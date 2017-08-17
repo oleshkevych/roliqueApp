@@ -1,0 +1,28 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="Widget.Rolique.Button" parent="Widget.AppCompat.Button">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="Widget.Rolique.Button.Blue" parent="Widget.Rolique.Button">
+        <item name="colorControlHighlight">@color/white</item>
+        <item name="colorButtonNormal">@color/colorPrimaryDark</item>
+    </style>
+
+    <style name="Widget.Rolique.ProgressBar" parent="Theme.AppCompat.Light"/>
+
+    <style name="Widget.Rolique.ProgressBar.White" parent="Widget.Rolique.ProgressBar">
+        <item name="colorAccent">@color/white</item>
+    </style>
+
+
+</resources>

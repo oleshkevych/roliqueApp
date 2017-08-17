@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Rolique App</string>
+
+    <!-- Activity login start-->
+    <string name="activity_login_title_activity_login">Sign in</string>
+    <string name="activity_login_email">Email</string>
+    <string name="activity_login_password">Password</string>
+    <string name="activity_login_error_invalid_email">This email address is invalid</string>
+    <string name="activity_login_error_invalid_password">This password is too short</string>
+    <string name="activity_login_error_invalid_confirm_password">Passwords are not the same</string>
+    <string name="activity_login_error_incorrect_password">This password is incorrect</string>
+    <string name="activity_login_error_field_required">This field is required</string>
+    <string name="activity_login_button_sign_in">Sign In</string>
+    <string name="activity_login_button_sign_up">Sign Up</string>
+    <string name="activity_login_first_name">First name</string>
+    <string name="activity_login_last_name">Last name</string>
+    <string name="activity_login_confirm_password">Confirm password</string>
+    <!-- Activity login end-->
+
+</resources>

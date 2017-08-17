@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "898584273592",
+    "firebase_url": "https://rolique-a93a5.firebaseio.com",
+    "project_id": "rolique-a93a5",
+    "storage_bucket": "rolique-a93a5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:898584273592:android:eacc3e6be4813b57",
+        "android_client_info": {
+          "package_name": "io.rolique.roliqueapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "898584273592-asp2kn7vj48kopto4ddu0it7qmdqn6da.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.rolique.roliqueapp",
+            "certificate_hash": "bed950b9f5cff0caeedc250cd3c5f264171897b0"
+          }
+        },
+        {
+          "client_id": "898584273592-u84951ia73gisuhggvl93m9dn1mpd8fg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPqcl8nN8GcDl-pZrsZL4sWIRduSIomw8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "898584273592-61fc1e7klvcvlp78cnej2jhmbn45cjcs.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "io.rolique.Rolique"
+              }
+            },
+            {
+              "client_id": "898584273592-u84951ia73gisuhggvl93m9dn1mpd8fg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
