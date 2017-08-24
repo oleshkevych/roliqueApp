@@ -9,11 +9,13 @@
         android:name=".RoliqueApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:label="@string/app_name"
         android:theme="@style/AppTheme">
-        <activity android:name=".screens.main.MainActivity">
+        <activity
+            android:name=".screens.navigation.chat.ChatsActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -22,8 +24,16 @@
         </activity>
         <activity
             android:name=".screens.login.LoginActivity"
-            android:label="@string/activity_login_title_activity_login">
+            android:label="@string/activity_login_title_activity_login"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".screens.navigation.contacts.ContactsActivity"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".screens.navigation.eat.EatingActivity"
+            android:screenOrientation="portrait">
         </activity>
     </application>
-
 </manifest>

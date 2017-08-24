@@ -1,4 +1,4 @@
-package io.rolique.roliqueapp.screens.main;
+package io.rolique.roliqueapp.screens.navigation.chat;
 
 import dagger.Component;
 import io.rolique.roliqueapp.RoliqueApplicationComponent;
@@ -10,8 +10,8 @@ import io.rolique.roliqueapp.screens.ViewScope;
  */
 
 @ViewScope
-@Component(dependencies = {RoliqueApplicationComponent.class}, modules = {MainPresenterModule.class})
-public interface MainComponent {
+@Component(dependencies = {RoliqueApplicationComponent.class}, modules = {ChatsPresenterModule.class})
+interface ChatsComponent {
 
-    void inject(MainActivity mainActivity);
+    void inject(ChatsActivity chatsActivity);
 }

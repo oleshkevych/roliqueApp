@@ -1,5 +1,10 @@
 package io.rolique.roliqueapp.screens.login;
 
+import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
+
+import java.io.File;
+
 import io.rolique.roliqueapp.screens.BasePresenter;
 import io.rolique.roliqueapp.screens.BaseView;
 
@@ -18,7 +23,7 @@ interface LoginContract {
 
     interface Presenter extends BasePresenter {
 
+        void uploadImage(@NonNull Bitmap bitmap, String email, String password, String firstName, String lastName);
         void signIn(String email, String password);
-        void signUp(String email, String password, String firstName, String lastName);
     }
 }

@@ -31,25 +31,14 @@ public class User {
     public User(String id,
                 String email,
                 String firstName,
-                String lastName) {
-        mId = id;
-        mFirstName = firstName;
-        mLastName = lastName;
-        mImageUrl = "imageUrl";
-        mType = "user";
-        mEmail = email;
-    }
-
-    public User(String id,
-                String firstName,
                 String lastName,
-                String imageUrl,
-                String type) {
+                String imageUrl) {
         mId = id;
         mFirstName = firstName;
         mLastName = lastName;
         mImageUrl = imageUrl;
-        mType = type;
+        mType = "user";
+        mEmail = email;
     }
 
     @Exclude

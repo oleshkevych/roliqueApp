@@ -3,6 +3,7 @@ package io.rolique.roliqueapp.screens.login;
 import android.content.Context;
 import android.content.Intent;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
@@ -15,6 +16,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import javax.inject.Inject;
@@ -25,7 +27,7 @@ import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.screens.BaseActivity;
-import io.rolique.roliqueapp.screens.main.MainActivity;
+import io.rolique.roliqueapp.screens.navigation.chat.ChatsActivity;
 
 /**
  * A login screen that offers login via email/password.
@@ -52,7 +54,8 @@ public class LoginActivity extends BaseActivity implements LoginContract.View {
     @BindView(R.id.edit_text_email_sign_in) EditText mEmailSignInEditText;
     @BindView(R.id.edit_text_password_sign_in) EditText mPasswordSignInEditText;
 
-    @BindView(R.id.layout_form_sign_up) LinearLayout mSignUpFormLayout;
+    @BindView(R.id.layout_form_sign_up) ScrollView mSignUpFormLayout;
+    @BindView(R.id.text_view_user_image) TextView mUserImageTextView;
     @BindView(R.id.edit_text_email_sign_up) EditText mEmailSignUpEditText;
     @BindView(R.id.edit_text_first_name_sign_up) EditText mFirstNameSignUpEditText;
     @BindView(R.id.edit_text_last_name_sign_up) EditText mLastNameSignUpEditText;
@@ -72,6 +75,9 @@ public class LoginActivity extends BaseActivity implements LoginContract.View {
 
         mEmailSignInEditText.setOnFocusChangeListener(mOnFocusChangeListener);
         mEmailSignUpEditText.setOnFocusChangeListener(mOnFocusChangeListener);
+
+        mLastNameSignUpEditText.addTextChangedListener(mOnNameEditorActionListener);
+        mFirstNameSignUpEditText.addTextChangedListener(mOnNameEditorActionListener);
     }
 
     @Override
@@ -177,47 +183,54 @@ public class LoginActivity extends BaseActivity implements LoginContract.View {
         if (isSignIn) {
             mPresenter.signIn(getInputText(mEmailSignInEditText), getInputText(mPasswordSignInEditText));
         } else {
-            mPresenter.signUp(getInputText(mEmailSignUpEditText),
+            mPresenter.uploadImage(getImageBitmap(),
+                    getInputText(mEmailSignUpEditText),
                     getInputText(mPasswordSignUpEditText),
                     getInputText(mFirstNameSignUpEditText),
                     getInputText(mLastNameSignUpEditText));
         }
     }
 
-    private boolean isFieldsValid(boolean isSignIn) {
-        if (isSignIn) {
-            if(!isEmailValid(mEmailSignInEditText)) return false;
-            if(!isPasswordValid(mPasswordSignInEditText)) return false;
-        } else {
-            if(!isEmailValid(mEmailSignUpEditText)) return false;
-            if(!isNameValid(mFirstNameSignUpEditText)) return false;
-            if(!isNameValid(mLastNameSignUpEditText)) return false;
-            if(!isPasswordValid(mPasswordSignUpEditText)) return false;
-            if(!isPasswordValid(mConfirmPasswordSignUpEditText)) return false;
-            if(!isPasswordConfirmed(mPasswordSignUpEditText, mConfirmPasswordSignUpEditText)) return false;
-        }
-        return true;
+    private Bitmap getImageBitmap() {
+        mUserImageTextView.setDrawingCacheEnabled(true);
+        mUserImageTextView.destroyDrawingCache();
+        mUserImageTextView.buildDrawingCache();
+        return mUserImageTextView.getDrawingCache();
     }
 
-    private boolean isPasswordConfirmed(EditText passwordSignUpEditText, EditText confirmPasswordSignUpEditText) {
+    private boolean isFieldsValid(boolean isSignIn) {
+        if (isSignIn) {
+            return lackEmail(mEmailSignInEditText) &&
+                    lackPassword(mPasswordSignInEditText);
+        } else {
+            return lackEmail(mEmailSignUpEditText) &&
+                    lackName(mFirstNameSignUpEditText) &&
+                    lackName(mLastNameSignUpEditText) &&
+                    lackPassword(mPasswordSignUpEditText) &&
+                    lackPassword(mConfirmPasswordSignUpEditText) &&
+                    lackConfirmPassword(mPasswordSignUpEditText, mConfirmPasswordSignUpEditText);
+        }
+    }
+
+    private boolean lackConfirmPassword(EditText passwordSignUpEditText, EditText confirmPasswordSignUpEditText) {
         String pass = getInputText(passwordSignUpEditText);
         String confirmPass = getInputText(confirmPasswordSignUpEditText);
         if (!pass.equals(confirmPass)) {
             confirmPasswordSignUpEditText.setError(getString(R.string.activity_login_error_invalid_confirm_password));
             confirmPasswordSignUpEditText.requestFocus();
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
-    private boolean isEmailValid(EditText emailView) {
+    private boolean lackEmail(EditText emailView) {
         String email = getInputText(emailView);
         if (TextUtils.isEmpty(email) || countSymbols(email) != 1) {
             emailView.setError(getString(R.string.activity_login_error_invalid_email));
             emailView.requestFocus();
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     private int countSymbols(String s) {
@@ -225,31 +238,29 @@ public class LoginActivity extends BaseActivity implements LoginContract.View {
         char c = "@".charAt(0);
         for (int i = 0; i < s.length(); i++) {
             char c1 = s.charAt(i);
-            if (c == c1) {
-                count++;
-            }
+            if (c == c1) count++;
         }
         return count;
     }
 
-    private boolean isPasswordValid(EditText passwordView) {
+    private boolean lackPassword(EditText passwordView) {
         String password = getInputText(passwordView);
         if (TextUtils.isEmpty(password) || password.length() <= 6) {
             passwordView.setError(getString(R.string.activity_login_error_invalid_password));
             passwordView.requestFocus();
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
-    private boolean isNameValid(EditText editText) {
+    private boolean lackName(EditText editText) {
         String string = getInputText(editText);
         if (TextUtils.isEmpty(string)) {
             editText.setError(getString(R.string.activity_login_error_field_required));
             editText.requestFocus();
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     private String getInputText(EditText emailView) {
@@ -260,6 +271,30 @@ public class LoginActivity extends BaseActivity implements LoginContract.View {
         findViewById(R.id.progress_bar).setVisibility(show ? View.VISIBLE : View.GONE);
         findViewById(R.id.layout_progress).setVisibility(show ? View.VISIBLE : View.GONE);
     }
+
+    TextWatcher mOnNameEditorActionListener = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            String firstName = mFirstNameSignUpEditText.getText().toString();
+            String lastName = mLastNameSignUpEditText.getText().toString();
+            String text = "";
+            if (!firstName.isEmpty())
+                text += firstName.substring(0, 1).toUpperCase();
+            if (!lastName.isEmpty())
+                text += lastName.substring(0, 1).toUpperCase();
+            mUserImageTextView.setText(text);
+        }
+    };
 
     @OnClick({R.id.button_sign_in, R.id.button_sign_up})
     void onSignClick() {
@@ -274,9 +309,9 @@ public class LoginActivity extends BaseActivity implements LoginContract.View {
 
     private void setSignInForm() {
         mToolbar.setTitle(R.string.activity_login_button_sign_in);
-        mSignUpSwitcherButton.setBackgroundColor(ContextCompat.getColor(LoginActivity.this, R.color.black_alpha_80));
+        mSignUpSwitcherButton.setBackground(ContextCompat.getDrawable(LoginActivity.this, R.drawable.shape_sign_up_button));
         mSignUpSwitcherButton.setClickable(true);
-        mSignInSwitcherButton.setBackgroundColor(ContextCompat.getColor(LoginActivity.this, R.color.colorPrimaryDark));
+        mSignInSwitcherButton.setBackground(ContextCompat.getDrawable(LoginActivity.this, R.drawable.shape_sign_in_button_selected));
         mSignInSwitcherButton.setClickable(false);
         mEmailSignUpEditText.getText().clear();
         mFirstNameSignUpEditText.getText().clear();
@@ -290,9 +325,9 @@ public class LoginActivity extends BaseActivity implements LoginContract.View {
     @OnClick(R.id.button_sign_up_switcher)
     void onSignUpClicked() {
         mToolbar.setTitle(R.string.activity_login_button_sign_up);
-        mSignInSwitcherButton.setBackgroundColor(ContextCompat.getColor(LoginActivity.this, R.color.black_alpha_80));
+        mSignInSwitcherButton.setBackground(ContextCompat.getDrawable(LoginActivity.this,  R.drawable.shape_sign_in_button));
         mSignInSwitcherButton.setClickable(true);
-        mSignUpSwitcherButton.setBackgroundColor(ContextCompat.getColor(LoginActivity.this, R.color.colorPrimaryDark));
+        mSignUpSwitcherButton.setBackground(ContextCompat.getDrawable(LoginActivity.this, R.drawable.shape_sign_up_button_selected));
         mSignUpSwitcherButton.setClickable(false);
         mEmailSignInEditText.getText().clear();
         mPasswordSignInEditText.getText().clear();
@@ -303,13 +338,26 @@ public class LoginActivity extends BaseActivity implements LoginContract.View {
     @Override
     public void showLoginInView() {
         showProgress(false);
-        startActivity(MainActivity.startIntent(LoginActivity.this));
+        startActivity(ChatsActivity.startIntent(LoginActivity.this));
+        finish();
     }
 
     @Override
     public void showLoginError() {
         showProgress(false);
         showSnackbar("Login Failed");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mPresenter.start();
+    }
+
+    @Override
+    protected void onStop() {
+        mPresenter.stop();
+        super.onStop();
     }
 }
 

@@ -6,9 +6,14 @@
 
     <color name="colorPrimaryDark_alpha_50">#7f303f9f</color>
 
+    <color name="black">#000000</color>
     <color name="black_alpha_50">#7f000000</color>
     <color name="black_alpha_80">#33000000</color>
 
     <color name="white">#ffffff</color>
+
+    <color name="lime_100">#d2d1bc</color>
+
+    <color name="transparent">#00000000</color>
 
 </resources>

@@ -17,4 +17,20 @@
     <string name="activity_login_confirm_password">Confirm password</string>
     <!-- Activity login end-->
 
+    <!-- Activity chats start-->
+    <string name="activity_chats_title">Chats</string>
+    <!-- Activity chats end-->
+
+    <!-- Activity eat start-->
+    <string name="activity_eat_title">Food</string>
+    <!-- Activity eat end-->
+
+    <!-- Activity contacts start-->
+    <string name="activity_contacts_title">Contacts</string>
+    <!-- Activity contacts end-->
+
+    <!-- navigation menu start-->
+    <string name="navigation_menu_check_in">Check in</string>
+    <string name="navigation_menu_log_out">Log out</string>
+    <!-- navigation menu end-->
 </resources>
