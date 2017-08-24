@@ -1,6 +1,4 @@
-package io.rolique.roliqueapp.screens.login;
-
-import javax.inject.Singleton;
+package io.rolique.roliqueapp.screens.welcome.fragments.signUp;
 
 import dagger.Module;
 import dagger.Provides;
@@ -12,17 +10,17 @@ import io.rolique.roliqueapp.screens.ViewScope;
  */
 
 @Module
-class LoginPresenterModule {
+class SignUpPresenterModule {
 
-    private final LoginActivity mView;
+    private final SignUpFragment mView;
 
-    LoginPresenterModule(LoginActivity view) {
+    SignUpPresenterModule(SignUpFragment view) {
         mView = view;
     }
 
     @Provides
     @ViewScope
-    LoginActivity provideLoginContractView() {
+    SignUpFragment provideSignUpContractView() {
         return mView;
     }
 }

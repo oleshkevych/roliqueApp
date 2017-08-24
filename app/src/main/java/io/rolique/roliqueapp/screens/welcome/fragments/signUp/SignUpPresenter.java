@@ -1,8 +1,8 @@
-package io.rolique.roliqueapp.screens.login;
+package io.rolique.roliqueapp.screens.welcome.fragments.signUp;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -22,9 +22,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.Date;
 
 import javax.inject.Inject;
@@ -39,9 +36,9 @@ import timber.log.Timber;
  * Copyright (c) 2017, Rolique. All rights reserved.
  */
 
-final class LoginPresenter implements LoginContract.Presenter, FirebaseValues {
+final class SignUpPresenter implements SignUpContract.Presenter, FirebaseValues {
 
-    private final LoginActivity mView;
+    private final SignUpFragment mView;
 
     FirebaseAuth mAuth;
     FirebaseDatabase mDatabase;
@@ -50,7 +47,7 @@ final class LoginPresenter implements LoginContract.Presenter, FirebaseValues {
     Query mQuery;
 
     @Inject
-    LoginPresenter(Context context, RoliqueApplicationPreferences preferences, LoginActivity view) {
+    SignUpPresenter(Context context, RoliqueApplicationPreferences preferences, SignUpFragment view) {
         mPreferences = preferences;
         mContext = context;
         mView = view;
@@ -71,7 +68,7 @@ final class LoginPresenter implements LoginContract.Presenter, FirebaseValues {
     }
 
     @Override
-    public void uploadImage(@NonNull Bitmap bitmap, final String email, final String password, final String firstName, final String lastName) {
+    public void uploadImage(@NonNull Bitmap bitmap, final String email, final String password, final String firstName, final String lastName, final Activity activity) {
         StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(String.format("%s.jpg", new Date().getTime()));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 80, baos);
@@ -88,30 +85,9 @@ final class LoginPresenter implements LoginContract.Presenter, FirebaseValues {
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                 String downloadUrl = taskSnapshot.getDownloadUrl().toString();
-                signUp(email, password, firstName, lastName, downloadUrl);
+                signUp(email, password, firstName, lastName, downloadUrl, activity);
             }
         });
-    }
-
-    @Override
-    public void signIn(final String email, final String password) {
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(mView, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            saveSignInCredentials(mAuth.getCurrentUser().getUid());
-                        } else {
-                            task.getException().printStackTrace();
-                            mView.showLoginError();
-                        }
-                    }
-                });
-    }
-
-    private void saveSignInCredentials(final String uid) {
-        mQuery = mDatabase.getReference(AUTH_USER).child(uid);
-        mQuery.addValueEventListener(mListener);
     }
 
     private ValueEventListener mListener = new ValueEventListener() {
@@ -130,9 +106,9 @@ final class LoginPresenter implements LoginContract.Presenter, FirebaseValues {
     };
 
 
-    private void signUp(final String email, String password, final String firstName, final String lastName, final String imageUrl) {
+    private void signUp(final String email, String password, final String firstName, final String lastName, final String imageUrl, Activity activity) {
         mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(mView, new OnCompleteListener<AuthResult>() {
+                .addOnCompleteListener(activity, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {

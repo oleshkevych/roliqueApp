@@ -13,8 +13,8 @@ import javax.inject.Inject;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
-import io.rolique.roliqueapp.screens.login.LoginActivity;
 import io.rolique.roliqueapp.screens.navigation.NavigationActivity;
+import io.rolique.roliqueapp.screens.welcome.WelcomeActivity;
 import io.rolique.roliqueapp.util.ui.UiUtil;
 
 public class ChatsActivity extends NavigationActivity implements ChatsContract.View {
@@ -74,7 +74,7 @@ public class ChatsActivity extends NavigationActivity implements ChatsContract.V
         if (isLogin) {
             showSnackbar("Logged in successfully");
         } else {
-            startActivity(LoginActivity.startIntent(ChatsActivity.this));
+            startActivity(WelcomeActivity.startIntent(ChatsActivity.this));
             finish();
         }
     }

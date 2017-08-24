@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -5,8 +6,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
     <include
-        layout="@layout/content_toolbar"/>
+        layout="@layout/content_toolbar_back"/>
 
     <ImageView
         android:id="@+id/image_view"
@@ -17,93 +19,6 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"/>
 
-    <LinearLayout
-        android:id="@+id/layout_nav_buttons_container"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
-        android:layout_marginStart="24dp"
-        android:background="@drawable/shape_layout_sign_button"
-        android:orientation="horizontal"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/image_view">
-
-        <Button
-            android:id="@+id/button_sign_in_switcher"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackground"
-            android:text="@string/activity_login_button_sign_in"
-            android:theme="@style/Widget.Rolique.Button.Blue"/>
-
-        <Button
-            android:id="@+id/button_sign_up_switcher"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackground"
-            android:text="@string/activity_login_button_sign_up"
-            android:theme="@style/Widget.Rolique.Button.Blue"/>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/layout_form_sign_in"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:orientation="vertical"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layout_nav_buttons_container"
-        tools:visibility="gone">
-
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <EditText
-                android:id="@+id/edit_text_email_sign_in"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:hint="@string/activity_login_email"
-                android:inputType="textEmailAddress"
-                android:maxLines="1"/>
-
-        </android.support.design.widget.TextInputLayout>
-
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <EditText
-                android:id="@+id/edit_text_password_sign_in"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:hint="@string/activity_login_password"
-                android:imeActionId="@+id/login"
-                android:imeActionLabel="@string/activity_login_title_activity_login"
-                android:imeOptions="actionUnspecified"
-                android:inputType="textPassword"
-                android:maxLines="1"/>
-
-        </android.support.design.widget.TextInputLayout>
-
-        <Button
-            android:id="@+id/button_sign_in"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/activity_login_title_activity_login"
-            android:textStyle="bold"
-            android:theme="@style/Widget.Rolique.Button.Blue"/>
-
-    </LinearLayout>
-
     <ScrollView
         android:id="@+id/layout_form_sign_up"
         android:layout_width="0dp"
@@ -111,7 +26,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layout_nav_buttons_container">
+        app:layout_constraintTop_toBottomOf="@+id/image_view">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -213,7 +128,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="@string/activity_login_title_activity_login"
+                android:text="@string/activity_sign_up_title"
                 android:textStyle="bold"
                 android:theme="@style/Widget.Rolique.Button.Blue"/>
 
@@ -230,4 +145,5 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
+
 </android.support.constraint.ConstraintLayout>

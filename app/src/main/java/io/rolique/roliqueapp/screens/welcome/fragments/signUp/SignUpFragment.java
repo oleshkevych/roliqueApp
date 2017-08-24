@@ -1,22 +1,19 @@
-package io.rolique.roliqueapp.screens.login;
+package io.rolique.roliqueapp.screens.welcome.fragments.signUp;
 
-import android.content.Context;
-import android.content.Intent;
-
+import android.app.Fragment;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import javax.inject.Inject;
@@ -25,36 +22,23 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
-import io.rolique.roliqueapp.RoliqueApplicationPreferences;
-import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.navigation.chat.ChatsActivity;
+import io.rolique.roliqueapp.screens.welcome.fragments.BaseFragment;
 
-/**
- * A login screen that offers login via email/password.
- */
-public class LoginActivity extends BaseActivity implements LoginContract.View {
+public class SignUpFragment extends BaseFragment implements SignUpContract.View {
 
-    public static Intent startIntent(Context context) {
-        Intent intent = new Intent(context, LoginActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        return intent;
+    public static Fragment newInstance() {
+        return new SignUpFragment();
     }
+
 
     private final String DEFAULT_MAIL = "@rolique.io";
 
-    @Inject LoginPresenter mPresenter;
-    @Inject RoliqueApplicationPreferences mPreferences;
+    @Inject SignUpPresenter mPresenter;
 
     // UI references.
     @BindView(R.id.toolbar) Toolbar mToolbar;
-    @BindView(R.id.button_sign_in_switcher) Button mSignInSwitcherButton;
-    @BindView(R.id.button_sign_up_switcher) Button mSignUpSwitcherButton;
 
-    @BindView(R.id.layout_form_sign_in) LinearLayout mSignInFormLayout;
-    @BindView(R.id.edit_text_email_sign_in) EditText mEmailSignInEditText;
-    @BindView(R.id.edit_text_password_sign_in) EditText mPasswordSignInEditText;
-
-    @BindView(R.id.layout_form_sign_up) ScrollView mSignUpFormLayout;
     @BindView(R.id.text_view_user_image) TextView mUserImageTextView;
     @BindView(R.id.edit_text_email_sign_up) EditText mEmailSignUpEditText;
     @BindView(R.id.edit_text_first_name_sign_up) EditText mFirstNameSignUpEditText;
@@ -62,31 +46,41 @@ public class LoginActivity extends BaseActivity implements LoginContract.View {
     @BindView(R.id.edit_text_password_sign_up) EditText mPasswordSignUpEditText;
     @BindView(R.id.edit_text_confirm_password_sign_up) EditText mConfirmPasswordSignUpEditText;
 
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_sign_up, container, false);
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        setUpToolbar();
 
-        setSignInForm();
-
-        mPasswordSignInEditText.setOnEditorActionListener(mOnEditorActionListener);
         mConfirmPasswordSignUpEditText.setOnEditorActionListener(mOnEditorActionListener);
-
-        mEmailSignInEditText.setOnFocusChangeListener(mOnFocusChangeListener);
         mEmailSignUpEditText.setOnFocusChangeListener(mOnFocusChangeListener);
 
         mLastNameSignUpEditText.addTextChangedListener(mOnNameEditorActionListener);
         mFirstNameSignUpEditText.addTextChangedListener(mOnNameEditorActionListener);
     }
 
+    private void setUpToolbar() {
+        mToolbar.setTitle(R.string.activity_sign_up_title);
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getActivity().onBackPressed();
+            }
+        });
+    }
+
     @Override
     protected void inject() {
-        DaggerLoginComponent.builder()
-                .roliqueApplicationComponent(((RoliqueApplication) getApplication()).getRepositoryComponent())
-                .loginPresenterModule(new LoginPresenterModule(LoginActivity.this))
+        DaggerSignUpComponent.builder()
+                .roliqueApplicationComponent(((RoliqueApplication) getActivity().getApplication()).getRepositoryComponent())
+                .signUpPresenterModule(new SignUpPresenterModule(SignUpFragment.this))
                 .build()
-                .inject(LoginActivity.this);
+                .inject(SignUpFragment.this);
     }
 
     TextView.OnEditorActionListener mOnEditorActionListener = new TextView.OnEditorActionListener() {
@@ -105,43 +99,14 @@ public class LoginActivity extends BaseActivity implements LoginContract.View {
         public void onFocusChange(View view, boolean b) {
             EditText editText = (EditText) view;
             if (b) {
-                if (editText.equals(mEmailSignInEditText)) {
-                    mEmailSignInEditText.addTextChangedListener(mOnEmailSignInEditorActionListener);
-                } else {
-                    mEmailSignUpEditText.addTextChangedListener(mOnEmailSignUpEditorActionListener);
-                }
+                mEmailSignUpEditText.addTextChangedListener(mOnEmailSignUpEditorActionListener);
                 String s = getInputText(editText);
                 if (!s.isEmpty() && s.contains("@")) {
                     s = s.substring(0, s.indexOf("@"));
                     editText.setText(s);
                 }
             } else {
-                if (editText.equals(mEmailSignInEditText)) {
-                    mEmailSignInEditText.removeTextChangedListener(mOnEmailSignInEditorActionListener);
-                } else {
-                    mEmailSignUpEditText.removeTextChangedListener(mOnEmailSignUpEditorActionListener);
-                }
-            }
-        }
-    };
-
-    TextWatcher mOnEmailSignInEditorActionListener = new TextWatcher() {
-        @Override
-        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-        }
-
-        @Override
-        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-        }
-
-        @Override
-        public void afterTextChanged(Editable editable) {
-            String s = editable.toString();
-            if (s.contains("@")) {
-                mPasswordSignInEditText.requestFocus();
-                mEmailSignInEditText.setText(transformString(s));
+                mEmailSignUpEditText.removeTextChangedListener(mOnEmailSignUpEditorActionListener);
             }
         }
     };
@@ -173,22 +138,18 @@ public class LoginActivity extends BaseActivity implements LoginContract.View {
     };
 
     private void attemptLogin() {
-        boolean isSignIn = mSignInFormLayout.getVisibility() == View.VISIBLE;
         showProgress(true);
-        if(!isFieldsValid(isSignIn)) {
+        if (laksFieldValues()) {
             showProgress(false);
             return;
         }
+        mPresenter.uploadImage(getImageBitmap(),
+                getInputText(mEmailSignUpEditText),
+                getInputText(mPasswordSignUpEditText),
+                getInputText(mFirstNameSignUpEditText),
+                getInputText(mLastNameSignUpEditText),
+                getActivity());
 
-        if (isSignIn) {
-            mPresenter.signIn(getInputText(mEmailSignInEditText), getInputText(mPasswordSignInEditText));
-        } else {
-            mPresenter.uploadImage(getImageBitmap(),
-                    getInputText(mEmailSignUpEditText),
-                    getInputText(mPasswordSignUpEditText),
-                    getInputText(mFirstNameSignUpEditText),
-                    getInputText(mLastNameSignUpEditText));
-        }
     }
 
     private Bitmap getImageBitmap() {
@@ -198,18 +159,13 @@ public class LoginActivity extends BaseActivity implements LoginContract.View {
         return mUserImageTextView.getDrawingCache();
     }
 
-    private boolean isFieldsValid(boolean isSignIn) {
-        if (isSignIn) {
-            return lackEmail(mEmailSignInEditText) &&
-                    lackPassword(mPasswordSignInEditText);
-        } else {
-            return lackEmail(mEmailSignUpEditText) &&
-                    lackName(mFirstNameSignUpEditText) &&
-                    lackName(mLastNameSignUpEditText) &&
-                    lackPassword(mPasswordSignUpEditText) &&
-                    lackPassword(mConfirmPasswordSignUpEditText) &&
-                    lackConfirmPassword(mPasswordSignUpEditText, mConfirmPasswordSignUpEditText);
-        }
+    private boolean laksFieldValues() {
+        return lackEmail(mEmailSignUpEditText) &&
+                lackName(mFirstNameSignUpEditText) &&
+                lackName(mLastNameSignUpEditText) &&
+                lackPassword(mPasswordSignUpEditText) &&
+                lackPassword(mConfirmPasswordSignUpEditText) &&
+                lackConfirmPassword(mPasswordSignUpEditText, mConfirmPasswordSignUpEditText);
     }
 
     private boolean lackConfirmPassword(EditText passwordSignUpEditText, EditText confirmPasswordSignUpEditText) {
@@ -268,8 +224,8 @@ public class LoginActivity extends BaseActivity implements LoginContract.View {
     }
 
     private void showProgress(final boolean show) {
-        findViewById(R.id.progress_bar).setVisibility(show ? View.VISIBLE : View.GONE);
-        findViewById(R.id.layout_progress).setVisibility(show ? View.VISIBLE : View.GONE);
+        getView().findViewById(R.id.progress_bar).setVisibility(show ? View.VISIBLE : View.GONE);
+        getView().findViewById(R.id.layout_progress).setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     TextWatcher mOnNameEditorActionListener = new TextWatcher() {
@@ -296,68 +252,34 @@ public class LoginActivity extends BaseActivity implements LoginContract.View {
         }
     };
 
-    @OnClick({R.id.button_sign_in, R.id.button_sign_up})
+    @OnClick(R.id.button_sign_up)
     void onSignClick() {
         hideKeyboard();
         attemptLogin();
     }
 
-    @OnClick(R.id.button_sign_in_switcher)
-    void onSignInClicked() {
-        setSignInForm();
-    }
-
-    private void setSignInForm() {
-        mToolbar.setTitle(R.string.activity_login_button_sign_in);
-        mSignUpSwitcherButton.setBackground(ContextCompat.getDrawable(LoginActivity.this, R.drawable.shape_sign_up_button));
-        mSignUpSwitcherButton.setClickable(true);
-        mSignInSwitcherButton.setBackground(ContextCompat.getDrawable(LoginActivity.this, R.drawable.shape_sign_in_button_selected));
-        mSignInSwitcherButton.setClickable(false);
-        mEmailSignUpEditText.getText().clear();
-        mFirstNameSignUpEditText.getText().clear();
-        mLastNameSignUpEditText.getText().clear();
-        mPasswordSignUpEditText.getText().clear();
-        mConfirmPasswordSignUpEditText.getText().clear();
-        mSignUpFormLayout.setVisibility(View.GONE);
-        mSignInFormLayout.setVisibility(View.VISIBLE);
-    }
-
-    @OnClick(R.id.button_sign_up_switcher)
-    void onSignUpClicked() {
-        mToolbar.setTitle(R.string.activity_login_button_sign_up);
-        mSignInSwitcherButton.setBackground(ContextCompat.getDrawable(LoginActivity.this,  R.drawable.shape_sign_in_button));
-        mSignInSwitcherButton.setClickable(true);
-        mSignUpSwitcherButton.setBackground(ContextCompat.getDrawable(LoginActivity.this, R.drawable.shape_sign_up_button_selected));
-        mSignUpSwitcherButton.setClickable(false);
-        mEmailSignInEditText.getText().clear();
-        mPasswordSignInEditText.getText().clear();
-        mSignUpFormLayout.setVisibility(View.VISIBLE);
-        mSignInFormLayout.setVisibility(View.GONE);
-    }
-
     @Override
     public void showLoginInView() {
         showProgress(false);
-        startActivity(ChatsActivity.startIntent(LoginActivity.this));
-        finish();
+        startActivity(ChatsActivity.startIntent(getActivity()));
+        getActivity().finish();
     }
 
     @Override
     public void showLoginError() {
         showProgress(false);
-        showSnackbar("Login Failed");
+        showSnackbar("Login Failed", getView());
     }
 
     @Override
-    protected void onStart() {
+    public void onStart() {
         super.onStart();
         mPresenter.start();
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         mPresenter.stop();
         super.onStop();
     }
 }
-

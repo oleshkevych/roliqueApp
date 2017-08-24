@@ -1,6 +1,18 @@
 <resources>
     <string name="app_name">Rolique App</string>
 
+    <!-- Activity welcome start-->
+    <string name="activity_welcome_title">Welcome to Rolique</string>
+    <!-- Activity welcome end-->
+
+    <!-- Activity sign up start-->
+    <string name="activity_sign_up_title">Sign up</string>
+    <!-- Activity sign up end-->
+
+    <!-- Activity sign in start-->
+    <string name="activity_sign_in_title">Sign In</string>
+    <!-- Activity sign in end-->
+
     <!-- Activity login start-->
     <string name="activity_login_title_activity_login">Sign in</string>
     <string name="activity_login_email">Email</string>
