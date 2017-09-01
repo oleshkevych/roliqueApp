@@ -45,6 +45,11 @@
     <string name="fragment_check_in_title">Check in</string>
     <!-- Activity eat end-->
 
+    <!-- Activity new chat start-->
+    <string name="activity_new_chat_title">New chat</string>
+    <string name="activity_new_chat_chat_name">Chat name</string>
+    <!-- Activity new chat end-->
+
     <!-- navigation menu start-->
     <string name="navigation_menu_check_in">Check in</string>
     <string name="navigation_menu_log_out">Log out</string>

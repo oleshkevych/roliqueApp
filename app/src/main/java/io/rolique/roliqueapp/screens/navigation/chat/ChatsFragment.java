@@ -12,12 +12,14 @@ import android.view.ViewGroup;
 import javax.inject.Inject;
 
 import butterknife.BindView;
+import butterknife.OnClick;
 import io.rolique.roliqueapp.BaseFragment;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.model.Chat;
+import io.rolique.roliqueapp.screens.newChat.NewChatActivity;
 
 public class ChatsFragment extends BaseFragment implements ChatsContract.View {
 
@@ -68,6 +70,11 @@ public class ChatsFragment extends BaseFragment implements ChatsContract.View {
             showSnackbar(getView(), chat.getId());
         }
     };
+
+    @OnClick(R.id.button_add_chat)
+    void onAddChatClick() {
+        startActivity(NewChatActivity.startIntent(getActivity()));
+    }
 
     @Override
     public void showAddedChatInView(Chat chat) {

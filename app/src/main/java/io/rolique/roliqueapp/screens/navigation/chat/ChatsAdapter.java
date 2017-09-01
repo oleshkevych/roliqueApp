@@ -9,7 +9,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import butterknife.BindView;
@@ -17,8 +16,6 @@ import butterknife.ButterKnife;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.data.model.Chat;
-import io.rolique.roliqueapp.data.model.User;
-import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.ui.UiUtil;
 
 /**
@@ -121,10 +118,10 @@ class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHolder> {
             }
         };
 
-        void bindChat(Chat meter) {
-            mChat = meter;
+        void bindChat(Chat chat) {
+            mChat = chat;
             mTitleTextView.setText(mChat.getTitle());
-            mLastMessageTextView.setText(String.format("%s - %s", UiUtil.getUserName(mChat.getSenderId(), mRoliqueAppUsers.getUsers()), mChat.getLastMessage()));
+            mLastMessageTextView.setText(String.format("%s - %s", UiUtil.getUserNameForView(mChat.getSenderId(), mRoliqueAppUsers.getUsers()), mChat.getLastMessage()));
             mDateTextView.setText(UiUtil.getStringTimeForView(mChat.getTimeStamp()));
             UiUtil.setImage(mImageView, mChat.getImageUrl());
         }

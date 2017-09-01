@@ -39,11 +39,15 @@ public class UiUtil {
         }
     }
 
-    public static String getUserName(String senderId, List<User> users) {
+    public static String getUserNameForView(String senderId, List<User> users) {
         for (User user: users)
             if (user.getId().equals(senderId))
-                return String.format("%s %s", user.getFirstName(), user.getLastName());
+                return getUserNameForView(user);
         return "unknown user";
+    }
+
+    public static String getUserNameForView(User user) {
+        return String.format("%s %s", user.getFirstName(), user.getLastName());
     }
 
 }

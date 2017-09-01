@@ -1,8 +1,5 @@
 package io.rolique.roliqueapp.util;
 
-import android.support.annotation.Nullable;
-
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -16,11 +13,11 @@ import timber.log.Timber;
  */
 
 public final class DateUtil {
-    private static final String DATE_FORMATE = "yyyy-MM-dd HH:mm:ss ZZZZZ";
+    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     public static Date transformDate(String dateInString) {
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMATE, Locale.getDefault());
+            SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault());
             if(dateInString.lastIndexOf('+') > 0)
                 dateInString = dateInString.substring(0, dateInString.lastIndexOf('+') - 1);
             return sdf.parse(dateInString);

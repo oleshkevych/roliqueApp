@@ -111,6 +111,30 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
         }
     };
 
+    TextWatcher mOnNameEditorActionListener = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            String firstName = mFirstNameSignUpEditText.getText().toString();
+            String lastName = mLastNameSignUpEditText.getText().toString();
+            String text = "";
+            if (!firstName.isEmpty())
+                text += firstName.substring(0, 1).toUpperCase();
+            if (!lastName.isEmpty())
+                text += lastName.substring(0, 1).toUpperCase();
+            mUserImageTextView.setText(text);
+        }
+    };
+
     private String transformString(String s) {
         s = s.substring(0, s.indexOf("@")) + DEFAULT_MAIL;
         return s;
@@ -227,30 +251,6 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
         getView().findViewById(R.id.progress_bar).setVisibility(show ? View.VISIBLE : View.GONE);
         getView().findViewById(R.id.layout_progress).setVisibility(show ? View.VISIBLE : View.GONE);
     }
-
-    TextWatcher mOnNameEditorActionListener = new TextWatcher() {
-        @Override
-        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-        }
-
-        @Override
-        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-        }
-
-        @Override
-        public void afterTextChanged(Editable editable) {
-            String firstName = mFirstNameSignUpEditText.getText().toString();
-            String lastName = mLastNameSignUpEditText.getText().toString();
-            String text = "";
-            if (!firstName.isEmpty())
-                text += firstName.substring(0, 1).toUpperCase();
-            if (!lastName.isEmpty())
-                text += lastName.substring(0, 1).toUpperCase();
-            mUserImageTextView.setText(text);
-        }
-    };
 
     @OnClick(R.id.button_sign_up)
     void onSignClick() {
