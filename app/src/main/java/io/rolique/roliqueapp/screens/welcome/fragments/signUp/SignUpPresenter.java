@@ -40,19 +40,20 @@ final class SignUpPresenter implements SignUpContract.Presenter, FirebaseValues 
 
     private final SignUpFragment mView;
 
-    FirebaseAuth mAuth;
-    FirebaseDatabase mDatabase;
+    final FirebaseAuth mAuth;
+    final FirebaseDatabase mDatabase;
     final RoliqueApplicationPreferences mPreferences;
-    final Context mContext;
     Query mQuery;
 
     @Inject
-    SignUpPresenter(Context context, RoliqueApplicationPreferences preferences, SignUpFragment view) {
+    SignUpPresenter(RoliqueApplicationPreferences preferences,
+                    SignUpFragment view,
+                    FirebaseAuth auth,
+                    FirebaseDatabase database) {
         mPreferences = preferences;
-        mContext = context;
         mView = view;
-        mAuth = FirebaseAuth.getInstance();
-        mDatabase = FirebaseDatabase.getInstance();
+        mAuth = auth;
+        mDatabase = database;
     }
 
     @Override
@@ -105,7 +106,6 @@ final class SignUpPresenter implements SignUpContract.Presenter, FirebaseValues 
         }
     };
 
-
     private void signUp(final String email, String password, final String firstName, final String lastName, final String imageUrl, Activity activity) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(activity, new OnCompleteListener<AuthResult>() {
@@ -115,7 +115,7 @@ final class SignUpPresenter implements SignUpContract.Presenter, FirebaseValues 
                             saveSignUpCredentials(mAuth.getCurrentUser().getUid(), email, firstName, lastName, imageUrl);
                         } else {
                             task.getException().printStackTrace();
-                            mView.showLoginError();
+                            mView.showLoginError(task.getException().getMessage());
                         }
                     }
                 });

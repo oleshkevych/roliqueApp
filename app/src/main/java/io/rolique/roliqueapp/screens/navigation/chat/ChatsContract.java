@@ -1,5 +1,8 @@
 package io.rolique.roliqueapp.screens.navigation.chat;
 
+import java.util.List;
+
+import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.screens.BasePresenter;
 import io.rolique.roliqueapp.screens.BaseView;
 
@@ -10,12 +13,13 @@ import io.rolique.roliqueapp.screens.BaseView;
 interface ChatsContract {
 
     interface View extends BaseView<Presenter> {
-        void showLoginInView(boolean isLogin);
-        void setImage(String path);
+        void showAddedChatInView(Chat chat);
+        void showChangedChatInView(Chat chat);
+        void showRemovedChatInView(Chat chat);
+        void showErrorInView(String message);
     }
 
     interface Presenter extends BasePresenter {
-        void isLogin();
-        void logout();
+        void setUpChatsListener();
     }
 }

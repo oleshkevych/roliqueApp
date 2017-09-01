@@ -1,6 +1,4 @@
-package io.rolique.roliqueapp.screens.navigation.chat;
-
-import android.app.Fragment;
+package io.rolique.roliqueapp.screens.navigation;
 
 import dagger.Module;
 import dagger.Provides;
@@ -12,17 +10,17 @@ import io.rolique.roliqueapp.screens.ViewScope;
  */
 
 @Module
-class ChatsPresenterModule {
+class NavigationPresenterModule {
 
-    private final ChatsContract.View mView;
+    private final NavigationActivity mView;
 
-    ChatsPresenterModule(ChatsContract.View view) {
+    NavigationPresenterModule(NavigationActivity view) {
         mView = view;
     }
 
     @Provides
     @ViewScope
-    ChatsContract.View provideChatsView() {
+    NavigationActivity provideNavigationActivity() {
         return mView;
     }
 }

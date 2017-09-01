@@ -5,8 +5,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="io.rolique.roliqueapp.screens.navigation.eat.EatingActivity">
-
-    <include layout="@layout/content_toolbar_navigation"/>
+    tools:context="io.rolique.roliqueapp.screens.navigation.contacts.ContactsFragment">
 
 </android.support.constraint.ConstraintLayout>

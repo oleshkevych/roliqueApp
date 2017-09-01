@@ -4,17 +4,17 @@
         android:id="@+id/menu_chats"
         android:background="?selectableItemBackground"
         android:icon="@drawable/ic_chat_black_24dp"
-        android:title="@string/activity_chats_title"/>
+        android:title="@string/fragment_chats_title"/>
     <item
         android:id="@+id/menu_contacts"
         android:background="?selectableItemBackground"
         android:icon="@drawable/ic_contacts_black_24dp"
-        android:title="@string/activity_contacts_title"/>
+        android:title="@string/fragment_contacts_title"/>
     <item
         android:id="@+id/menu_eat"
         android:background="?selectableItemBackground"
         android:icon="@drawable/ic_local_bar_black_24dp"
-        android:title="@string/activity_eat_title"/>
+        android:title="@string/fragment_eat_title"/>
     <item
         android:id="@+id/menu_check_in"
         android:background="?selectableItemBackground"

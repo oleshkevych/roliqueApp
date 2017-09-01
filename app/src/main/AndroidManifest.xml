@@ -14,21 +14,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".screens.navigation.chat.ChatsActivity"
+            android:name=".screens.navigation.NavigationActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-        </activity>
-        <activity
-            android:name=".screens.navigation.contacts.ContactsActivity"
-            android:screenOrientation="portrait">
-        </activity>
-        <activity
-            android:name=".screens.navigation.eat.EatingActivity"
-            android:screenOrientation="portrait">
         </activity>
         <activity
             android:name=".screens.welcome.WelcomeActivity"

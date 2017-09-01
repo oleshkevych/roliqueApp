@@ -22,8 +22,8 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
-import io.rolique.roliqueapp.screens.navigation.chat.ChatsActivity;
-import io.rolique.roliqueapp.screens.welcome.fragments.BaseFragment;
+import io.rolique.roliqueapp.screens.navigation.NavigationActivity;
+import io.rolique.roliqueapp.BaseFragment;
 
 public class SignUpFragment extends BaseFragment implements SignUpContract.View {
 
@@ -160,11 +160,11 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
     }
 
     private boolean laksFieldValues() {
-        return lackEmail(mEmailSignUpEditText) &&
-                lackName(mFirstNameSignUpEditText) &&
-                lackName(mLastNameSignUpEditText) &&
-                lackPassword(mPasswordSignUpEditText) &&
-                lackPassword(mConfirmPasswordSignUpEditText) &&
+        return lackEmail(mEmailSignUpEditText) ||
+                lackName(mFirstNameSignUpEditText) ||
+                lackName(mLastNameSignUpEditText) ||
+                lackPassword(mPasswordSignUpEditText) ||
+                lackPassword(mConfirmPasswordSignUpEditText) ||
                 lackConfirmPassword(mPasswordSignUpEditText, mConfirmPasswordSignUpEditText);
     }
 
@@ -261,14 +261,14 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
     @Override
     public void showLoginInView() {
         showProgress(false);
-        startActivity(ChatsActivity.startIntent(getActivity()));
+        startActivity(NavigationActivity.startIntent(getActivity()));
         getActivity().finish();
     }
 
     @Override
-    public void showLoginError() {
+    public void showLoginError(String message) {
         showProgress(false);
-        showSnackbar("Login Failed", getView());
+        showSnackbar(getView(), message);
     }
 
     @Override

@@ -2,6 +2,9 @@ package io.rolique.roliqueapp;
 
 import android.content.Context;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
+
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -16,20 +19,37 @@ import io.rolique.roliqueapp.screens.ViewScope;
 @Module
 public class RoliqueApplicationModule {
 
+    private final FirebaseAuth mFirebaseAuth;
     private final Context mContext;
+    private final FirebaseDatabase mFirebaseDatabase;
 
-    public RoliqueApplicationModule(Context context) {
+    public RoliqueApplicationModule(Context context, FirebaseAuth auth, FirebaseDatabase database) {
         mContext = context;
+        mFirebaseAuth = auth;
+        mFirebaseDatabase = database;
     }
 
     @Provides
-    Context provideContext() {
-        return mContext;
+    @Singleton
+    FirebaseDatabase provideDatabase() {
+        return mFirebaseDatabase;
+    }
+
+    @Provides
+    @Singleton
+    FirebaseAuth provideAuth() {
+        return mFirebaseAuth;
     }
 
     @Provides
     @Singleton
     public RoliqueApplicationPreferences providePreferences() {
         return new RoliqueApplicationPreferences(mContext);
+    }
+
+    @Provides
+    @Singleton
+    public RoliqueAppUsers provideUsers() {
+        return new RoliqueAppUsers(mFirebaseAuth, mFirebaseDatabase);
     }
 }

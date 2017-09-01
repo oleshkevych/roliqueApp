@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:foreground="?android:selectableItemBackground"
+    android:orientation="horizontal"
+    android:paddingBottom="8dp"
+    android:paddingEnd="16dp"
+    android:paddingStart="16dp"
+    android:paddingTop="8dp">
+
+    <ImageView
+        android:id="@+id/image_view"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        tools:src="@color/black"/>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_weight="6"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/text_view_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingEnd="8dp"
+            android:paddingStart="8dp"
+            android:textAppearance="?android:textAppearanceListItem"
+            tools:text="Title"/>
+
+        <TextView
+            android:id="@+id/text_view_last_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingEnd="8dp"
+            android:paddingStart="8dp"
+            android:paddingTop="4dp"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
+            android:textColor="@color/black_alpha_50"
+            tools:text="Last sender: bla-bla-bla"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/text_view_date"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/black_alpha_50"
+        android:textSize="12sp"
+        tools:text="21:15"/>
+
+</LinearLayout>

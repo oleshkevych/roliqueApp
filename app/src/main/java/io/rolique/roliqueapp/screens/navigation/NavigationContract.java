@@ -1,7 +1,6 @@
-package io.rolique.roliqueapp.screens.welcome.fragments.signIn;
+package io.rolique.roliqueapp.screens.navigation;
 
-import android.app.Activity;
-
+import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.screens.BasePresenter;
 import io.rolique.roliqueapp.screens.BaseView;
 
@@ -9,17 +8,15 @@ import io.rolique.roliqueapp.screens.BaseView;
  * Created by Volodymyr Oleshkevych on 8/16/2017.
  * Copyright (c) 2017, Rolique. All rights reserved.
  */
-
-interface SignInContract {
+interface NavigationContract {
 
     interface View extends BaseView<Presenter> {
-
-        void showLoginInView();
-        void showLoginError(String message);
+        void showLoginInView(boolean isLogin);
+        void setImage(String path);
     }
 
     interface Presenter extends BasePresenter {
-
-        void signIn(String email, String password, Activity activity);
+        void isLogin();
+        void logout();
     }
 }

@@ -1,14 +1,16 @@
 package io.rolique.roliqueapp.screens.navigation;
 
+import android.app.Fragment;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,25 +18,46 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import io.rolique.roliqueapp.R;
+import io.rolique.roliqueapp.RoliqueApplication;
+import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.screens.BaseActivity;
-import io.rolique.roliqueapp.screens.navigation.chat.ChatsActivity;
-import io.rolique.roliqueapp.screens.navigation.contacts.ContactsActivity;
-import io.rolique.roliqueapp.screens.navigation.eat.EatingActivity;
+import io.rolique.roliqueapp.screens.navigation.chat.ChatsFragment;
+import io.rolique.roliqueapp.screens.navigation.checkIn.CheckInFragment;
+import io.rolique.roliqueapp.screens.navigation.contacts.ContactsFragment;
+import io.rolique.roliqueapp.screens.navigation.eat.EatingFragment;
+import io.rolique.roliqueapp.screens.welcome.WelcomeActivity;
+import io.rolique.roliqueapp.util.ui.UiUtil;
 
 /**
  * Created by Volodymyr Oleshkevych on 8/22/2017.
  * Copyright (c) 2017, Rolique. All rights reserved.
  */
-public abstract class NavigationActivity extends BaseActivity {
+public class NavigationActivity extends BaseActivity implements NavigationContract.View {
 
-    @BindView(R.id.drawer_layout) protected DrawerLayout mDrawerLayout;
-    @BindView(R.id.navigation_view) protected NavigationView mNavigationView;
-    @BindView(R.id.container) FrameLayout mContainer;
-    protected TextView mNameTextView;
-    protected Toolbar mToolbar;
-    protected ImageView mNavigationImageView;
+    public static Intent startIntent(Context context) {
+        Intent intent = new Intent(context, NavigationActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        return intent;
+    }
+
+    @BindView(R.id.drawer_layout) DrawerLayout mDrawerLayout;
+    @BindView(R.id.navigation_view) NavigationView mNavigationView;
+    @BindView(R.id.toolbar) Toolbar mToolbar;
+    @BindView(R.id.view_pager) ViewPager mViewPager;
+
+    @Inject NavigationPresenter mPresenter;
+    @Inject RoliqueApplicationPreferences mPreferences;
+
+    private TextView mNameTextView;
+    private ImageView mNavigationImageView;
+    private FragmentViewPagerAdapter mFragmentViewPagerAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -49,21 +72,48 @@ public abstract class NavigationActivity extends BaseActivity {
                 onLogOutClicked();
             }
         });
+        mPresenter.isLogin();
     }
 
     @Override
-    public void setContentView(@LayoutRes int layoutResID) {
-        if (layoutResID == R.layout.activity_navigation) {
-            super.setContentView(layoutResID);
-            setUpNavigationView();
-        } else {
-            LayoutInflater.from(NavigationActivity.this).inflate(layoutResID, mContainer);
-            mToolbar = getViewById(R.id.toolbar);
+    protected void inject() {
+        DaggerNavigationComponent.builder()
+                .roliqueApplicationComponent(((RoliqueApplication) getApplication()).getRepositoryComponent())
+                .navigationPresenterModule(new NavigationPresenterModule(NavigationActivity.this))
+                .build()
+                .inject(NavigationActivity.this);
+    }
+
+    private void onLogOutClicked() {
+        mPresenter.logout();
+    }
+
+    @Override
+    public void showLoginInView(boolean isLogin) {
+        if (isLogin) {
+            setUpFragments();
             setUpToolbar();
+            setChatsSelected();
+        } else {
+            startActivity(WelcomeActivity.startIntent(NavigationActivity.this));
+            finish();
         }
     }
 
-    private void setUpNavigationView() {
+    private void setUpFragments() {
+        mFragmentViewPagerAdapter = new FragmentViewPagerAdapter(getFragmentManager());
+        mViewPager.setAdapter(mFragmentViewPagerAdapter);
+        mViewPager.setOffscreenPageLimit(4);
+    }
+
+    private void setUpToolbar() {
+        mNameTextView.setText(String.format("%s %s", mPreferences.getFirstName(), mPreferences.getLastName()));
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDrawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
         mNavigationView.setNavigationItemSelectedListener(mNavigationListener);
     }
 
@@ -71,18 +121,28 @@ public abstract class NavigationActivity extends BaseActivity {
             = new NavigationView.OnNavigationItemSelectedListener() {
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            Menu menu = mNavigationView.getMenu();
+            for (int i = 0; i < menu.size(); i++) {
+                MenuItem menuItem = menu.getItem(i);
+                if (menuItem.equals(item)) menuItem.setChecked(true);
+                else menuItem.setChecked(false);
+            }
             switch (item.getItemId()) {
                 case R.id.menu_chats:
-                    startActivity(ChatsActivity.startIntent(NavigationActivity.this));
+                    mToolbar.setTitle(R.string.fragment_chats_title);
+                    mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.CHATS, false);
                     break;
                 case R.id.menu_contacts:
-                    startActivity(ContactsActivity.startIntent(NavigationActivity.this));
+                    mToolbar.setTitle(R.string.fragment_contacts_title);
+                    mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.CONTACTS, false);
                     break;
                 case R.id.menu_eat:
-                    startActivity(EatingActivity.startIntent(NavigationActivity.this));
+                    mToolbar.setTitle(R.string.fragment_eat_title);
+                    mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.EAT, false);
                     break;
                 case R.id.menu_check_in:
-                    showCheckInFragment();
+                    mToolbar.setTitle(R.string.fragment_check_in_title);
+                    mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.CHECK_IN, false);
                     break;
             }
             mDrawerLayout.closeDrawer(GravityCompat.START);
@@ -90,13 +150,20 @@ public abstract class NavigationActivity extends BaseActivity {
         }
     };
 
-    private void showCheckInFragment() {
-        //TODO: make check in fragment
+    private void setChatsSelected() {
+        Menu menu = mNavigationView.getMenu();
+        for (int i = 0; i < menu.size(); i++) {
+            MenuItem menuItem = menu.getItem(i);
+            if (menuItem.getItemId() == R.id.menu_chats) menuItem.setChecked(true);
+        }
+        mToolbar.setTitle(R.string.fragment_chats_title);
+        mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.CHATS, false);
     }
 
-    protected abstract void setUpToolbar();
-
-    protected abstract void onLogOutClicked();
+    @Override
+    public void setImage(String path) {
+        UiUtil.setImage(mNavigationImageView, path);
+    }
 
     @Override
     public void onBackPressed() {

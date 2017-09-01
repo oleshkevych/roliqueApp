@@ -30,19 +30,26 @@
     <!-- Activity login end-->
 
     <!-- Activity chats start-->
-    <string name="activity_chats_title">Chats</string>
+    <string name="fragment_chats_title">Chats</string>
     <!-- Activity chats end-->
 
     <!-- Activity eat start-->
-    <string name="activity_eat_title">Food</string>
+    <string name="fragment_eat_title">Food</string>
     <!-- Activity eat end-->
 
     <!-- Activity contacts start-->
-    <string name="activity_contacts_title">Contacts</string>
+    <string name="fragment_contacts_title">Contacts</string>
     <!-- Activity contacts end-->
+
+    <!-- Activity eat start-->
+    <string name="fragment_check_in_title">Check in</string>
+    <!-- Activity eat end-->
 
     <!-- navigation menu start-->
     <string name="navigation_menu_check_in">Check in</string>
     <string name="navigation_menu_log_out">Log out</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
     <!-- navigation menu end-->
 </resources>

@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.rolique.roliqueapp.R;
-import io.rolique.roliqueapp.screens.welcome.fragments.BaseFragment;
+import io.rolique.roliqueapp.BaseFragment;
 import io.rolique.roliqueapp.screens.welcome.fragments.signIn.SignInFragment;
 import io.rolique.roliqueapp.screens.welcome.fragments.signUp.SignUpFragment;
 

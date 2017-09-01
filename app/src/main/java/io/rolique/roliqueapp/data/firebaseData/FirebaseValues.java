@@ -7,9 +7,10 @@ package io.rolique.roliqueapp.data.firebaseData;
 public interface FirebaseValues {
 
     String AUTH_USER = "auth/users";
-    String CHAT = "chat/chats";
-    String FIRST_NAME = "first_name";
-    String LAST_NAME = "last_name";
+    String CHAT = "chat";
+    String CHATS = "chats";
+    String USER_CHAT = "userChats";
     String IMAGE_URL = "image_url";
     String TYPE = "type";
+
 }

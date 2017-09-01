@@ -1,4 +1,4 @@
-package io.rolique.roliqueapp.screens.welcome.fragments;
+package io.rolique.roliqueapp;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -6,10 +6,8 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
@@ -48,7 +46,7 @@ public abstract class BaseFragment extends Fragment {
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
-    protected void showSnackbar(String text, View view) {
+    protected void showSnackbar(View view, String text) {
         Snackbar.make(view, text, Snackbar.LENGTH_LONG).show();
     }
 }

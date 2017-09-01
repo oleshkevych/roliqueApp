@@ -17,7 +17,7 @@ interface SignUpContract {
     interface View extends BaseView<Presenter> {
 
         void showLoginInView();
-        void showLoginError();
+        void showLoginError(String message);
     }
 
     interface Presenter extends BasePresenter {

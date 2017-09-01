@@ -2,6 +2,9 @@ package io.rolique.roliqueapp;
 
 import android.app.Application;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
+
 import timber.log.Timber;
 
 /**
@@ -30,7 +33,9 @@ public class RoliqueApplication extends Application {
     }
     private RoliqueApplicationComponent buildRepositoryComponent() {
         return DaggerRoliqueApplicationComponent.builder()
-                .roliqueApplicationModule(new RoliqueApplicationModule((getApplicationContext())))
+                .roliqueApplicationModule(new RoliqueApplicationModule((getApplicationContext()),
+                        FirebaseAuth.getInstance(),
+                        FirebaseDatabase.getInstance()))
                 .build();
     }
 

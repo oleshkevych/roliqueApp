@@ -13,5 +13,5 @@ import io.rolique.roliqueapp.screens.ViewScope;
 @Component(dependencies = {RoliqueApplicationComponent.class}, modules = {ChatsPresenterModule.class})
 interface ChatsComponent {
 
-    void inject(ChatsActivity chatsActivity);
+    void inject(ChatsFragment chatsFragment);
 }

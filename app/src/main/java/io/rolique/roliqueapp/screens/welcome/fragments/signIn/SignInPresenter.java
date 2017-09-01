@@ -33,16 +33,17 @@ final class SignInPresenter implements SignInContract.Presenter, FirebaseValues 
     FirebaseAuth mAuth;
     FirebaseDatabase mDatabase;
     final RoliqueApplicationPreferences mPreferences;
-    final Context mContext;
     Query mQuery;
 
     @Inject
-    SignInPresenter(Context context, RoliqueApplicationPreferences preferences, SignInFragment view) {
+    SignInPresenter(RoliqueApplicationPreferences preferences,
+                    SignInFragment view,
+                    FirebaseAuth auth,
+                    FirebaseDatabase database) {
         mPreferences = preferences;
-        mContext = context;
         mView = view;
-        mAuth = FirebaseAuth.getInstance();
-        mDatabase = FirebaseDatabase.getInstance();
+        mAuth = auth;
+        mDatabase = database;
     }
 
     @Override
@@ -67,7 +68,7 @@ final class SignInPresenter implements SignInContract.Presenter, FirebaseValues 
                             saveSignInCredentials(mAuth.getCurrentUser().getUid());
                         } else {
                             task.getException().printStackTrace();
-                            mView.showLoginError();
+                            mView.showLoginError(task.getException().getMessage());
                         }
                     }
                 });
