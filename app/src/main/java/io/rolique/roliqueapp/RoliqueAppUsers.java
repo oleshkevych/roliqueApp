@@ -59,7 +59,13 @@ public class RoliqueAppUsers implements FirebaseValues {
             userRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    mUsers.add(dataSnapshot.getValue(User.class));
+                    User user = dataSnapshot.getValue(User.class);
+                    for (int i = 0; i < mUsers.size(); i++)
+                        if (mUsers.get(i).getId().equals(user.getId())) {
+                            mUsers.set(i, user);
+                            return;
+                        }
+                    mUsers.add(user);
                 }
 
                 @Override

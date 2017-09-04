@@ -39,7 +39,7 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
     // UI references.
     @BindView(R.id.toolbar) Toolbar mToolbar;
 
-    @BindView(R.id.text_view_user_image) TextView mUserImageTextView;
+    @BindView(R.id.text_view_image) TextView mUserImageTextView;
     @BindView(R.id.edit_text_email_sign_up) EditText mEmailSignUpEditText;
     @BindView(R.id.edit_text_first_name_sign_up) EditText mFirstNameSignUpEditText;
     @BindView(R.id.edit_text_last_name_sign_up) EditText mLastNameSignUpEditText;

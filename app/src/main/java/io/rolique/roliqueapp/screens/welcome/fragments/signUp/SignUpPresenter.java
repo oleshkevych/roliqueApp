@@ -28,7 +28,10 @@ import javax.inject.Inject;
 
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.firebaseData.FirebaseValues;
+import io.rolique.roliqueapp.data.model.Chat;
+import io.rolique.roliqueapp.data.model.ChatMessage;
 import io.rolique.roliqueapp.data.model.User;
+import io.rolique.roliqueapp.util.LinksBuilder;
 import timber.log.Timber;
 
 /**
@@ -43,7 +46,6 @@ final class SignUpPresenter implements SignUpContract.Presenter, FirebaseValues 
     final FirebaseAuth mAuth;
     final FirebaseDatabase mDatabase;
     final RoliqueApplicationPreferences mPreferences;
-    Query mQuery;
 
     @Inject
     SignUpPresenter(RoliqueApplicationPreferences preferences,
@@ -54,18 +56,6 @@ final class SignUpPresenter implements SignUpContract.Presenter, FirebaseValues 
         mView = view;
         mAuth = auth;
         mDatabase = database;
-    }
-
-    @Override
-    public void start() {
-        if(mQuery != null)
-            mQuery.addValueEventListener(mListener);
-    }
-
-    @Override
-    public void stop() {
-        if(mQuery != null)
-            mQuery.removeEventListener(mListener);
     }
 
     @Override
@@ -85,26 +75,11 @@ final class SignUpPresenter implements SignUpContract.Presenter, FirebaseValues 
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                String downloadUrl = taskSnapshot.getDownloadUrl().toString();
+                @SuppressWarnings("VisibleForTests") String downloadUrl = taskSnapshot.getDownloadUrl().toString();
                 signUp(email, password, firstName, lastName, downloadUrl, activity);
             }
         });
     }
-
-    private ValueEventListener mListener = new ValueEventListener() {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-            User user = dataSnapshot.getValue(User.class);
-            Timber.d(user.toString());
-            mPreferences.logIn(user);
-            mView.showLoginInView();
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-    };
 
     private void signUp(final String email, String password, final String firstName, final String lastName, final String imageUrl, Activity activity) {
         mAuth.createUserWithEmailAndPassword(email, password)
@@ -133,6 +108,40 @@ final class SignUpPresenter implements SignUpContract.Presenter, FirebaseValues 
                 Timber.d(databaseReference.getKey());
             }
         });
+
+        registerInChats(userId);
+    }
+
+    private void registerInChats(final String userId) {
+        ChatMessage chatMessage = new ChatMessage();
+        chatMessage.setEmpty();
+        DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, userId, "main"));
+        memberRef.setValue(chatMessage);
+
+        final DatabaseReference mainChatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS, "main"));
+        mainChatRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Chat main = dataSnapshot.getValue(Chat.class);
+                main.getMemberIds().add(userId);
+                mainChatRef.setValue(main);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
         mView.showLoginInView();
+    }
+
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void stop() {
+
     }
 }

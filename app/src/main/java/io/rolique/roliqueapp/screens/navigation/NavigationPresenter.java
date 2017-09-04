@@ -6,7 +6,6 @@ import javax.inject.Inject;
 
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.firebaseData.FirebaseValues;
-import io.rolique.roliqueapp.screens.navigation.chat.ChatsFragment;
 
 /**
  * Created by Volodymyr Oleshkevych on 8/16/2017.

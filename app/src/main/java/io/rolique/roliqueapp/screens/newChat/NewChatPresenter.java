@@ -1,19 +1,27 @@
 package io.rolique.roliqueapp.screens.newChat;
 
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
+import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.io.ByteArrayOutputStream;
+import java.util.Date;
+import java.util.List;
 
 import javax.inject.Inject;
 
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.firebaseData.FirebaseValues;
 import io.rolique.roliqueapp.data.model.Chat;
+import io.rolique.roliqueapp.data.model.ChatMessage;
 import io.rolique.roliqueapp.util.LinksBuilder;
-import timber.log.Timber;
 
 /**
  * Created by Volodymyr Oleshkevych on 8/16/2017.
@@ -26,7 +34,6 @@ class NewChatPresenter implements NewChatContract.Presenter, FirebaseValues {
     private RoliqueApplicationPreferences mPreferences;
 
     FirebaseDatabase mDatabase;
-    DatabaseReference mUserChatsRef;
 
     @Inject
     NewChatPresenter(RoliqueApplicationPreferences preferences,
@@ -43,108 +50,52 @@ class NewChatPresenter implements NewChatContract.Presenter, FirebaseValues {
 
     @Override
     public void stop() {
-        mUserChatsRef.removeEventListener(mUserChatsEventListener);
     }
 
-    public void setUpChatsListener() {
-        mUserChatsRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, mPreferences.getId()));
-        mUserChatsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChildren()) {
-                    mUserChatsRef.addChildEventListener(mUserChatsEventListener);
-                } else {
-                    mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT))
-                            .child(mPreferences.getId())
-                            .child("main")
-                            .setValue("true", new DatabaseReference.CompletionListener() {
-                                @Override
-                                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                                    mUserChatsRef.addChildEventListener(mUserChatsEventListener);
-                                }
-                            });
-                }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                databaseError.toException().printStackTrace();
-                mView.showErrorInView(databaseError.getMessage());
-            }
-        });
-
-    }
-
-    ChildEventListener mUserChatsEventListener = new ChildEventListener() {
-        @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS, dataSnapshot.getKey()));
-            chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Chat chat = dataSnapshot.getValue(Chat.class);
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    mView.showErrorInView(databaseError.getMessage());
-                    Timber.e(databaseError.getMessage(), databaseError.getDetails());
-                    databaseError.toException().printStackTrace();
-                }
-            });
-        }
-
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS, dataSnapshot.getKey()));
-            chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Chat chat = dataSnapshot.getValue(Chat.class);
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    mView.showErrorInView(databaseError.getMessage());
-                    Timber.e(databaseError.getMessage(), databaseError.getDetails());
-                    databaseError.toException().printStackTrace();
-                }
-            });
-        }
-
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {
-            DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS, dataSnapshot.getKey()));
-            chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Chat chat = dataSnapshot.getValue(Chat.class);
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    mView.showErrorInView(databaseError.getMessage());
-                    Timber.e(databaseError.getMessage(), databaseError.getDetails());
-                    databaseError.toException().printStackTrace();
-                }
-            });
-        }
-
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-            Timber.e(databaseError.getMessage(), databaseError.getDetails());
-            databaseError.toException().printStackTrace();
-            mView.showErrorInView(databaseError.getMessage());
-        }
-    };
 
     @Override
-    public void saveNewChat() {
+    public void saveNewChat(final Chat chat, Bitmap image) {
+        mView.setProgressIndicator(true);
+        DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS)).push();
+        String id  = chatRef.getKey();
+        chat.setId(id);
 
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(String.format("%s.jpg", new Date().getTime()));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.PNG, 80, baos);
+        byte[] data = baos.toByteArray();
+
+        UploadTask uploadTask = storageRef.putBytes(data);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                exception.printStackTrace();
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                @SuppressWarnings("VisibleForTests") String downloadUrl = taskSnapshot. getDownloadUrl().toString();
+                chat.setImageUrl(downloadUrl);
+                setChat(chat);
+            }
+        });
+    }
+
+    private void setChat(Chat chat) {
+        DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS, chat.getId()));
+        chatRef.setValue(chat);
+        setUpMembers(chat.getMemberIds(), chat.getId());
+    }
+
+    private void setUpMembers(List<String> memberIds, String chatId) {
+        ChatMessage chatMessage = new ChatMessage();
+        chatMessage.setEmpty();
+        for (String memberId: memberIds) {
+            DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, memberId, chatId));
+            memberRef.setValue(chatMessage);
+        }
+        mView.setProgressIndicator(false);
+        mView.showSavedInView();
     }
 }

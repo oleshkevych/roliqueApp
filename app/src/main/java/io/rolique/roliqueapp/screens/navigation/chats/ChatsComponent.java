@@ -1,4 +1,4 @@
-package io.rolique.roliqueapp.screens.navigation.chat;
+package io.rolique.roliqueapp.screens.navigation.chats;
 
 import dagger.Component;
 import io.rolique.roliqueapp.RoliqueApplicationComponent;

@@ -1,4 +1,4 @@
-package io.rolique.roliqueapp.screens.navigation.chat;
+package io.rolique.roliqueapp.screens.navigation.chats;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -121,8 +121,8 @@ class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHolder> {
         void bindChat(Chat chat) {
             mChat = chat;
             mTitleTextView.setText(mChat.getTitle());
-            mLastMessageTextView.setText(String.format("%s - %s", UiUtil.getUserNameForView(mChat.getSenderId(), mRoliqueAppUsers.getUsers()), mChat.getLastMessage()));
-            mDateTextView.setText(UiUtil.getStringTimeForView(mChat.getTimeStamp()));
+//            mLastMessageTextView.setText(String.format("%s - %s", UiUtil.getUserNameForView(mChat.getSenderId(), mRoliqueAppUsers.getUsers()), mChat.getLastMessage()));
+//            mDateTextView.setText(UiUtil.getStringTimeForView(mChat.getTimeStamp()));
             UiUtil.setImage(mImageView, mChat.getImageUrl());
         }
     }

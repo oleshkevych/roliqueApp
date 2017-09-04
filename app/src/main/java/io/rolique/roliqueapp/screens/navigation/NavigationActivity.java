@@ -1,6 +1,5 @@
 package io.rolique.roliqueapp.screens.navigation;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,12 +13,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -28,10 +23,6 @@ import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.screens.BaseActivity;
-import io.rolique.roliqueapp.screens.navigation.chat.ChatsFragment;
-import io.rolique.roliqueapp.screens.navigation.checkIn.CheckInFragment;
-import io.rolique.roliqueapp.screens.navigation.contacts.ContactsFragment;
-import io.rolique.roliqueapp.screens.navigation.eat.EatingFragment;
 import io.rolique.roliqueapp.screens.welcome.WelcomeActivity;
 import io.rolique.roliqueapp.util.ui.UiUtil;
 

@@ -1,6 +1,4 @@
-package io.rolique.roliqueapp.screens.navigation.chat;
-
-import android.app.Fragment;
+package io.rolique.roliqueapp.screens.navigation.chats;
 
 import dagger.Module;
 import dagger.Provides;

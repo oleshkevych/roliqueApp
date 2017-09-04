@@ -1,5 +1,7 @@
 package io.rolique.roliqueapp.screens.newChat;
 
+import android.graphics.Bitmap;
+
 import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.screens.BasePresenter;
 import io.rolique.roliqueapp.screens.BaseView;
@@ -17,6 +19,6 @@ interface NewChatContract {
     }
 
     interface Presenter extends BasePresenter {
-        void saveNewChat();
+        void saveNewChat(Chat chat, Bitmap image);
     }
 }

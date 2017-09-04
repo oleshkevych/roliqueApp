@@ -1,4 +1,4 @@
-package io.rolique.roliqueapp.screens.navigation.chat;
+package io.rolique.roliqueapp.screens.navigation.chats;
 
 import android.app.Fragment;
 import android.os.Bundle;

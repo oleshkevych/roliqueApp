@@ -18,16 +18,10 @@ public class Chat {
     public String mId;
     @PropertyName("image_url")
     public String mImageUrl;
-    @PropertyName("last_message")
-    public String mLastMessage;
     @PropertyName("members")
     public List<String> mMemberIds;
     @PropertyName("owner")
     public String mOwnerId;
-    @PropertyName("sender")
-    public String mSenderId;
-    @PropertyName("time_stamp")
-    public String mTimeStamp;
     @PropertyName("title")
     public String mTitle;
 
@@ -55,16 +49,6 @@ public class Chat {
     }
 
     @Exclude
-    public String getLastMessage() {
-        return mLastMessage;
-    }
-
-    @Exclude
-    public void setLastMessage(String lastMessage) {
-        mLastMessage = lastMessage;
-    }
-
-    @Exclude
     public List<String> getMemberIds() {
         return mMemberIds;
     }
@@ -82,26 +66,6 @@ public class Chat {
     @Exclude
     public void setOwnerId(String ownerId) {
         mOwnerId = ownerId;
-    }
-
-    @Exclude
-    public String getSenderId() {
-        return mSenderId;
-    }
-
-    @Exclude
-    public void setSenderId(String senderId) {
-        mSenderId = senderId;
-    }
-
-    @Exclude
-    public String getTimeStamp() {
-        return mTimeStamp;
-    }
-
-    @Exclude
-    public void setTimeStamp(String timeStamp) {
-        mTimeStamp = timeStamp;
     }
 
     @Exclude

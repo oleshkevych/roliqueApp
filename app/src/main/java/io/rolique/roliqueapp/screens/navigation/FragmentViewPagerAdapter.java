@@ -7,7 +7,7 @@ import android.support.v13.app.FragmentPagerAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.rolique.roliqueapp.screens.navigation.chat.ChatsFragment;
+import io.rolique.roliqueapp.screens.navigation.chats.ChatsFragment;
 import io.rolique.roliqueapp.screens.navigation.checkIn.CheckInFragment;
 import io.rolique.roliqueapp.screens.navigation.contacts.ContactsFragment;
 import io.rolique.roliqueapp.screens.navigation.eat.EatingFragment;

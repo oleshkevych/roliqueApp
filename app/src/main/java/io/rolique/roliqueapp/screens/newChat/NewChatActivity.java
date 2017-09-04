@@ -2,8 +2,9 @@ package io.rolique.roliqueapp.screens.newChat;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
+import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -25,6 +26,7 @@ import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
+import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.newChat.adapters.ImageDecoration;
@@ -39,7 +41,7 @@ public class NewChatActivity extends BaseActivity implements NewChatContract.Vie
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.view_switcher) ViewSwitcher mViewSwitcher;
-    @BindView(R.id.text_view_user_image) TextView mUserImageTextView;
+    @BindView(R.id.text_view_image) TextView mImageTextView;
     @BindView(R.id.edit_text_chat_name) EditText mChatNameEditText;
 
     @Inject NewChatPresenter mPresenter;
@@ -111,24 +113,35 @@ public class NewChatActivity extends BaseActivity implements NewChatContract.Vie
                             .toUpperCase();
                 }
             }
-            mUserImageTextView.setText(text);
+            mImageTextView.setText(text);
         }
     };
 
     private void setUpRecyclersView() {
-        RecyclerView usersRecyclerView = getViewById(R.id.recycler_view_users);
-        usersRecyclerView.setLayoutManager(new LinearLayoutManager(NewChatActivity.this));
-        mUsersAdapter = new UsersAdapter(NewChatActivity.this, getUsers(mRoliqueAppUsers.getUsers()));
-        usersRecyclerView.setAdapter(mUsersAdapter);
-        mUsersAdapter.setOnItemClickListener(mOnItemClickListener);
+        if (mRoliqueAppUsers.getUsers().isEmpty()) {
+            setProgressIndicator(true);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    setUpRecyclersView();
+                }
+            }, 500);
+        } else {
+            setProgressIndicator(false);
+            RecyclerView usersRecyclerView = getViewById(R.id.recycler_view_users);
+            usersRecyclerView.setLayoutManager(new LinearLayoutManager(NewChatActivity.this));
+            mUsersAdapter = new UsersAdapter(NewChatActivity.this, getUsers(mRoliqueAppUsers.getUsers()));
+            usersRecyclerView.setAdapter(mUsersAdapter);
+            mUsersAdapter.setOnItemClickListener(mOnItemClickListener);
 
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(NewChatActivity.this);
-        linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        RecyclerView membersRecyclerView = getViewById(R.id.recycler_view_members);
-        membersRecyclerView.setLayoutManager(linearLayoutManager);
-        membersRecyclerView.addItemDecoration(new ImageDecoration(getResources().getDimensionPixelSize(R.dimen.members_recycler_padding)));
-        mMembersAdapter = new MembersAdapter(NewChatActivity.this);
-        membersRecyclerView.setAdapter(mMembersAdapter);
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(NewChatActivity.this);
+            linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+            RecyclerView membersRecyclerView = getViewById(R.id.recycler_view_members);
+            membersRecyclerView.setLayoutManager(linearLayoutManager);
+            membersRecyclerView.addItemDecoration(new ImageDecoration(getResources().getDimensionPixelSize(R.dimen.members_recycler_padding)));
+            mMembersAdapter = new MembersAdapter(NewChatActivity.this);
+            membersRecyclerView.setAdapter(mMembersAdapter);
+        }
     }
 
     private List<User> getUsers(List<User> users) {
@@ -152,10 +165,24 @@ public class NewChatActivity extends BaseActivity implements NewChatContract.Vie
 
     @OnClick(R.id.button_save)
     void onSaveClick() {
-        String ids = "";
-        for (String s : mUsersAdapter.getSelectedUserIds())
-            ids += s;
-        showSnackbar(ids);
+        Chat chat = new Chat();
+        chat.setMemberIds(getMemberIds());
+        chat.setOwnerId(mPreferences.getId());
+        chat.setTitle(mChatNameEditText.getText().toString());
+        mPresenter.saveNewChat(chat, getImageBitmap());
+    }
+
+    private List<String> getMemberIds() {
+        List<String> members = mUsersAdapter.getSelectedUserIds();
+        members.add(mPreferences.getId());
+        return members;
+    }
+
+    private Bitmap getImageBitmap() {
+        mImageTextView.setDrawingCacheEnabled(true);
+        mImageTextView.destroyDrawingCache();
+        mImageTextView.buildDrawingCache();
+        return mImageTextView.getDrawingCache();
     }
 
     @Override

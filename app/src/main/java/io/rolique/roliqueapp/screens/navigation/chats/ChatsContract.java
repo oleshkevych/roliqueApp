@@ -1,6 +1,4 @@
-package io.rolique.roliqueapp.screens.navigation.chat;
-
-import java.util.List;
+package io.rolique.roliqueapp.screens.navigation.chats;
 
 import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.screens.BasePresenter;
