@@ -10,4 +10,5 @@ public interface FirebaseValues {
     String CHAT = "chat";
     String CHATS = "chats";
     String USER_CHAT = "userChats";
+    String MESSAGES = "messages";
 }

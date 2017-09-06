@@ -24,9 +24,13 @@
         </activity>
         <activity
             android:name=".screens.welcome.WelcomeActivity"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".screens.newChat.NewChatActivity"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".screens.chat.ChatActivity"
             android:screenOrientation="portrait">
-        </activity>
-        <activity android:name=".screens.newChat.NewChatActivity">
         </activity>
     </application>
 

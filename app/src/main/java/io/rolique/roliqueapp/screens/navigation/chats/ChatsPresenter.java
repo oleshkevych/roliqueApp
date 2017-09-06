@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.firebaseData.FirebaseValues;
 import io.rolique.roliqueapp.data.model.Chat;
+import io.rolique.roliqueapp.data.model.Message;
 import io.rolique.roliqueapp.util.LinksBuilder;
 import timber.log.Timber;
 
@@ -77,12 +78,37 @@ class ChatsPresenter implements ChatsContract.Presenter, FirebaseValues {
     ChildEventListener mUserChatsEventListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS, dataSnapshot.getKey()));
+            final DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS, dataSnapshot.getKey()));
             chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    Chat chat = dataSnapshot.getValue(Chat.class);
-                    mView.showAddedChatInView(chat);
+                        final Chat chat = dataSnapshot.getValue(Chat.class);
+                        DatabaseReference userChatsRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, mPreferences.getId(), chat.getId()));
+                        userChatsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                Message message = null;
+                                if (dataSnapshot.getValue() instanceof String) {
+                                    message = Message.getEmptyMessage(chat.getId(), mPreferences.getId());
+                                    DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, message.getChatId())).push();
+                                    String id  = chatRef.getKey();
+                                    message.setId(id);
+
+                                    DatabaseReference messageRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId(), message.getId()));
+                                    messageRef.setValue(message);
+                                }
+                                else {
+                                    message = dataSnapshot.getValue(Message.class);
+                                }
+                                chat.setLastMessage(message);
+                                mView.showAddedChatInView(chat);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
                 }
 
                 @Override
@@ -100,8 +126,21 @@ class ChatsPresenter implements ChatsContract.Presenter, FirebaseValues {
             chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    Chat chat = dataSnapshot.getValue(Chat.class);
-                    mView.showChangedChatInView(chat);
+                    final Chat chat = dataSnapshot.getValue(Chat.class);
+                    DatabaseReference userChatsRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, mPreferences.getId(), chat.getId()));
+                    userChatsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            Message message = dataSnapshot.getValue(Message.class);
+                            chat.setLastMessage(message);
+                            mView.showChangedChatInView(chat);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 }
 
                 @Override

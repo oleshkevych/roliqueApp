@@ -1,7 +1,6 @@
 package io.rolique.roliqueapp.screens.welcome.fragments.signUp;
 
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 
@@ -29,7 +28,7 @@ import javax.inject.Inject;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.firebaseData.FirebaseValues;
 import io.rolique.roliqueapp.data.model.Chat;
-import io.rolique.roliqueapp.data.model.ChatMessage;
+import io.rolique.roliqueapp.data.model.Message;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.util.LinksBuilder;
 import timber.log.Timber;
@@ -109,22 +108,20 @@ final class SignUpPresenter implements SignUpContract.Presenter, FirebaseValues 
             }
         });
 
-        registerInChats(userId);
+        registerMainChatInUserChats(userId);
     }
 
-    private void registerInChats(final String userId) {
-        ChatMessage chatMessage = new ChatMessage();
-        chatMessage.setEmpty();
-        DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, userId, "main"));
-        memberRef.setValue(chatMessage);
-
-        final DatabaseReference mainChatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS, "main"));
-        mainChatRef.addListenerForSingleValueEvent(new ValueEventListener() {
+    private void registerMainChatInUserChats(final String userId) {
+        DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES));
+        Query mChatQuery = chatRef.child("main").limitToLast(1);
+        mChatQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Chat main = dataSnapshot.getValue(Chat.class);
-                main.getMemberIds().add(userId);
-                mainChatRef.setValue(main);
+                Message message = dataSnapshot.getValue(Message.class);
+                DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, userId, "main"));
+                memberRef.setValue(message);
+
+                registerUserInMainChat(userId);
             }
 
             @Override
@@ -132,7 +129,24 @@ final class SignUpPresenter implements SignUpContract.Presenter, FirebaseValues 
 
             }
         });
-        mView.showLoginInView();
+    }
+
+    private void registerUserInMainChat(final String userId) {
+        final DatabaseReference mainChatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS, "main"));
+        mainChatRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Chat main = dataSnapshot.getValue(Chat.class);
+                main.getMemberIds().add(userId);
+                mainChatRef.setValue(main);
+                mView.showLoginInView();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override

@@ -20,7 +20,8 @@ import javax.inject.Inject;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.firebaseData.FirebaseValues;
 import io.rolique.roliqueapp.data.model.Chat;
-import io.rolique.roliqueapp.data.model.ChatMessage;
+import io.rolique.roliqueapp.data.model.Message;
+import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.LinksBuilder;
 
 /**
@@ -89,8 +90,7 @@ class NewChatPresenter implements NewChatContract.Presenter, FirebaseValues {
     }
 
     private void setUpMembers(List<String> memberIds, String chatId) {
-        ChatMessage chatMessage = new ChatMessage();
-        chatMessage.setEmpty();
+        Message chatMessage = new Message(chatId, mPreferences.getId(), "Welcome!", DateUtil.getStringTime(), "user");
         for (String memberId: memberIds) {
             DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, memberId, chatId));
             memberRef.setValue(chatMessage);

@@ -53,8 +53,10 @@
     <!-- navigation menu start-->
     <string name="navigation_menu_check_in">Check in</string>
     <string name="navigation_menu_log_out">Log out</string>
+    <!-- navigation menu end-->
+
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <!-- navigation menu end-->
+
 </resources>

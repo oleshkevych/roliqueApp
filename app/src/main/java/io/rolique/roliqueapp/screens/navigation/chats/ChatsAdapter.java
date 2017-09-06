@@ -16,7 +16,10 @@ import butterknife.ButterKnife;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.data.model.Chat;
+import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.ui.UiUtil;
+
+import static io.rolique.roliqueapp.util.DateUtil.getStringMessageDate;
 
 /**
  * Created by Volodymyr Oleshkevych on 8/28/2017.
@@ -121,8 +124,8 @@ class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHolder> {
         void bindChat(Chat chat) {
             mChat = chat;
             mTitleTextView.setText(mChat.getTitle());
-//            mLastMessageTextView.setText(String.format("%s - %s", UiUtil.getUserNameForView(mChat.getSenderId(), mRoliqueAppUsers.getUsers()), mChat.getLastMessage()));
-//            mDateTextView.setText(UiUtil.getStringTimeForView(mChat.getTimeStamp()));
+            mLastMessageTextView.setText(String.format("%s - %s", UiUtil.getUserNameForView(mChat.getLastMessage().getSenderId(), mRoliqueAppUsers.getUsers()), mChat.getLastMessage().getText()));
+            mDateTextView.setText(DateUtil.getStringMessageDate(mChat.getLastMessage().getTimeStamp()));
             UiUtil.setImage(mImageView, mChat.getImageUrl());
         }
     }

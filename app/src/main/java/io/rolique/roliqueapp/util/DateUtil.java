@@ -13,18 +13,20 @@ import timber.log.Timber;
  */
 
 public final class DateUtil {
-    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss Z";
 
     public static Date transformDate(String dateInString) {
         try {
             SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault());
-            if(dateInString.lastIndexOf('+') > 0)
-                dateInString = dateInString.substring(0, dateInString.lastIndexOf('+') - 1);
             return sdf.parse(dateInString);
         } catch (Exception e) {
             Timber.e(e);
             return new Date(0);
         }
+    }
+
+    public static boolean isSameDay(String date1, String date2) {
+        return isSameDay(transformDate(date1), transformDate(date2));
     }
 
     public static boolean isSameDay(Date date1, Date date2) {
@@ -58,5 +60,71 @@ public final class DateUtil {
     public static String getStringDate(int date) {
         if (date < 10) return String.format("%s%s", 0, date);
         return String.valueOf(date);
+    }
+
+    public static String getStringTime() {
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault());
+        String date = sdf.format(new Date());
+        String date1 = date.substring(0, date.length() - 2);
+        String date2 = date.substring(date.length() - 2);
+        return String.format("%s:%s", date1, date2);
+    }
+
+    public static String getStringMessageDate(String timeStamp) {
+        Date messageDate = transformDate(timeStamp);
+        Calendar  messageCalendar = Calendar.getInstance();
+        messageCalendar.setTime(messageDate);
+        Calendar currentCalendar = Calendar.getInstance();
+        currentCalendar.setTime(new Date());
+        if (messageCalendar.get(Calendar.ERA) == currentCalendar.get(Calendar.ERA) &&
+                messageCalendar.get(Calendar.YEAR) == currentCalendar.get(Calendar.YEAR)) {
+            switch (currentCalendar.get(Calendar.DAY_OF_YEAR) - messageCalendar.get(Calendar.DAY_OF_YEAR)) {
+                case 0:
+                    String hour = DateUtil.getStringDate(messageCalendar.get(Calendar.HOUR_OF_DAY));
+                    String minutes = DateUtil.getStringDate(messageCalendar.get(Calendar.MINUTE));
+                    return String.format("%s:%s", hour, minutes);
+                case 1:
+                    return "Yesterday";
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                    SimpleDateFormat sdf = new SimpleDateFormat("EEEE", Locale.getDefault());
+                    return sdf.format(messageDate);
+            }
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy", Locale.getDefault());
+        return sdf.format(messageDate);
+    }
+
+    public static String getDetailedStringMessageDate(String timeStamp) {
+        Date messageDate = transformDate(timeStamp);
+        Calendar  messageCalendar = Calendar.getInstance();
+        messageCalendar.setTime(messageDate);
+        Calendar currentCalendar = Calendar.getInstance();
+        currentCalendar.setTime(new Date());
+        if (messageCalendar.get(Calendar.ERA) == currentCalendar.get(Calendar.ERA) &&
+                messageCalendar.get(Calendar.YEAR) == currentCalendar.get(Calendar.YEAR)) {
+            String hour = DateUtil.getStringDate(messageCalendar.get(Calendar.HOUR_OF_DAY));
+            String minutes = DateUtil.getStringDate(messageCalendar.get(Calendar.MINUTE));
+            switch (currentCalendar.get(Calendar.DAY_OF_YEAR) - messageCalendar.get(Calendar.DAY_OF_YEAR)) {
+                case 0:
+                    return String.format("%s:%s", hour, minutes);
+                case 1:
+                    return String.format("Yesterday %s:%s", hour, minutes);
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                    SimpleDateFormat sdf = new SimpleDateFormat("EEEE", Locale.getDefault());
+                    return String.format("%s %s:%s", sdf.format(messageDate), hour, minutes);
+            }
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy", Locale.getDefault());
+        return sdf.format(messageDate);
     }
 }

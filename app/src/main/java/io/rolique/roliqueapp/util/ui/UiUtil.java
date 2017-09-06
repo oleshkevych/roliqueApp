@@ -25,20 +25,6 @@ public class UiUtil {
                 .into(image);
     }
 
-    public static String getStringTimeForView(String time) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(DateUtil.transformDate(time));
-        if (DateUtil.isToday(DateUtil.transformDate(time))) {
-            String hour = DateUtil.getStringDate(calendar.get(Calendar.HOUR));
-            String minutes = DateUtil.getStringDate(calendar.get(Calendar.MINUTE));
-            return String.format("%s:%s", hour, minutes);
-        } else {
-            String dayOfMonth = DateUtil.getStringDate(calendar.get(Calendar.DAY_OF_MONTH));
-            String month = DateUtil.getStringDate(calendar.get(Calendar.MONTH));
-            return String.format("%s.%s", dayOfMonth, month);
-        }
-    }
-
     public static String getUserNameForView(String senderId, List<User> users) {
         for (User user: users)
             if (user.getId().equals(senderId))

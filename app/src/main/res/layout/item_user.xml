@@ -15,7 +15,8 @@
         android:id="@+id/image_view"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        tools:src="@color/black"/>
+        tools:src="@color/black"
+        tools:ignore="ContentDescription"/>
 
     <TextView
         android:id="@+id/text_view_user_name"

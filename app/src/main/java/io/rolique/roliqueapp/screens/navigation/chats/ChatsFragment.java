@@ -19,6 +19,7 @@ import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.model.Chat;
+import io.rolique.roliqueapp.screens.chat.ChatActivity;
 import io.rolique.roliqueapp.screens.newChat.NewChatActivity;
 
 public class ChatsFragment extends BaseFragment implements ChatsContract.View {
@@ -67,7 +68,7 @@ public class ChatsFragment extends BaseFragment implements ChatsContract.View {
     ChatsAdapter.OnItemClickListener mItemClickListener = new ChatsAdapter.OnItemClickListener() {
         @Override
         public void onItemClick(Chat chat) {
-            showSnackbar(getView(), chat.getId());
+            startActivity(ChatActivity.startIntent(getActivity(), chat));
         }
     };
 

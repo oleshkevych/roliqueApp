@@ -21,9 +21,7 @@
             android:id="@+id/view_pager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
-
     </LinearLayout>
-
 
     <android.support.design.widget.NavigationView
         android:id="@+id/navigation_view"
@@ -37,5 +35,4 @@
         app:itemIconTint="@drawable/selector_drawer_item"
         app:itemTextColor="@drawable/selector_drawer_item"
         app:menu="@menu/menu_navigation"/>
-
 </android.support.v4.widget.DrawerLayout>
