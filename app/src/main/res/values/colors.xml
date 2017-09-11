@@ -5,6 +5,10 @@
     <color name="colorAccent">#000000</color>
 
     <color name="colorPrimaryDark_alpha_50">#7f303f9f</color>
+    <color name="colorPrimaryDark_alpha_80">#34303f9f</color>
+
+    <color name="green_700_alpha_50">#7a64dd17</color>
+    <color name="green_700_alpha_80">#3764dd17</color>
 
     <color name="black">#000000</color>
     <color name="black_alpha_50">#7f000000</color>

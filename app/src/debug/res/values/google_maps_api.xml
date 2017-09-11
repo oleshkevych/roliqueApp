@@ -1,0 +1,26 @@
+<resources>
+    <!--
+    TODO: Before you run your application, you need a Google Maps API key.
+
+    To get one, follow this link, follow the directions and press "Create" at the end:
+
+    https://console.developers.google.com/flows/enableapi?apiid=maps_android_backend&keyType=CLIENT_SIDE_ANDROID&r=BE:D9:50:B9:F5:CF:F0:CA:EE:DC:25:0C:D3:C5:F2:64:17:18:97:B0%3Bio.rolique.roliqueapp.screens.navigation.checkIn
+
+    You can also add your credentials to an existing key, using these values:
+
+    Package name:
+    BE:D9:50:B9:F5:CF:F0:CA:EE:DC:25:0C:D3:C5:F2:64:17:18:97:B0
+
+    SHA-1 certificate fingerprint:
+    BE:D9:50:B9:F5:CF:F0:CA:EE:DC:25:0C:D3:C5:F2:64:17:18:97:B0
+
+    Alternatively, follow the directions here:
+    https://developers.google.com/maps/documentation/android/start#get-key
+
+    Once you have your key (it starts with "AIza"), replace the "google_maps_key"
+    string in this file.
+    -->
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
+        AIzaSyDXy-C6Wbp5pAtn4Yn2vlJsU7xhDiJq7aw
+    </string>
+</resources>
