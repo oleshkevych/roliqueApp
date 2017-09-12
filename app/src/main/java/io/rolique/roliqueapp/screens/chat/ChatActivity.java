@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 import java.util.List;
 
@@ -24,11 +25,13 @@ import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.data.model.Message;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.chat.adapters.MessagesAdapter;
+import io.rolique.roliqueapp.screens.editChat.ChatEditorActivity;
 import io.rolique.roliqueapp.util.DateUtil;
 
 public class ChatActivity extends BaseActivity implements ChatContract.View {
 
     public static String EXTRA_CHAT = "CHAT";
+    public static int RC_CHAT_EDIT = 101;
 
     public static Intent startIntent(Context context, Chat chat) {
         Intent intent = new Intent(context, ChatActivity.class);
@@ -53,7 +56,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         setContentView(R.layout.activity_chat);
 
         mChat = getIntent().getParcelableExtra(EXTRA_CHAT);
-        setUpToolbar(mChat.getTitle());
+        setUpToolbar(mChat);
 
         setUpRecyclerView();
         setUpRefreshLayout();
@@ -70,8 +73,11 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                 .inject(ChatActivity.this);
     }
 
-    private void setUpToolbar(String chatTitle) {
-        mToolbar.setTitle(chatTitle);
+    private void setUpToolbar(Chat chat) {
+        mToolbar.setTitle(chat.getTitle());
+        ImageButton imageButton = (ImageButton) findViewById(R.id.button_edit);
+        if (chat.getId().equals("main")) imageButton.setVisibility(View.GONE);
+        else imageButton.setImageResource(chat.getOwnerId().equals(mPreferences.getId())? R.drawable.ic_edit_white_24dp : R.drawable.ic_move_out_white_24dp);
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -117,6 +123,24 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                 .create();
     }
 
+    @OnClick(R.id.button_edit)
+    void onEditClick() {
+        if (mChat.getOwnerId().equals(mPreferences.getId())) {
+            startActivityForResult(ChatEditorActivity.startIntent(ChatActivity.this, mChat), RC_CHAT_EDIT);
+        } else {
+            mPresenter.leaveChat(mChat, mPreferences.getId());
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == RC_CHAT_EDIT) {
+            boolean isDeleted = data.getBooleanExtra(getString(R.string.extra_chat_from_edit), false);
+            if (isDeleted) onBackPressed();
+        }
+    }
+
     @Override
     public void showLastMessagesView(List<Message> messages) {
         mAdapter.setMessages(messages);
@@ -142,6 +166,11 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     @Override
     public void showErrorInView(String message) {
         showSnackbar(message);
+    }
+
+    @Override
+    public void showLeaveInView() {
+        onBackPressed();
     }
 
     @Override

@@ -130,5 +130,17 @@ public class Chat implements Parcelable {
         dest.writeString(mTitle);
         dest.writeParcelable(mLastMessage, flags);
     }
+
+    @Override
+    public String toString() {
+        return "Chat{" +
+                "mId='" + mId + '\'' +
+                ", mImageUrl='" + mImageUrl + '\'' +
+                ", mMemberIds=" + mMemberIds +
+                ", mOwnerId='" + mOwnerId + '\'' +
+                ", mTitle='" + mTitle + '\'' +
+                ", mLastMessage=" + mLastMessage +
+                '}';
+    }
 }
 

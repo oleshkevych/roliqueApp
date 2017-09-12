@@ -145,4 +145,14 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
             memberRef.setValue(message);
         }
     }
+
+    @Override
+    public void leaveChat(Chat chat, String memberId) {
+        chat.getMemberIds().remove(memberId);
+        DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS, chat.getId()));
+        chatRef.setValue(chat);
+        DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, memberId, chat.getId()));
+        memberRef.removeValue();
+        mView.showLeaveInView();
+    }
 }

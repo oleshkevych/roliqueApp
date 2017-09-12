@@ -21,11 +21,13 @@ interface ChatContract {
         void showNewMessageView(Message message);
         void setProgressIndicator(boolean active);
         void showErrorInView(String message);
+        void showLeaveInView();
     }
 
     interface Presenter extends BasePresenter {
         void getTopMessages(String firstMessageId, Chat chat);
         void fetchLastMessages(Chat chat);
         void addMessages(Message message, Chat chat);
+        void leaveChat(Chat chat, String memberId);
     }
 }

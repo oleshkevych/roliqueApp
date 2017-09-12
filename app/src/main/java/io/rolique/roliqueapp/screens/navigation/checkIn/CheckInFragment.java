@@ -2,7 +2,6 @@ package io.rolique.roliqueapp.screens.navigation.checkIn;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -182,7 +181,7 @@ public class CheckInFragment extends BaseFragment {
                         .center(ROLIQUE_POSITION)
                         .radius(RANGE_RADIUS)
                         .strokeColor(ContextCompat.getColor(mMapView.getContext(), R.color.green_700_alpha_50))
-                        .fillColor(ContextCompat.getColor(mMapView.getContext(), R.color.green_700_alpha_80)));
+                        .fillColor(ContextCompat.getColor(mMapView.getContext(), R.color.green_700_alpha_90)));
 
                 // For dropping a marker at a point on the Map
                 mGoogleMap.addMarker(new MarkerOptions().position(ROLIQUE_POSITION).title("Rolique").snippet("Your lovely job"));
@@ -209,7 +208,7 @@ public class CheckInFragment extends BaseFragment {
 
     @Override
     public void onPause() {
-        toggleMapServices(!mIsVisibleToUser);
+        toggleMapServices(false);
         super.onPause();
     }
 

@@ -20,7 +20,7 @@ import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.screens.chat.ChatActivity;
-import io.rolique.roliqueapp.screens.newChat.NewChatActivity;
+import io.rolique.roliqueapp.screens.editChat.ChatEditorActivity;
 
 public class ChatsFragment extends BaseFragment implements ChatsContract.View {
 
@@ -74,7 +74,7 @@ public class ChatsFragment extends BaseFragment implements ChatsContract.View {
 
     @OnClick(R.id.button_add_chat)
     void onAddChatClick() {
-        startActivity(NewChatActivity.startIntent(getActivity()));
+        startActivity(ChatEditorActivity.startIntent(getActivity()));
     }
 
     @Override
@@ -88,8 +88,8 @@ public class ChatsFragment extends BaseFragment implements ChatsContract.View {
     }
 
     @Override
-    public void showRemovedChatInView(Chat chat) {
-        mAdapter.removeChat(chat);
+    public void showRemovedChatInView(String chatId) {
+        mAdapter.removeChat(chatId);
     }
 
     @Override

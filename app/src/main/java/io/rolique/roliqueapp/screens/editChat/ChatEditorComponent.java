@@ -1,4 +1,4 @@
-package io.rolique.roliqueapp.screens.newChat;
+package io.rolique.roliqueapp.screens.editChat;
 
 import dagger.Component;
 import io.rolique.roliqueapp.RoliqueApplicationComponent;
@@ -10,8 +10,8 @@ import io.rolique.roliqueapp.screens.ViewScope;
  */
 
 @ViewScope
-@Component(dependencies = {RoliqueApplicationComponent.class}, modules = {NewChatPresenterModule.class})
-interface NewChatComponent {
+@Component(dependencies = {RoliqueApplicationComponent.class}, modules = {ChatEditorPresenterModule.class})
+interface ChatEditorComponent {
 
-    void inject(NewChatActivity newChatActivity);
+    void inject(ChatEditorActivity chatEditorActivity);
 }

@@ -1,4 +1,4 @@
-package io.rolique.roliqueapp.screens.newChat;
+package io.rolique.roliqueapp.screens.editChat;
 
 import dagger.Module;
 import dagger.Provides;
@@ -10,17 +10,17 @@ import io.rolique.roliqueapp.screens.ViewScope;
  */
 
 @Module
-class NewChatPresenterModule {
+class ChatEditorPresenterModule {
 
-    private final NewChatContract.View mView;
+    private final ChatEditorContract.View mView;
 
-    NewChatPresenterModule(NewChatContract.View view) {
+    ChatEditorPresenterModule(ChatEditorContract.View view) {
         mView = view;
     }
 
     @Provides
     @ViewScope
-    NewChatContract.View provideNewChatView() {
+    ChatEditorContract.View provideChatEditorView() {
         return mView;
     }
 }

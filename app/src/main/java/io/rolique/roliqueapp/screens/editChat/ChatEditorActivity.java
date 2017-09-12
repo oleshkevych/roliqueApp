@@ -1,4 +1,4 @@
-package io.rolique.roliqueapp.screens.newChat;
+package io.rolique.roliqueapp.screens.editChat;
 
 import android.content.Context;
 import android.content.Intent;
@@ -22,6 +22,7 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import butterknife.OnTouch;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.RoliqueApplication;
@@ -29,14 +30,22 @@ import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.screens.BaseActivity;
-import io.rolique.roliqueapp.screens.newChat.adapters.ImageDecoration;
-import io.rolique.roliqueapp.screens.newChat.adapters.MembersAdapter;
-import io.rolique.roliqueapp.screens.newChat.adapters.UsersAdapter;
+import io.rolique.roliqueapp.screens.editChat.adapters.ImageDecoration;
+import io.rolique.roliqueapp.screens.editChat.adapters.MembersAdapter;
+import io.rolique.roliqueapp.screens.editChat.adapters.UsersAdapter;
 
-public class NewChatActivity extends BaseActivity implements NewChatContract.View {
+public class ChatEditorActivity extends BaseActivity implements ChatEditorContract.View {
+
+    private static final String EXTRA_CHAT = "CHAT";
+
+    public static Intent startIntent(Context context, Chat chat) {
+        Intent intent = new Intent(context, ChatEditorActivity.class);
+        intent.putExtra(EXTRA_CHAT, chat);
+        return intent;
+    }
 
     public static Intent startIntent(Context context) {
-        return new Intent(context, NewChatActivity.class);
+        return new Intent(context, ChatEditorActivity.class);
     }
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
@@ -44,17 +53,27 @@ public class NewChatActivity extends BaseActivity implements NewChatContract.Vie
     @BindView(R.id.text_view_image) TextView mImageTextView;
     @BindView(R.id.edit_text_chat_name) EditText mChatNameEditText;
 
-    @Inject NewChatPresenter mPresenter;
+    @Inject ChatEditorPresenter mPresenter;
     @Inject RoliqueAppUsers mRoliqueAppUsers;
     @Inject RoliqueApplicationPreferences mPreferences;
 
     MembersAdapter mMembersAdapter;
     UsersAdapter mUsersAdapter;
+    Chat mChat;
+    boolean mIsEditingMode;
+    boolean mIsDeleted;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_chat);
+
+        if (getIntent().hasExtra(EXTRA_CHAT)) {
+            mIsEditingMode = true;
+            mChat = getIntent().getParcelableExtra(EXTRA_CHAT);
+            findViewById(R.id.button_delete).setVisibility(View.VISIBLE);
+        }
+
         setUpToolbar();
         setUpHeader();
         setUpRecyclersView();
@@ -62,15 +81,15 @@ public class NewChatActivity extends BaseActivity implements NewChatContract.Vie
 
     @Override
     protected void inject() {
-        DaggerNewChatComponent.builder()
+        DaggerChatEditorComponent.builder()
                 .roliqueApplicationComponent(((RoliqueApplication) getApplication()).getRepositoryComponent())
-                .newChatPresenterModule(new NewChatPresenterModule(NewChatActivity.this))
+                .chatEditorPresenterModule(new ChatEditorPresenterModule(ChatEditorActivity.this))
                 .build()
-                .inject(NewChatActivity.this);
+                .inject(ChatEditorActivity.this);
     }
 
     private void setUpToolbar() {
-        mToolbar.setTitle(R.string.activity_new_chat_title);
+        mToolbar.setTitle(mIsEditingMode ? mChat.getTitle() : getString(R.string.activity_new_chat_title));
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -81,6 +100,7 @@ public class NewChatActivity extends BaseActivity implements NewChatContract.Vie
 
     private void setUpHeader() {
         mChatNameEditText.addTextChangedListener(mOnNameEditorActionListener);
+        if (mIsEditingMode) mChatNameEditText.setText(mChat.getTitle());
     }
 
     TextWatcher mOnNameEditorActionListener = new TextWatcher() {
@@ -129,18 +149,19 @@ public class NewChatActivity extends BaseActivity implements NewChatContract.Vie
         } else {
             setProgressIndicator(false);
             RecyclerView usersRecyclerView = getViewById(R.id.recycler_view_users);
-            usersRecyclerView.setLayoutManager(new LinearLayoutManager(NewChatActivity.this));
-            mUsersAdapter = new UsersAdapter(NewChatActivity.this, getUsers(mRoliqueAppUsers.getUsers()));
+            usersRecyclerView.setLayoutManager(new LinearLayoutManager(ChatEditorActivity.this));
+            mUsersAdapter = new UsersAdapter(ChatEditorActivity.this, getUsers(mRoliqueAppUsers.getUsers()));
             usersRecyclerView.setAdapter(mUsersAdapter);
             mUsersAdapter.setOnItemClickListener(mOnItemClickListener);
 
-            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(NewChatActivity.this);
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(ChatEditorActivity.this);
             linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
             RecyclerView membersRecyclerView = getViewById(R.id.recycler_view_members);
             membersRecyclerView.setLayoutManager(linearLayoutManager);
             membersRecyclerView.addItemDecoration(new ImageDecoration(getResources().getDimensionPixelSize(R.dimen.members_recycler_padding)));
-            mMembersAdapter = new MembersAdapter(NewChatActivity.this);
+            mMembersAdapter = new MembersAdapter(ChatEditorActivity.this);
             membersRecyclerView.setAdapter(mMembersAdapter);
+            if (mIsEditingMode) setMembersInView();
         }
     }
 
@@ -149,6 +170,18 @@ public class NewChatActivity extends BaseActivity implements NewChatContract.Vie
         for (User user : users)
             if (!user.getId().equals(mPreferences.getId())) userList.add(user);
         return userList;
+    }
+
+    private void setMembersInView() {
+        List<String> ids = new ArrayList<>();
+        for (String memberId : mChat.getMemberIds())
+            for (User user : mRoliqueAppUsers.getUsers())
+                if (memberId.equals(user.getId()) && !memberId.equals(mPreferences.getId())) {
+                    mMembersAdapter.addMember(user.getImageUrl());
+                    ids.add(memberId);
+                    break;
+                }
+        mUsersAdapter.setMemberIds(ids);
     }
 
     UsersAdapter.OnItemClickListener mOnItemClickListener = new UsersAdapter.OnItemClickListener() {
@@ -169,7 +202,12 @@ public class NewChatActivity extends BaseActivity implements NewChatContract.Vie
         chat.setMemberIds(getMemberIds());
         chat.setOwnerId(mPreferences.getId());
         chat.setTitle(mChatNameEditText.getText().toString());
-        mPresenter.saveNewChat(chat, getImageBitmap());
+        if(mIsEditingMode) {
+            chat.setId(mChat.getId());
+            mPresenter.editChat(chat, mChat, getImageBitmap());
+        } else {
+            mPresenter.saveNewChat(chat, getImageBitmap());
+        }
     }
 
     private List<String> getMemberIds() {
@@ -185,8 +223,17 @@ public class NewChatActivity extends BaseActivity implements NewChatContract.Vie
         return mImageTextView.getDrawingCache();
     }
 
+    @OnClick(R.id.button_delete)
+    void onDeleteClick() {
+        mIsDeleted = true;
+        mPresenter.deleteChat(mChat);
+    }
+
     @Override
     public void showSavedInView() {
+        Intent intent = new Intent();
+        intent.putExtra(getString(R.string.extra_chat_from_edit), mIsDeleted);
+        setResult(RESULT_OK, intent);
         finish();
     }
 
@@ -194,6 +241,11 @@ public class NewChatActivity extends BaseActivity implements NewChatContract.Vie
     public void setProgressIndicator(boolean active) {
         mViewSwitcher.setDisplayedChild(active ? 1 : 0);
         getViewById(R.id.layout_progress).setVisibility(active ? View.VISIBLE : View.GONE);
+    }
+
+    @OnTouch(R.id.layout_progress)
+    boolean onProgressLayoutTouch() {
+        return true;
     }
 
     @Override

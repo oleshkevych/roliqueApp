@@ -18,6 +18,7 @@ import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.ui.UiUtil;
+import timber.log.Timber;
 
 import static io.rolique.roliqueapp.util.DateUtil.getStringMessageDate;
 
@@ -90,9 +91,9 @@ class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHolder> {
             }
     }
 
-    void removeChat(Chat chat) {
+    void removeChat(String chatId) {
         for (int i = 0; i < mChats.size(); i++)
-            if (chat.getId().equals(mChats.get(i).getId())) {
+            if (chatId.equals(mChats.get(i).getId())) {
                 mChats.remove(i);
                 notifyItemRemoved(i);
                 break;

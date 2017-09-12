@@ -158,8 +158,7 @@ class ChatsPresenter implements ChatsContract.Presenter, FirebaseValues {
             chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    Chat chat = dataSnapshot.getValue(Chat.class);
-                    mView.showRemovedChatInView(chat);
+                    mView.showRemovedChatInView(dataSnapshot.getKey());
                 }
 
                 @Override

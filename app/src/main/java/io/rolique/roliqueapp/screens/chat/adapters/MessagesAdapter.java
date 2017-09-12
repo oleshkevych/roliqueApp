@@ -2,6 +2,7 @@ package io.rolique.roliqueapp.screens.chat.adapters;
 
 import android.content.Context;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Pair;
@@ -207,6 +208,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     class MessageViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.text_view_date) TextView mDateTextView;
+        @BindView(R.id.text_view_user_name) TextView mUserNameTextView;
         @BindView(R.id.layout_message_container) LinearLayout mMessageContainerLayout;
         @BindView(R.id.image_view_user_image) ImageView mSenderImageView;
         @BindView(R.id.text_view_message) TextView mMessageTextView;
@@ -223,24 +225,24 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             @Override
             public void onClick(View v) {
                 mDateTextView.setVisibility(mDateTextView.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+                mUserNameTextView.setVisibility(mUserNameTextView.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
             }
         };
 
         void bindMessage(Message message, int messagePosition) {
             mMessage = message;
             boolean isCurrentUser = mMessage.getSenderId().equals(mCurrentUserId);
-            @DrawableRes int background = getBackgroundDrawable(messagePosition, isCurrentUser);
+            setUpHeader(isCurrentUser);
+            setUpImageView(messagePosition, isCurrentUser);
+            setUpMessageInView(messagePosition, isCurrentUser);
+        }
+
+        private void setUpHeader(boolean isCurrentUser) {
             mDateTextView.setText(DateUtil.getDetailedStringMessageDate(mMessage.getTimeStamp()));
             mDateTextView.setVisibility(View.GONE);
-            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) mMessageContainerLayout.getLayoutParams();
-            params.gravity = isCurrentUser ? Gravity.END : Gravity.START;
-            params.bottomMargin = 0;
-            params.topMargin = messagePosition == TOP_MESSAGE ||messagePosition == SINGLE_MESSAGE ? 20 : 0;
-            params.bottomMargin = (messagePosition == BOTTOM_MESSAGE || messagePosition == SINGLE_MESSAGE) ? 20 : 4;
-            mMessageContainerLayout.setLayoutParams(params);
-            mMessageTextView.setBackground(ContextCompat.getDrawable(mMessageTextView.getContext(), background));
-            setUpImageView(messagePosition, isCurrentUser);
-            mMessageTextView.setText(mMessage.getText());
+            mUserNameTextView.setText(UiUtil.getUserNameForView(mMessage.getSenderId(), mUsers));
+            mUserNameTextView.setVisibility(View.GONE);
+            mUserNameTextView.setGravity(isCurrentUser ? Gravity.END : Gravity.START);
         }
 
         private void setUpImageView(int messagePosition, boolean isCurrentUser) {
@@ -254,6 +256,29 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             } else {
                 mSenderImageView.setVisibility(View.INVISIBLE);
             }
+        }
+
+        private String getImageUrl(String senderId, List<User> users) {
+            for (User user : users)
+                if (user.getId().equals(senderId)) return user.getImageUrl();
+            return "";
+        }
+
+        private void setUpMessageInView(int messagePosition, boolean isCurrentUser) {
+            @DrawableRes int background = getBackgroundDrawable(messagePosition, isCurrentUser);
+            mMessageContainerLayout.setLayoutParams(getMessageParameters(messagePosition, isCurrentUser));
+            mMessageTextView.setBackground(ContextCompat.getDrawable(mMessageTextView.getContext(), background));
+            mMessageTextView.setText(mMessage.getText());
+        }
+
+        @NonNull
+        private LinearLayout.LayoutParams getMessageParameters(int messagePosition, boolean isCurrentUser) {
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) mMessageContainerLayout.getLayoutParams();
+            params.gravity = isCurrentUser ? Gravity.END : Gravity.START;
+            params.bottomMargin = 0;
+            params.topMargin = messagePosition == TOP_MESSAGE ||messagePosition == SINGLE_MESSAGE ? 20 : 0;
+            params.bottomMargin = (messagePosition == BOTTOM_MESSAGE || messagePosition == SINGLE_MESSAGE) ? 20 : 4;
+            return params;
         }
 
         @DrawableRes
@@ -281,12 +306,6 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                         return R.drawable.shape_text_view_message_alien_single;
                 }
             return 0;
-        }
-
-        private String getImageUrl(String senderId, List<User> users) {
-            for (User user : users)
-                if (user.getId().equals(senderId)) return user.getImageUrl();
-            return "";
         }
     }
 

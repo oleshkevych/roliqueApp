@@ -13,7 +13,7 @@ interface ChatsContract {
     interface View extends BaseView<Presenter> {
         void showAddedChatInView(Chat chat);
         void showChangedChatInView(Chat chat);
-        void showRemovedChatInView(Chat chat);
+        void showRemovedChatInView(String chatId);
         void showErrorInView(String message);
     }
 

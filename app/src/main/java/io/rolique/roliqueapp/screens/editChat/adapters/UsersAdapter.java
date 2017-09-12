@@ -1,4 +1,4 @@
-package io.rolique.roliqueapp.screens.newChat.adapters;
+package io.rolique.roliqueapp.screens.editChat.adapters;
 
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
@@ -10,13 +10,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.rolique.roliqueapp.R;
-import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.util.ui.UiUtil;
 
@@ -67,6 +65,11 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
     public List<String> getSelectedUserIds() {
         return mSelectedUserIds;
+    }
+
+    public void setMemberIds(List<String> ids) {
+        mSelectedUserIds.addAll(ids);
+        notifyDataSetChanged();
     }
 
     class UserViewHolder extends RecyclerView.ViewHolder {
