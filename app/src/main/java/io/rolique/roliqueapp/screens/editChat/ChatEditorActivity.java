@@ -66,7 +66,7 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_chat);
+        setContentView(R.layout.activity_chat_editor);
 
         if (getIntent().hasExtra(EXTRA_CHAT)) {
             mIsEditingMode = true;
