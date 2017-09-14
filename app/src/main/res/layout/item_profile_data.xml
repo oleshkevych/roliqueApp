@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:padding="8dp"
+    tools:background="@color/black_alpha_80">
+
+    <TextView
+        android:id="@+id/text_view_data_key"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+        android:textColor="@color/black_alpha_80"/>
+
+    <io.rolique.roliqueapp.widget.KeyboardEditText
+        android:id="@+id/edit_text_data_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/transparent"
+        android:gravity="center_vertical"
+        android:paddingBottom="16dp"
+        android:paddingEnd="0dp"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        tools:text="rgk eokgpo kergpokergkergerk pogkerogkeporgk  porgkre gkeorkgoergkoergkeorgkoe koergk eorgk oerkgorekg pekrgpo ker og oiregj oirejg oiewrjgoi jewgje rgjrewjg oiewrjgoijewrgoijwergjoi rjeg"/>
+</LinearLayout>

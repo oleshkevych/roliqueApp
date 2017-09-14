@@ -82,33 +82,33 @@ class ChatsPresenter implements ChatsContract.Presenter, FirebaseValues {
             chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                        final Chat chat = dataSnapshot.getValue(Chat.class);
-                        DatabaseReference userChatsRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, mPreferences.getId(), chat.getId()));
-                        userChatsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                Message message = null;
-                                if (dataSnapshot.getValue() instanceof String) {
-                                    message = Message.getEmptyMessage(chat.getId(), mPreferences.getId());
-                                    DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, message.getChatId())).push();
-                                    String id  = chatRef.getKey();
-                                    message.setId(id);
+                    final Chat chat = dataSnapshot.getValue(Chat.class);
+                    if (chat == null) return;
+                    DatabaseReference userChatsRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, mPreferences.getId(), chat.getId()));
+                    userChatsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            Message message = null;
+                            if (dataSnapshot.getValue() instanceof String) {
+                                message = Message.getEmptyMessage(chat.getId(), mPreferences.getId());
+                                DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, message.getChatId())).push();
+                                String id = chatRef.getKey();
+                                message.setId(id);
 
-                                    DatabaseReference messageRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId(), message.getId()));
-                                    messageRef.setValue(message);
-                                }
-                                else {
-                                    message = dataSnapshot.getValue(Message.class);
-                                }
-                                chat.setLastMessage(message);
-                                mView.showAddedChatInView(chat);
+                                DatabaseReference messageRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId(), message.getId()));
+                                messageRef.setValue(message);
+                            } else {
+                                message = dataSnapshot.getValue(Message.class);
                             }
+                            chat.setLastMessage(message);
+                            mView.showAddedChatInView(chat);
+                        }
 
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
 
-                            }
-                        });
+                        }
+                    });
                 }
 
                 @Override

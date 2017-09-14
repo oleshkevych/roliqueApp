@@ -55,6 +55,17 @@
     <string name="navigation_menu_log_out">Log out</string>
     <!-- navigation menu end-->
 
+    <!-- Activity profile start-->
+    <string name="activity_profile_details_title">Profile</string>
+    <string name="activity_profile_details_title_edit">Edit Profile</string>
+    <string name="activity_profile_details_phone_number">Phone Number</string>
+    <string name="activity_profile_details_social_profile">Social Profile</string>
+    <string name="activity_profile_details_email">Email</string>
+    <string name="activity_profile_details_info">Info</string>
+    <string name="activity_profile_details_web_links">Web Links</string>
+    <string name="activity_profile_details_address">Address</string>
+    <!-- Activity profile end-->
+
     <string name="title_activity_maps">Map</string>
 
 </resources>

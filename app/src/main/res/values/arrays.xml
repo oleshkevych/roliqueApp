@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="user_data_categories">
+        <item>Phone Number</item>
+        <item>Address</item>
+        <item>Social Profile</item>
+        <item>Email</item>
+        <item>Info</item>
+        <item>Web Links</item>
+    </string-array>
+</resources>

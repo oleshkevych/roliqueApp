@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    tools:context="io.rolique.roliqueapp.screens.profileDetailes.ProfileDetailsActivity">
+
+    <include layout="@layout/content_toolbar_edit"/>
+
+    <android.support.design.widget.CoordinatorLayout
+        android:id="@+id/coordinator_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:fitsSystemWindows="true">
+
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/content_profile_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            app:elevation="12dp"
+            app:expanded="true">
+
+            <LinearLayout
+                android:id="@+id/container_collapsed_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:minHeight="84dp"
+                android:orientation="vertical"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
+
+                <ImageView
+                    android:id="@+id/image_view"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:layout_marginTop="16dp"
+                    tools:ignore="ContentDescription"
+                    tools:src="@color/black"/>
+
+                <io.rolique.roliqueapp.widget.KeyboardEditText
+                    android:id="@+id/text_view_user_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxWidth="300dp"
+                    android:maxLines="1"
+                    android:padding="8dp"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:background="@color/transparent"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+                    android:textColor="@color/indigo_accent_700"
+                    tools:text="User Name"/>
+
+                <FrameLayout
+                    android:id="@+id/layout_anchor"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_gravity="center"
+                        android:background="@color/colorPrimary"/>
+                </FrameLayout>
+            </LinearLayout>
+
+        </android.support.design.widget.AppBarLayout>
+
+        <io.rolique.roliqueapp.widget.FloatingActionMenu
+            android:id="@+id/floating_action_menu"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom|end"
+            app:fam_fifthOptionIcon="@drawable/ic_email_white_16dp"
+            app:fam_fifthOptionName="@string/activity_profile_details_email"
+            app:fam_firstOptionIcon="@drawable/ic_address_white_24dp"
+            app:fam_firstOptionName="@string/activity_profile_details_address"
+            app:fam_forthOptionIcon="@drawable/ic_info_white_16dp"
+            app:fam_forthOptionName="@string/activity_profile_details_info"
+            app:fam_secondOptionIcon="@drawable/ic_web_links_white_16dp"
+            app:fam_secondOptionName="@string/activity_profile_details_web_links"
+            app:fam_sixthOptionIcon="@drawable/ic_phone_phone_16dp"
+            app:fam_sixthOptionName="@string/activity_profile_details_phone_number"
+            app:fam_thirdOptionIcon="@drawable/ic_social_white_16dp"
+            app:fam_thirdOptionName="@string/activity_profile_details_social_profile"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/floating_button_call"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="24dp"
+            app:backgroundTint="@color/indigo_accent_700"
+            app:fabSize="mini"
+            app:layout_anchor="@id/layout_anchor"
+            app:layout_anchorGravity="center_vertical"
+            app:srcCompat="@drawable/ic_phone_phone_16dp"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/floating_button_chat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:backgroundTint="@color/indigo_accent_700"
+            app:fabSize="mini"
+            app:layout_anchor="@id/layout_anchor"
+            app:layout_anchorGravity="center"
+            app:srcCompat="@drawable/ic_chat_white_16dp"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/floating_button_mail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="24dp"
+            app:backgroundTint="@color/indigo_accent_700"
+            app:fabSize="mini"
+            app:layout_anchor="@id/layout_anchor"
+            app:layout_anchorGravity="center_vertical|right"
+            app:srcCompat="@drawable/ic_email_white_16dp"/>
+
+        <android.support.v4.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="16dp">
+
+                <io.rolique.roliqueapp.widget.profileCategoryCard.ProfileCategoryCard
+                    android:id="@+id/profile_card_0"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:pcc_category_number="0"/>
+
+                <io.rolique.roliqueapp.widget.profileCategoryCard.ProfileCategoryCard
+                    android:id="@+id/profile_card_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:pcc_category_number="1"/>
+
+                <io.rolique.roliqueapp.widget.profileCategoryCard.ProfileCategoryCard
+                    android:id="@+id/profile_card_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:pcc_category_number="2"/>
+
+                <io.rolique.roliqueapp.widget.profileCategoryCard.ProfileCategoryCard
+                    android:id="@+id/profile_card_3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:pcc_category_number="3"/>
+
+                <io.rolique.roliqueapp.widget.profileCategoryCard.ProfileCategoryCard
+                    android:id="@+id/profile_card_4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:pcc_category_number="4"/>
+
+                <io.rolique.roliqueapp.widget.profileCategoryCard.ProfileCategoryCard
+                    android:id="@+id/profile_card_5"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:pcc_category_number="5"/>
+            </LinearLayout>
+        </android.support.v4.widget.NestedScrollView>
+    </android.support.design.widget.CoordinatorLayout>
+</LinearLayout>

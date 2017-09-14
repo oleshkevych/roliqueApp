@@ -6,4 +6,25 @@
         <attr name="drawableTopCompat" format="reference"/>
         <attr name="drawableBottomCompat" format="reference"/>
     </declare-styleable>
+
+    <declare-styleable name="ProfileCategoryCard">
+        <attr name="pcc_category_number" format="integer"/>
+    </declare-styleable>
+
+    <declare-styleable name="FloatingActionMenu">
+        <attr name="fam_overrideDefaultActionOptionButton" format="boolean"/>
+        <attr name="fam_optionButtonIcon" format="reference"/>
+        <attr name="fam_firstOptionName" format="string"/>
+        <attr name="fam_secondOptionName" format="string"/>
+        <attr name="fam_thirdOptionName" format="string"/>
+        <attr name="fam_forthOptionName" format="string"/>
+        <attr name="fam_fifthOptionName" format="string"/>
+        <attr name="fam_sixthOptionName" format="string"/>
+        <attr name="fam_firstOptionIcon" format="reference"/>
+        <attr name="fam_secondOptionIcon" format="reference"/>
+        <attr name="fam_thirdOptionIcon" format="reference"/>
+        <attr name="fam_forthOptionIcon" format="reference"/>
+        <attr name="fam_fifthOptionIcon" format="reference"/>
+        <attr name="fam_sixthOptionIcon" format="reference"/>
+    </declare-styleable>
 </resources>
