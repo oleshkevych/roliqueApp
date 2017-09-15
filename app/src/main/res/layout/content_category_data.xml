@@ -8,7 +8,8 @@
     android:paddingTop="8dp"
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
-    tools:background="@color/black">
+    android:paddingBottom="8dp"
+    android:background="@color/black_alpha_90">
 
     <TextView
         android:id="@+id/text_view_category"

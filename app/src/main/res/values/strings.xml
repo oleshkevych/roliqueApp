@@ -66,6 +66,20 @@
     <string name="activity_profile_details_address">Address</string>
     <!-- Activity profile end-->
 
+    <!--Select bottom dialog start-->
+    <string name="bottom_dialog_select_call">Call</string>
+    <string name="bottom_dialog_select_open_link">Open Link</string>
+    <string name="bottom_dialog_select_share">Share</string>
+    <string name="bottom_dialog_select_copy">Copy</string>
+    <!--Select bottom dialog end-->
+
+    <!--Select bottom dialog start-->
+    <string name="bottom_dialog_add_key_hint">Set new custom key</string>
+    <string name="bottom_dialog_add_value_hint">Set Value</string>
+    <string name="bottom_dialog_add_save">SAVE</string>
+    <string name="bottom_dialog_add_cancel">CANCEL</string>
+    <!--Select bottom dialog end-->
+
     <string name="title_activity_maps">Map</string>
 
 </resources>

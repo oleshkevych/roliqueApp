@@ -13,6 +13,12 @@ import android.support.v7.widget.AppCompatEditText;
  */
 public class KeyboardEditText extends AppCompatEditText {
 
+    public interface OnKeyboardChangeListener {
+        void onKeyboardStateChanged(boolean isVisible);
+    }
+
+    private OnKeyboardChangeListener mOnKeyboardChangeListener;
+
     public KeyboardEditText(Context context) {
         super(context);
     }
@@ -25,6 +31,10 @@ public class KeyboardEditText extends AppCompatEditText {
         super(context, attrs, defStyleAttr);
     }
 
+    public void setOnKeyboardChangeListener(OnKeyboardChangeListener onKeyboardChangeListener) {
+        mOnKeyboardChangeListener = onKeyboardChangeListener;
+    }
+
     @Override
     public void setOnTouchListener(OnTouchListener l) {
         super.setOnTouchListener(l);
@@ -34,33 +44,17 @@ public class KeyboardEditText extends AppCompatEditText {
     protected void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
         super.onFocusChanged(focused, direction, previouslyFocusedRect);
         if (focused) setCursorVisible(true);
-        if (listener != null)
-            listener.onStateChanged(this, true);
     }
 
     @Override
     public boolean onKeyPreIme(int keyCode, @NonNull KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_BACK
                 && event.getAction() == KeyEvent.ACTION_UP) {
-            if (listener != null)
-                listener.onStateChanged(this, false);
+            if (mOnKeyboardChangeListener != null)
+                mOnKeyboardChangeListener.onKeyboardStateChanged(false);
 
             setCursorVisible(false);
-
         }
         return super.onKeyPreIme(keyCode, event);
-    }
-
-    /**
-     * Keyboard Listener
-     */
-    KeyboardListener listener;
-
-    public void setOnKeyboardListener(KeyboardListener listener) {
-        this.listener = listener;
-    }
-
-    public interface KeyboardListener {
-        void onStateChanged(KeyboardEditText keyboardEditText, boolean showing);
     }
 }

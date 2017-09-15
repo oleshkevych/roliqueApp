@@ -186,14 +186,10 @@
         android:id="@+id/floating_button_toggle_options"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:focusableInTouchMode="true"
-        android:focusable="true"
-        android:focusedByDefault="true"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:clickable="true"
         app:backgroundTint="@color/colorPrimaryDark"
         android:src="@drawable/ic_add_white_16dp"
         app:fabSize="normal"/>
-
 </merge>

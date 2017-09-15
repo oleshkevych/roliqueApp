@@ -8,6 +8,7 @@ public interface FirebaseValues {
 
     String AUTH_USER = "auth/users";
     String AUTH = "auth";
+    String USERS = "users";
     String CHAT = "chat";
     String CHATS = "chats";
     String USER_CHAT = "userChats";

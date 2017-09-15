@@ -1,4 +1,4 @@
-package io.rolique.roliqueapp.screens.profileDetailes;
+package io.rolique.roliqueapp.screens.profile;
 
 import dagger.Module;
 import dagger.Provides;
@@ -10,17 +10,17 @@ import io.rolique.roliqueapp.screens.ViewScope;
  */
 
 @Module
-class ProfileDetailsPresenterModule {
+class ProfilePresenterModule {
 
-    private final ProfileDetailsContract.View mView;
+    private final ProfileContract.View mView;
 
-    ProfileDetailsPresenterModule(ProfileDetailsContract.View view) {
+    ProfilePresenterModule(ProfileContract.View view) {
         mView = view;
     }
 
     @Provides
     @ViewScope
-    ProfileDetailsContract.View provideProfileDetailsView() {
+    ProfileContract.View provideProfileView() {
         return mView;
     }
 }

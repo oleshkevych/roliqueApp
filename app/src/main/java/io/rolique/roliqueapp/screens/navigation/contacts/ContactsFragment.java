@@ -17,9 +17,8 @@ import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.data.model.User;
-import io.rolique.roliqueapp.screens.editChat.DaggerChatEditorComponent;
 import io.rolique.roliqueapp.screens.navigation.contacts.adapter.UsersAdapter;
-import io.rolique.roliqueapp.screens.profileDetailes.ProfileDetailsActivity;
+import io.rolique.roliqueapp.screens.profile.ProfileActivity;
 
 public class ContactsFragment extends BaseFragment {
 
@@ -62,7 +61,7 @@ public class ContactsFragment extends BaseFragment {
     UsersAdapter.OnItemClickListener mOnItemClickListener = new UsersAdapter.OnItemClickListener() {
         @Override
         public void onUserClicked(User user) {
-            startActivity(ProfileDetailsActivity.startIntent(getActivity(), user));
+            startActivity(ProfileActivity.startIntent(getActivity(), user));
         }
     };
 

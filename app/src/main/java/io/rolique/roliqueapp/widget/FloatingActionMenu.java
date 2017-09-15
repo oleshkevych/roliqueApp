@@ -21,8 +21,6 @@ import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 import io.rolique.roliqueapp.R;
-import io.rolique.roliqueapp.screens.navigation.contacts.adapter.UsersAdapter;
-
 
 /**
  * Created by Volodymyr Oleshkevych on 9/12/2017.
@@ -52,7 +50,13 @@ public class FloatingActionMenu extends CoordinatorLayout {
         void onItemClick(String category);
     }
 
+    public interface OnToggleListener {
+        void onToggleVisibility(boolean isOptionsVisible);
+    }
+
     OnItemClickListener mOnItemClickListener;
+
+    OnToggleListener mOnToggleListener;
 
     public FloatingActionMenu(Context context) {
         this(context, null);
@@ -236,7 +240,13 @@ public class FloatingActionMenu extends CoordinatorLayout {
 
     public void setEnabled(boolean isButtonEnable){
         mOptionsToggleActionButton.setEnabled(isButtonEnable);
-        mOptionsToggleActionButton.setAlpha(isButtonEnable ? 1f : 0.5f);
+        mOptionsToggleActionButton.setVisibility(isButtonEnable ? VISIBLE : GONE);
+        mFirstOptionActionButton.setVisibility(isButtonEnable ? VISIBLE : GONE);
+        mSecondOptionActionButton.setVisibility(isButtonEnable ? VISIBLE : GONE);
+        mThirdOptionActionButton.setVisibility(isButtonEnable ? VISIBLE : GONE);
+        mForthOptionActionButton.setVisibility(isButtonEnable ? VISIBLE : GONE);
+        mFifthOptionActionButton.setVisibility(isButtonEnable ? VISIBLE : GONE);
+        mSixthOptionActionButton.setVisibility(isButtonEnable ? VISIBLE : GONE);
     }
 
     OnClickListener onOptionsButtonClick = new OnClickListener() {
@@ -292,6 +302,10 @@ public class FloatingActionMenu extends CoordinatorLayout {
         mOnItemClickListener = onItemClickListener;
     }
 
+    public void setOnToggleListener(OnToggleListener onToggleListener) {
+        mOnToggleListener = onToggleListener;
+    }
+
     @Override
     public void setVisibility(int visibility) {
         mOptionsToggleActionButton.setVisibility(visibility);
@@ -304,6 +318,7 @@ public class FloatingActionMenu extends CoordinatorLayout {
     }
 
     private void toggleOptions() {
+        mOnToggleListener.onToggleVisibility(!mIsOptionVisible);
         if (mIsOptionVisible) {
             hideOptions();
         } else {
@@ -358,17 +373,16 @@ public class FloatingActionMenu extends CoordinatorLayout {
         view.startAnimation(animation);
     }
 
-
-
-    public FloatingActionButton getOptionsToggleActionButton() {
-        return mOptionsToggleActionButton;
-    }
-
     @Override
     public void setOnClickListener(@Nullable OnClickListener listener) {
         mOptionsToggleActionButton.setOnClickListener(listener);
     }
 
+    public boolean isOptionVisible() {
+        return mIsOptionVisible;
+    }
+
+    // commented code need to toggle button visibility on scroll
     public static class Behavior extends CoordinatorLayout.Behavior<FloatingActionMenu> {
 
         private boolean mIsPivotInited;
@@ -434,7 +448,6 @@ public class FloatingActionMenu extends CoordinatorLayout {
         }
 
 //        private void updateFabTranslationForSnackbar(FloatingActionMenu child, View dependency) {
-//            float height = dependency.getHeight();
 //            float translationY = Math.min(0, height);
 //            ViewCompat.setTranslationY(child, translationY);
 //        }
