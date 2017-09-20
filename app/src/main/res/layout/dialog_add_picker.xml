@@ -70,15 +70,13 @@
             android:drawableStart="@drawable/ic_save_black_24dp"
             android:drawablePadding="16dp"
             android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
-            android:text="@string/bottom_dialog_add_save"
-            android:visibility="gone"/>
+            android:text="@string/bottom_dialog_add_save"/>
 
         <View
             android:id="@+id/view_divider"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:visibility="gone"
             android:background="@color/grey_600"/>
 
         <TextView
@@ -87,7 +85,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="95"
             android:foreground="?attr/selectableItemBackground"
-            android:background="@color/red_700"
+            android:background="@color/red_700_alpha_50"
             android:padding="16dp"
             android:gravity="center|start"
             android:drawableStart="@drawable/ic_cancel_black_24dp"

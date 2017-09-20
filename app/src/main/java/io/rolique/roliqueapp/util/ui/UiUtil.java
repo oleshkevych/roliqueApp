@@ -3,6 +3,7 @@ package io.rolique.roliqueapp.util.ui;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.util.Calendar;
 import java.util.List;
@@ -17,12 +18,11 @@ import io.rolique.roliqueapp.util.DateUtil;
  */
 public class UiUtil {
 
-    public static void setImage(ImageView image, String path) {
-        Glide.with(image.getContext())
+    public static void setImage(ImageView imageView, String path) {
+        Glide.with(imageView.getContext())
                 .load(path)
-                .placeholder(R.color.white)
-                .crossFade()
-                .into(image);
+                .apply(RequestOptions.circleCropTransform())
+                .into(imageView);
     }
 
     public static String getUserNameForView(String senderId, List<User> users) {

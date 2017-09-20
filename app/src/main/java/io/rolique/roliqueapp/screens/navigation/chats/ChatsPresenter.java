@@ -72,7 +72,6 @@ class ChatsPresenter implements ChatsContract.Presenter, FirebaseValues {
                 mView.showErrorInView(databaseError.getMessage());
             }
         });
-
     }
 
     ChildEventListener mUserChatsEventListener = new ChildEventListener() {

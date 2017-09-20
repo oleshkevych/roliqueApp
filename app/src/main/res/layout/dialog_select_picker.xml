@@ -7,6 +7,24 @@
               tools:background="@color/white">
 
     <TextView
+        android:id="@+id/text_view_email"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackground"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:gravity="center"
+        android:drawableTop="@drawable/ic_email_grey_36dp"
+        android:drawablePadding="16dp"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+        android:textColor="@color/grey_600"
+        android:textStyle="bold"
+        android:visibility="gone"
+        android:text="@string/bottom_dialog_select_mail"
+        tools:visibility="visible"/>
+
+    <TextView
         android:id="@+id/text_view_call"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

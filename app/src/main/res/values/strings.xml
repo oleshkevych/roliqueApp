@@ -64,10 +64,15 @@
     <string name="activity_profile_details_info">Info</string>
     <string name="activity_profile_details_web_links">Web Links</string>
     <string name="activity_profile_details_address">Address</string>
+    <string name="activity_profile_details_phone_numbers_title">Select Number</string>
+    <string name="activity_profile_details_phone_numbers_error">Number is invalid</string>
+    <string name="activity_profile_details_email_title">Select Email</string>
+    <string name="activity_profile_details_email_error">Email is invalid</string>
     <!-- Activity profile end-->
 
     <!--Select bottom dialog start-->
     <string name="bottom_dialog_select_call">Call</string>
+    <string name="bottom_dialog_select_mail">Email</string>
     <string name="bottom_dialog_select_open_link">Open Link</string>
     <string name="bottom_dialog_select_share">Share</string>
     <string name="bottom_dialog_select_copy">Copy</string>

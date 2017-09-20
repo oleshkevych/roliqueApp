@@ -36,6 +36,8 @@ public class ProfileCategoryCard extends FrameLayout {
 
         void onLinkOpen(String url);
 
+        void onEmailAddressClick(String email);
+
         void onTextSelected(String text, EditText editText, String category);
 
         void onDeleteClick(String category, String key);
@@ -185,11 +187,18 @@ public class ProfileCategoryCard extends FrameLayout {
             } else {
                 editText.setTextColor(ContextCompat.getColor(editText.getContext(), R.color.indigo_accent_700));
                 editText.setFocusable(false);
-                if (mCategory.equals(mCategories[2]) || mCategory.equals(mCategories[3]) || mCategory.equals(mCategories[5]))
+                if (mCategory.equals(mCategories[2]) || mCategory.equals(mCategories[5]))
                     editText.setOnClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View view) {
                             mOnActionClickListener.onLinkOpen(editText.getText().toString());
+                        }
+                    });
+                if (mCategory.equals(mCategories[3]))
+                    editText.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            mOnActionClickListener.onEmailAddressClick(editText.getText().toString());
                         }
                     });
                 if (mCategory.equals(mCategories[0]))

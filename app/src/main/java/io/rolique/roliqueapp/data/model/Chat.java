@@ -34,6 +34,18 @@ public class Chat implements Parcelable {
     public Chat() {
     }
 
+    public Chat(String id,
+                String imageUrl,
+                List<String> memberIds,
+                String ownerId,
+                String title) {
+        mId = id;
+        mImageUrl = imageUrl;
+        mMemberIds = memberIds;
+        mOwnerId = ownerId;
+        mTitle = title;
+    }
+
     @Exclude
     public String getId() {
         return mId;
@@ -141,6 +153,48 @@ public class Chat implements Parcelable {
                 ", mTitle='" + mTitle + '\'' +
                 ", mLastMessage=" + mLastMessage +
                 '}';
+    }
+
+    public static class Builder {
+
+        public String mId;
+        public String mImageUrl;
+        public List<String> mMemberIds = new ArrayList<>();
+        public String mOwnerId;
+        public String mTitle;
+
+        public Builder setId(String id) {
+            mId = id;
+            return this;
+        }
+
+        public Builder setImageUrl(String imageUrl) {
+            mImageUrl = imageUrl;
+            return this;
+        }
+
+        public Builder setMemberIds(List<String> memberIds) {
+            mMemberIds = memberIds;
+            return this;
+        }
+
+        public Builder setOwnerId(String ownerId) {
+            mOwnerId = ownerId;
+            return this;
+        }
+
+        public Builder setTitle(String title) {
+            mTitle = title;
+            return this;
+        }
+
+        public Chat create() {
+            return new Chat(mId,
+                    mImageUrl,
+                    mMemberIds,
+                    mOwnerId,
+                    mTitle);
+        }
     }
 }
 

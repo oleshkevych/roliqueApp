@@ -4,6 +4,7 @@ import android.util.Pair;
 
 import java.util.List;
 
+import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.screens.BasePresenter;
 import io.rolique.roliqueapp.screens.BaseView;
@@ -18,6 +19,7 @@ interface ProfileContract {
         void showValuesInView(String category, List<Pair<String, String>> pairs);
         void showRemoveCategoryInView(String category);
         void showErrorInView(String message);
+        void showChatInView(Chat chat);
     }
 
     interface Presenter extends BasePresenter {
@@ -26,5 +28,6 @@ interface ProfileContract {
         void setNewValue(User user, String category, String key, String value);
         void removeValue(User user, String category, String key);
         void removeCategory(User user, String category);
+        void findChat(final String userId, final String profileId, String profileImageUrl, String profileName);
     }
 }

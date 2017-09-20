@@ -1,5 +1,6 @@
 package io.rolique.roliqueapp.screens.profile;
 
+import android.animation.ValueAnimator;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -8,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
@@ -15,6 +17,7 @@ import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.EditText;
 import android.widget.ImageView;
 
@@ -32,14 +35,17 @@ import butterknife.OnClick;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
+import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.screens.BaseActivity;
+import io.rolique.roliqueapp.screens.chat.ChatActivity;
 import io.rolique.roliqueapp.util.ui.UiUtil;
 import io.rolique.roliqueapp.widget.AddPickerDialog;
 import io.rolique.roliqueapp.widget.FloatingActionMenu;
 import io.rolique.roliqueapp.widget.KeyboardEditText;
 import io.rolique.roliqueapp.widget.SelectPickerDialog;
 import io.rolique.roliqueapp.widget.ProfileCategoryCard;
+import io.rolique.roliqueapp.widget.recyclerPicker.RecyclerPickerDialog;
 
 public class ProfileActivity extends BaseActivity implements ProfileContract.View {
 
@@ -61,13 +67,19 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
     @BindView(R.id.layout_root) ViewGroup mRootViewGroup;
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.content_profile_header) AppBarLayout mAppBarLayout;
-    @BindView(R.id.text_view_user_name) KeyboardEditText mUserNameEditText;
     @BindView(R.id.image_view) ImageView mImageView;
+    @BindView(R.id.text_view_user_name) KeyboardEditText mUserNameEditText;
+    @BindView(R.id.floating_button_call) FloatingActionButton mCallButton;
+    @BindView(R.id.floating_button_chat) FloatingActionButton mChatButton;
+    @BindView(R.id.floating_button_mail) FloatingActionButton mMailButton;
+
     @BindView(R.id.coordinator_layout) CoordinatorLayout mCoordinatorLayout;
     @BindView(R.id.floating_action_menu) FloatingActionMenu mFloatingActionMenu;
 
     List<String> mCategories;
     User mUser;
+    String[] mPhoneNumbers = new String[0];
+    String[] mEmails = new String[0];
     boolean mIsEditMode;
     float mImageOriginalHeight;
     float mImageOriginalMargin;
@@ -89,6 +101,8 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
         mUser = getIntent().getParcelableExtra(EXTRA_USER);
         mCategories = new ArrayList<>(Arrays.asList(mCategoriesArray));
 
+        setButtonsEnabled(mCallButton, false);
+        setButtonsEnabled(mMailButton, false);
         setUpContent(mUser, false);
 
         for (final ProfileCategoryCard profileCategoryCard : mProfileCategoryCards) {
@@ -114,6 +128,11 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
                 .profilePresenterModule(new ProfilePresenterModule(ProfileActivity.this))
                 .build()
                 .inject(ProfileActivity.this);
+    }
+
+    private void setButtonsEnabled(FloatingActionButton button, boolean isActive) {
+        button.setImageAlpha(isActive ? 255 : 125);
+        button.setClickable(isActive);
     }
 
     private void setUpContent(final User user, boolean isEditMode) {
@@ -199,7 +218,6 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
                         mUserNameEditText.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                     }
                 });
-
         mAppBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             @Override
             public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
@@ -212,11 +230,10 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
                     layoutParams.width = Math.round((1 - moving) * (mImageOriginalWidth - mNameOriginalHeight) + mNameOriginalHeight);
                     mImageView.setLayoutParams(layoutParams);
                 }
+                mImageView.setTranslationY((mNameOriginalHeight) * moving);
+                mImageView.setTranslationX((mContainerOriginalWidth - mImageOriginalWidth) * (1 - moving) / 2 + moving * mImageOriginalMargin);
 
-                mImageView.setTranslationY((moving) * mNameOriginalHeight + (mImageOriginalHeight - mImageView.getHeight()) / 2);
-                mImageView.setTranslationX(mContainerOriginalWidth / 2 - mImageOriginalWidth / 2 - moving * (mContainerOriginalWidth / 2 - mImageOriginalWidth / 2 + (mImageOriginalWidth - mImageView.getWidth())));
-
-                mUserNameEditText.setTranslationX(mContainerOriginalWidth / 2 - mUserNameEditText.getWidth() / 2 - moving * (mContainerOriginalWidth / 2 - mUserNameEditText.getWidth() / 2 - (mImageView.getWidth() + mImageOriginalMargin)));
+                mUserNameEditText.setTranslationX((mContainerOriginalWidth - mUserNameEditText.getWidth()) * (1 - moving) / 2 + moving * (mImageView.getWidth() + mImageOriginalMargin));
             }
         });
     }
@@ -243,6 +260,11 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
                 public void onCallClick(SelectPickerDialog dialog) {
                     dialog.dismiss();
                     startCall(number);
+                }
+
+                @Override
+                public void onMailClick(SelectPickerDialog dialog) {
+
                 }
 
                 @Override
@@ -274,6 +296,11 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
                 }
 
                 @Override
+                public void onMailClick(SelectPickerDialog dialog) {
+
+                }
+
+                @Override
                 public void onOpenLinkClick(SelectPickerDialog dialog) {
                     dialog.dismiss();
                     startWebView(url);
@@ -294,6 +321,11 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
         }
 
         @Override
+        public void onEmailAddressClick(String email) {
+            sendEmail(email);
+        }
+
+        @Override
         public void onTextSelected(final String text, final EditText editText, String category) {
             SelectPickerDialog selectPickerDialog = getPickerIntent(category);
             selectPickerDialog.show(getSupportFragmentManager(), selectPickerDialog.getClass().getName());
@@ -303,6 +335,12 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
                 public void onCallClick(SelectPickerDialog dialog) {
                     dialog.dismiss();
                     startCall(text);
+                }
+
+                @Override
+                public void onMailClick(SelectPickerDialog dialog) {
+                    dialog.dismiss();
+                    sendEmail(text);
                 }
 
                 @Override
@@ -342,10 +380,12 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
     };
 
     private SelectPickerDialog getPickerIntent(String category) {
-        if (category.equals(mCategoriesArray[2]) || category.equals(mCategoriesArray[3]) || category.equals(mCategoriesArray[5]))
-           return SelectPickerDialog.newInstance(SelectPickerDialog.LINK_AND_SELECTION);
+        if (category.equals(mCategoriesArray[2]) || category.equals(mCategoriesArray[5]))
+            return SelectPickerDialog.newInstance(SelectPickerDialog.LINK_AND_SELECTION);
         if (category.equals(mCategoriesArray[0]))
             return SelectPickerDialog.newInstance(SelectPickerDialog.PHONE_NUMBER_AND_SELECTION);
+        if (category.equals(mCategoriesArray[3]))
+            return SelectPickerDialog.newInstance(SelectPickerDialog.EMAIL_AND_SELECTION);
         return SelectPickerDialog.newInstance();
     }
 
@@ -356,6 +396,10 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
 
     private void startWebView(String url) {
         Intent i = new Intent(Intent.ACTION_VIEW);
+        if (!url.startsWith("http://") || !url.startsWith("https://")) {
+            if (!url.startsWith("www.")) url = String.format("%s%s", "www.", url);
+            url = String.format("%s%s", "https://", url);
+        }
         i.setData(Uri.parse(url));
         startActivity(i);
     }
@@ -374,10 +418,27 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
         startActivity(Intent.createChooser(intent, "Share"));
     }
 
+    private void sendEmail(String email) {
+        if (!email.contains("@")) {
+            showSnackbar(mCoordinatorLayout, R.string.activity_profile_details_email_error);
+            return;
+        }
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:" + email));
+        intent.putExtra(Intent.EXTRA_SUBJECT, "");
+        intent.putExtra(Intent.EXTRA_TEXT, "Hi " + mUser.getFirstName());
+
+        try {
+            startActivity(Intent.createChooser(intent, "Send Email"));
+        } catch (android.content.ActivityNotFoundException ex) {
+            showSnackbar(mCoordinatorLayout, "There are no email clients installed.");
+        }
+    }
+
     ProfileCategoryCard.OnKeyboardChangeListener mOnKeyboardListener = new ProfileCategoryCard.OnKeyboardChangeListener() {
         @Override
         public void isKeyboardShown(boolean isShown) {
-            if(isShown) onShowKeyboard();
+            if (isShown) onShowKeyboard();
             else onHideKeyboard();
         }
     };
@@ -413,10 +474,12 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
     }
 
     private void onShowKeyboard() {
-        mAppBarLayout.setExpanded(false, true);
+        if (findViewById(R.id.container_collapsed_layout).getHeight() > 300)
+            mAppBarLayout.setExpanded(true);
         mFloatingActionMenu.hideOptions();
         mFloatingActionMenu.setEnabled(false);
     }
+
     private void onHideKeyboard() {
         mFloatingActionMenu.setEnabled(true);
     }
@@ -427,21 +490,92 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
         setUpContent(mUser, true);
     }
 
+    @OnClick(R.id.floating_button_call)
+    void onCallClick() {
+        hideKeyboard();
+        if (mPhoneNumbers.length == 1) {
+            startCall(mPhoneNumbers[0]);
+            return;
+        }
+        RecyclerPickerDialog dialog = RecyclerPickerDialog.newInstance(mPhoneNumbers, R.string.activity_profile_details_phone_numbers_title);
+        dialog.show(getSupportFragmentManager(), dialog.getClass().getName());
+        dialog.setOnPickListener(new RecyclerPickerDialog.OnPickListener() {
+            @Override
+            public void onValueClick(RecyclerPickerDialog dialog, String value) {
+                dialog.dismiss();
+                startCall(value);
+            }
+        });
+    }
+
+    @OnClick(R.id.floating_button_chat)
+    void onChatClick() {
+        mPresenter.findChat(mPreferences.getId(), mUser.getId(), mUser.getImageUrl(), UiUtil.getUserNameForView(mUser));
+    }
+
+    @OnClick(R.id.floating_button_mail)
+    void onEmailClick() {
+        hideKeyboard();
+        if (mEmails.length == 1) {
+            sendEmail(mEmails[0]);
+            return;
+        }
+        RecyclerPickerDialog dialog = RecyclerPickerDialog.newInstance(mEmails, R.string.activity_profile_details_email_title);
+        dialog.show(getSupportFragmentManager(), dialog.getClass().getName());
+        dialog.setOnPickListener(new RecyclerPickerDialog.OnPickListener() {
+            @Override
+            public void onValueClick(RecyclerPickerDialog dialog, String value) {
+                dialog.dismiss();
+                sendEmail(value);
+            }
+        });
+    }
+
     @Override
     public void showValuesInView(String category, List<Pair<String, String>> pairs) {
         int index = mCategories.indexOf(category);
+        if (index == 0) {
+            mPhoneNumbers = new String[pairs.size()];
+            for (int i = 0; i < pairs.size(); i++)
+                mPhoneNumbers[i] = pairs.get(i).second;
+            if (mPhoneNumbers.length > 0) {
+                setButtonsEnabled(mCallButton, true);
+            }
+        }
+        if (index == 3) {
+            mEmails = new String[pairs.size()];
+            for (int i = 0; i < pairs.size(); i++)
+                mEmails[i] = pairs.get(i).second;
+            if (mEmails.length > 0) {
+                setButtonsEnabled(mMailButton, true);
+            }
+        }
         mProfileCategoryCards.get(index).setValues(pairs);
     }
 
     @Override
     public void showRemoveCategoryInView(String category) {
         int index = mCategories.indexOf(category);
+        if (index == 0) {
+            mPhoneNumbers = new String[0];
+            setButtonsEnabled(mCallButton, false);
+        }
+        if (index == 3) {
+            mEmails = new String[0];
+            setButtonsEnabled(mMailButton, false);
+        }
         mProfileCategoryCards.get(index).cleanView();
     }
 
     @Override
     public void showErrorInView(String message) {
         showSnackbar(message);
+    }
+
+    @Override
+    public void showChatInView(Chat chat) {
+        startActivity(ChatActivity.startIntent(ProfileActivity.this, chat));
+        finish();
     }
 
     @Override

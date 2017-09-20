@@ -25,5 +25,4 @@
         android:padding="8dp"
         android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
         tools:text="wpofeefndnfkabgw"/>
-
 </RelativeLayout>

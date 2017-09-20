@@ -3,6 +3,7 @@ package io.rolique.roliqueapp.widget;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetDialogFragment;
+import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -79,18 +80,19 @@ public class AddPickerDialog extends BottomSheetDialogFragment {
     };
 
     private void toggleVisibility(boolean isSaveVisible) {
-        mSaveTextView.setVisibility(isSaveVisible ? View.VISIBLE : View.GONE);
-        View view = ButterKnife.findById(getView(), R.id.view_divider);
-        view.setVisibility(isSaveVisible ? View.VISIBLE : View.GONE);
+        mSaveTextView.setAlpha(isSaveVisible ? 1.0f : 0.2f);
+        mSaveTextView.setOnClickListener(isSaveVisible ? mOnClickListener : null);
     }
 
-    @OnClick(R.id.text_view_save)
-    protected void onSaveClick() {
-        if (mPickListener != null) mPickListener.onSaveClick(AddPickerDialog.this,
-                mCategory,
-                mKeyEditText.getText().toString(),
-                mValueEditText.getText().toString());
-    }
+    View.OnClickListener mOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            if (mPickListener != null) mPickListener.onSaveClick(AddPickerDialog.this,
+                    mCategory,
+                    mKeyEditText.getText().toString(),
+                    mValueEditText.getText().toString());
+        }
+    };
 
     @OnClick(R.id.text_view_cancel)
     protected void onOpenLinkClick() {

@@ -27,6 +27,7 @@ public class SelectPickerDialog extends BottomSheetDialogFragment {
     public static final String PHONE_NUMBER_AND_SELECTION = "PHONE_NUMBER_AND_SELECTION";
     public static final String LINK = "LINK";
     public static final String LINK_AND_SELECTION = "LINK_AND_SELECTION";
+    public static final String EMAIL_AND_SELECTION = "EMAIL_AND_SELECTION";
 
     public static SelectPickerDialog newInstance() {
         SelectPickerDialog dialog = new SelectPickerDialog();
@@ -46,6 +47,7 @@ public class SelectPickerDialog extends BottomSheetDialogFragment {
 
     public interface OnPickListener {
         void onCallClick(SelectPickerDialog dialog);
+        void onMailClick(SelectPickerDialog dialog);
         void onOpenLinkClick(SelectPickerDialog dialog);
         void onCopyClick(SelectPickerDialog dialog);
         void onShareClick(SelectPickerDialog dialog);
@@ -53,6 +55,7 @@ public class SelectPickerDialog extends BottomSheetDialogFragment {
     }
 
     @BindView(R.id.text_view_open_link) TextView mOpenLinkTextView;
+    @BindView(R.id.text_view_email) TextView mEmailTextView;
     @BindView(R.id.text_view_call) TextView mCallTextView;
     @BindView(R.id.text_view_copy) TextView mCopyTextView;
     @BindView(R.id.text_view_share) TextView mShareTextView;
@@ -94,12 +97,22 @@ public class SelectPickerDialog extends BottomSheetDialogFragment {
                 mCopyTextView.setVisibility(View.VISIBLE);
                 mShareTextView.setVisibility(View.VISIBLE);
                 break;
+            case EMAIL_AND_SELECTION:
+                mEmailTextView.setVisibility(View.VISIBLE);
+                mCopyTextView.setVisibility(View.VISIBLE);
+                mShareTextView.setVisibility(View.VISIBLE);
+                break;
         }
     }
 
     @OnClick(R.id.text_view_call)
     protected void onCallClick() {
         if (mPickListener != null) mPickListener.onCallClick(SelectPickerDialog.this);
+    }
+
+    @OnClick(R.id.text_view_email)
+    protected void onEmailClick() {
+        if (mPickListener != null) mPickListener.onMailClick(SelectPickerDialog.this);
     }
 
     @OnClick(R.id.text_view_open_link)
