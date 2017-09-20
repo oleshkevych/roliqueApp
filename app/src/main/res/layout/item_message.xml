@@ -64,5 +64,14 @@
             tools:background="@drawable/shape_text_view_message_alien_single"
             tools:text="45685558955 "/>
 
+        <LinearLayout
+            android:id="@+id/container_images"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:visibility="gone"
+            android:orientation="vertical"
+            tools:visibility="visible"/>
+
     </LinearLayout>
 </LinearLayout>

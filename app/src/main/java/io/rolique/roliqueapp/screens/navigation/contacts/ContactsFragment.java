@@ -65,10 +65,14 @@ public class ContactsFragment extends BaseFragment {
         }
     };
 
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if (!isVisibleToUser) return;
+//    @Override
+//    public void setUserVisibleHint(boolean isVisibleToUser) {
+//        super.setUserVisibleHint(isVisibleToUser);
+//        if (!isVisibleToUser) return;
+//        updateUsersInView();
+//    }
+
+    private void updateUsersInView() {
         if (mRoliqueAppUsers.getUsers().isEmpty()) {
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -79,5 +83,11 @@ public class ContactsFragment extends BaseFragment {
         } else {
             mUsersAdapter.setUsers(mRoliqueAppUsers.getUsers());
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUsersInView();
     }
 }

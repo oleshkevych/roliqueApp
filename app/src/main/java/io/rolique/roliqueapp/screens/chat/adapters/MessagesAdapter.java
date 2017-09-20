@@ -20,6 +20,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.rolique.roliqueapp.R;
+import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.data.model.Message;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.util.DateUtil;
@@ -212,6 +213,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         @BindView(R.id.layout_message_container) LinearLayout mMessageContainerLayout;
         @BindView(R.id.image_view_user_image) ImageView mSenderImageView;
         @BindView(R.id.text_view_message) TextView mMessageTextView;
+        @BindView(R.id.container_images) LinearLayout mImageMessagesLayout;
 
         Message mMessage;
 
@@ -265,10 +267,31 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
 
         private void setUpMessageInView(int messagePosition, boolean isCurrentUser) {
-            @DrawableRes int background = getBackgroundDrawable(messagePosition, isCurrentUser);
+            if (mMessage.isMedia()) {
+                mMessageTextView.setVisibility(View.GONE);
+                mImageMessagesLayout.setVisibility(View.VISIBLE);
+                mImageMessagesLayout.removeAllViews();
+                for (Media media: mMessage.getMedias()) {
+                    ImageView imageView = createImageView(media.getHeight(), media.getWidth());
+                    UiUtil.setImageWithRoundCorners(imageView, media.getImageUrl());
+                    mImageMessagesLayout.addView(imageView);
+                }
+            } else {
+                mMessageTextView.setVisibility(View.VISIBLE);
+                mImageMessagesLayout.setVisibility(View.GONE);
+                @DrawableRes int background = getBackgroundDrawable(messagePosition, isCurrentUser);
+                mMessageTextView.setBackground(ContextCompat.getDrawable(mMessageTextView.getContext(), background));
+                mMessageTextView.setText(mMessage.getText());
+            }
             mMessageContainerLayout.setLayoutParams(getMessageParameters(messagePosition, isCurrentUser));
-            mMessageTextView.setBackground(ContextCompat.getDrawable(mMessageTextView.getContext(), background));
-            mMessageTextView.setText(mMessage.getText());
+        }
+
+        private ImageView createImageView(int height, int width) {
+            int baseDimen = itemView.getContext().getResources().getDimensionPixelSize(R.dimen.message_image_view_base_height);
+            ImageView imageView = new ImageView(itemView.getContext());
+            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(baseDimen*height/width, baseDimen);
+            imageView.setLayoutParams(params);
+            return imageView;
         }
 
         @NonNull

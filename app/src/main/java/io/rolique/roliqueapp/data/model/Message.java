@@ -7,6 +7,9 @@ import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.firebase.database.PropertyName;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.rolique.roliqueapp.util.DateUtil;
 
 /**
@@ -34,6 +37,8 @@ public class Message implements Parcelable{
     public String mTimeStamp;
     @PropertyName("type")
     public String mType;
+    @PropertyName("images")
+    public List<Media> mMedias = new ArrayList<>();
 
     public Message() {
     }
@@ -57,6 +62,7 @@ public class Message implements Parcelable{
         mText = in.readString();
         mTimeStamp = in.readString();
         mType = in.readString();
+        in.readTypedList(mMedias, Media.CREATOR);
     }
 
     @Exclude
@@ -119,6 +125,21 @@ public class Message implements Parcelable{
         mType = type;
     }
 
+    @Exclude
+    public List<Media> getMedias() {
+        return mMedias;
+    }
+
+    @Exclude
+    public boolean isMedia() {
+        return mMedias.size() > 0;
+    }
+
+    @Exclude
+    public void setMedias(List<Media> medias) {
+        mMedias = medias;
+    }
+
     @Override
     public String toString() {
         return "Message{" +
@@ -156,6 +177,7 @@ public class Message implements Parcelable{
         dest.writeString(mText);
         dest.writeString(mTimeStamp);
         dest.writeString(mType);
+        dest.writeTypedList(mMedias);
     }
 
     public static class Builder {

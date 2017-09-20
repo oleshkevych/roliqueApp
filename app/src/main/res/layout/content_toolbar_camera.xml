@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.Toolbar
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/toolbar"
+    android:layout_width="match_parent"
+    android:layout_height="?actionBarSize"
+    android:background="@color/black_alpha_50"
+    android:elevation="4dp"
+    android:visibility="gone"
+    app:title="wefwef3erg245rg24"
+    app:titleMarginStart="48dp"
+    app:titleTextColor="@color/white"
+    tools:targetApi="lollipop"
+    tools:visibility="visible">
+
+    <ImageButton
+        android:id="@+id/image_view_camera_switcher_toolbar"
+        android:layout_width="@dimen/image_button_size_medium"
+        android:layout_height="@dimen/image_button_size_medium"
+        android:layout_gravity="end|center"
+        android:background="?selectableItemBackground"
+        android:padding="8dp"
+        android:scaleType="fitCenter"
+        app:srcCompat="@drawable/ic_camera_front_white_24dp"
+        tools:ignore="ContentDescription"/>
+</android.support.v7.widget.Toolbar>
