@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="io.rolique.cameralibrary">
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+
+    <application
+        android:theme="@style/AppTheme"
+        tools:replace="android:theme">
+        <activity
+            android:name=".screens.camera.Camera1Activity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.Fullscreen"/>
+        <activity
+            android:name=".screens.camera.Camera2Activity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.Fullscreen"/>
+        <activity
+            android:name=".screens.imageViewer.ImageViewerActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.Fullscreen"/>
+    </application>
+</manifest>

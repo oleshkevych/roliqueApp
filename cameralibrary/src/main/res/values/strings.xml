@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Camera Library</string>
+
+    <!-- activity camera start-->
+    <string name="activity_camera_camera_error">Camera Error</string>
+    <string name="activity_camera_storage_permission_error">Error: Could not store the photo, please check your storage permissions</string>
+    <string name="activity_camera_saving_error">Error: Could not store the file</string>
+    <!-- activity camera end-->
+</resources>

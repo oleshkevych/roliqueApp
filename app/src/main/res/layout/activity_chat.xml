@@ -34,6 +34,19 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
+            <ImageButton
+                android:id="@+id/button_add_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="?selectableItemBackground"
+                android:paddingBottom="16dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="16dp"
+                android:paddingTop="16dp"
+                android:src="@drawable/ic_add_a_photo_blue_24dp"
+                tools:ignore="ContentDescription"/>
+
             <EditText
                 android:id="@+id/edit_text_message"
                 android:layout_width="0dp"

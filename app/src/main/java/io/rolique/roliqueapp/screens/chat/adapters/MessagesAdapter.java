@@ -287,9 +287,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
 
         private ImageView createImageView(int height, int width) {
-            int baseDimen = itemView.getContext().getResources().getDimensionPixelSize(R.dimen.message_image_view_base_height);
+            int baseDimen = itemView.getContext().getResources().getDimensionPixelSize(R.dimen.message_image_view_base_width);
+            int imageViewHeight = height >= width ? baseDimen * height/width : baseDimen;
+            int imageViewWidth = height >= width ?  baseDimen : baseDimen * width/height;
             ImageView imageView = new ImageView(itemView.getContext());
-            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(baseDimen*height/width, baseDimen);
+            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(imageViewWidth, imageViewHeight);
             imageView.setLayoutParams(params);
             return imageView;
         }

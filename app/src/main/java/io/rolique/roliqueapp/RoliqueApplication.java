@@ -31,6 +31,7 @@ public class RoliqueApplication extends Application {
             });
         }
     }
+
     private RoliqueApplicationComponent buildRepositoryComponent() {
         return DaggerRoliqueApplicationComponent.builder()
                 .roliqueApplicationModule(new RoliqueApplicationModule((getApplicationContext()),

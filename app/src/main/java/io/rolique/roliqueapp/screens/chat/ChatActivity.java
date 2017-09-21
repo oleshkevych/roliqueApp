@@ -26,6 +26,7 @@ import io.rolique.roliqueapp.data.model.Message;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.chat.adapters.MessagesAdapter;
 import io.rolique.roliqueapp.screens.editChat.ChatEditorActivity;
+import io.rolique.roliqueapp.util.CameraUtil;
 import io.rolique.roliqueapp.util.DateUtil;
 
 public class ChatActivity extends BaseActivity implements ChatContract.View {
@@ -102,6 +103,11 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                 mPresenter.getTopMessages(mAdapter.getFirstMessageId(), mChat);
             }
         });
+    }
+
+    @OnClick(R.id.button_add_image)
+    void onAddPhotoClick() {
+        CameraUtil.startCamera(ChatActivity.this);
     }
 
     @OnClick(R.id.button_send)
