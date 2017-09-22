@@ -11,12 +11,15 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import io.rolique.cameralibrary.MediaLib;
+import io.rolique.cameralibrary.data.model.Media;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.RoliqueApplication;
@@ -26,8 +29,8 @@ import io.rolique.roliqueapp.data.model.Message;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.chat.adapters.MessagesAdapter;
 import io.rolique.roliqueapp.screens.editChat.ChatEditorActivity;
-import io.rolique.roliqueapp.util.CameraUtil;
 import io.rolique.roliqueapp.util.DateUtil;
+import timber.log.Timber;
 
 public class ChatActivity extends BaseActivity implements ChatContract.View {
 
@@ -50,6 +53,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
 
     private MessagesAdapter mAdapter;
     Chat mChat;
+    private MediaLib mediaLib;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +62,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
 
         mChat = getIntent().getParcelableExtra(EXTRA_CHAT);
         setUpToolbar(mChat);
-
+        setUpMediaLib();
         setUpRecyclerView();
         setUpRefreshLayout();
 
@@ -76,7 +80,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
 
     private void setUpToolbar(Chat chat) {
         mToolbar.setTitle(chat.getTitle());
-        ImageButton imageButton = (ImageButton) findViewById(R.id.button_edit);
+        ImageButton imageButton = findViewById(R.id.button_edit);
         if (chat.getId().equals("main")) imageButton.setVisibility(View.GONE);
         else imageButton.setImageResource(chat.getOwnerId().equals(mPreferences.getId())? R.drawable.ic_edit_white_24dp : R.drawable.ic_move_out_white_24dp);
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -85,6 +89,44 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                 onBackPressed();
             }
         });
+    }
+
+    private void setUpMediaLib() {
+        mediaLib = new MediaLib(ChatActivity.this, new MediaLib.MediaLibListener() {
+            @Override
+            public void onSuccess(List<Media> medias) {
+                Timber.e("SUCCESS!!!");
+                Timber.d(medias.toString());
+                List<io.rolique.roliqueapp.data.model.Media> messageMedias = new ArrayList<>();
+                for(Media media: medias)
+                    messageMedias.add(new io.rolique.roliqueapp.data.model.Media
+                            .Builder()
+                            .setHeight(media.getHeight())
+                            .setWidth(media.getWidth())
+                            .setImageUrl(media.getImage().getAbsolutePath())
+                            .setMediaType(io.rolique.roliqueapp.data.model.Media.CATEGORY_IMAGE)
+                            .create());
+                //TODO: add preview firstly
+                mPresenter.addMediaMessage(getMediaMessage(mMessageEditText.getText().toString(), messageMedias), mChat);
+            }
+
+            @Override
+            public void onError(Exception e) {
+
+            }
+        });
+        mediaLib.setStorage(MediaLib.GLOBAL_MEDIA_DEFAULT_FOLDER);
+    }
+
+    private Message getMediaMessage(String messageText, List<io.rolique.roliqueapp.data.model.Media> medias) {
+        Message.Builder builder = new Message.Builder();
+        return builder.setChatId(mChat.getId())
+                .setSenderId(mPreferences.getId())
+                .setText(messageText)
+                .setType("user")
+                .setTimeStamp(DateUtil.getStringTime())
+                .setMedias(medias)
+                .create();
     }
 
     private void setUpRecyclerView() {
@@ -107,7 +149,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
 
     @OnClick(R.id.button_add_image)
     void onAddPhotoClick() {
-        CameraUtil.startCamera(ChatActivity.this);
+        mediaLib.startCamera();
     }
 
     @OnClick(R.id.button_send)
@@ -115,7 +157,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         String text = mMessageEditText.getText().toString();
         if (text.trim().isEmpty()) return;
         Message message = getMessage(text);
-        mPresenter.addMessages(message, mChat);
+        mPresenter.addMessage(message, mChat);
         mMessageEditText.getText().clear();
     }
 
@@ -141,6 +183,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if(mediaLib != null) mediaLib.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == RC_CHAT_EDIT) {
             boolean isDeleted = data.getBooleanExtra(getString(R.string.extra_chat_from_edit), false);
             if (isDeleted) onBackPressed();

@@ -21,8 +21,12 @@ import io.rolique.roliqueapp.util.DateUtil;
 public class Message implements Parcelable{
 
     @Exclude
-    public static Message getEmptyMessage(String chatId, String userId) {
+    public static Message getStartMessage(String chatId, String userId) {
         return new Message(chatId, userId, "Welcome!", DateUtil.getStringTime(), "user");
+    }
+
+    public static Message createMediaMessage(String chatId, String userId, List<Media> medias) {
+        return new Message(chatId, userId, "Welcome!", DateUtil.getStringTime(), "user", medias);
     }
 
     @PropertyName("id")
@@ -53,6 +57,15 @@ public class Message implements Parcelable{
         mText = text;
         mTimeStamp = timeStamp;
         mType = type;
+    }
+
+    public Message(String chatId, String senderId, String text, String timeStamp, String type, List<Media> medias) {
+        mChatId = chatId;
+        mSenderId = senderId;
+        mText = text;
+        mTimeStamp = timeStamp;
+        mType = type;
+        mMedias = medias;
     }
 
     public Message(Parcel in) {
@@ -187,6 +200,7 @@ public class Message implements Parcelable{
         private String mText;
         private String mTimeStamp;
         private String mType;
+        private List<Media> mMedias = new ArrayList<>();
 
         public Builder setChatId(String chatId) {
             mChatId = chatId;
@@ -213,12 +227,18 @@ public class Message implements Parcelable{
             return this;
         }
 
+        public Builder setMedias(List<Media> medias) {
+            mMedias = medias;
+            return this;
+        }
+
         public Message create() {
             return new Message(mChatId,
                     mSenderId,
                     mText,
                     mTimeStamp,
-                    mType);
+                    mType,
+                    mMedias);
         }
     }
 }

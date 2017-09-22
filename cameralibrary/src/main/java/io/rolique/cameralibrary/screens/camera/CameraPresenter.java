@@ -93,7 +93,7 @@ class CameraPresenter implements CameraContract.Presenter {
     }
 
     @Override
-    public void savePictureToFile(final byte[] data, final File pictureFile, final int screenHeight, final int screenWidth) {
+    public void savePictureToFile(final byte[] data, final File pictureFile, final int screenWidth, final int screenHeight) {
         Disposable disposable = Single.fromCallable(
                 new Callable<File>() {
                     @Override

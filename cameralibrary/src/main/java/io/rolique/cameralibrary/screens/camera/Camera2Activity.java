@@ -364,7 +364,8 @@ public class Camera2Activity extends CameraBaseActivity {
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
                 mIsTakingPicture = false;
-                mPresenter.savePictureToFile(bytes, mFile, mPreviewSize.getHeight(), mPreviewSize.getWidth());
+                //TODO: check orientation
+                mPresenter.savePictureToFile(bytes, mFile, mPreviewSize.getWidth(), mPreviewSize.getHeight());
             }
         }
     };

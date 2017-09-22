@@ -27,7 +27,9 @@ interface ChatContract {
     interface Presenter extends BasePresenter {
         void getTopMessages(String firstMessageId, Chat chat);
         void fetchLastMessages(Chat chat);
-        void addMessages(Message message, Chat chat);
+        void addMessage(Message message, Chat chat);
         void leaveChat(Chat chat, String memberId);
+        void addMediaMessage(Message message, Chat chat);
+
     }
 }

@@ -1,6 +1,7 @@
 package io.rolique.roliqueapp.screens.chat;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -132,7 +133,7 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
     };
 
     @Override
-    public void addMessages(Message message, Chat chat) {
+    public void addMessage(Message message, Chat chat) {
         DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, message.getChatId())).push();
         String id  = chatRef.getKey();
         message.setId(id);
@@ -154,5 +155,38 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
         DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, memberId, chat.getId()));
         memberRef.removeValue();
         mView.showLeaveInView();
+    }
+
+    @Override
+    public void addMediaMessage(Message message, Chat chat) {
+        //TODO: add progress
+        uploadRecycle(0, message, chat);
+    }
+
+    private void uploadRecycle(final int countUploading, final Message message, final Chat chat) {
+        if (message.getMedias().size() == countUploading)
+            addMessage(message, chat);
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(String.format("%s.jpg", new Date().getTime()));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        Bitmap bitmap = BitmapFactory.decodeFile(message.getMedias().get(countUploading).getImageUrl(), bmOptions);
+        bitmap.compress(Bitmap.CompressFormat.PNG, 80, baos);
+        byte[] data = baos.toByteArray();
+
+        UploadTask uploadTask = storageRef.putBytes(data);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                exception.printStackTrace();
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                @SuppressWarnings("VisibleForTests") String downloadUrl = taskSnapshot.getDownloadUrl().toString();
+                message.getMedias().get(countUploading).setImageUrl(downloadUrl);
+                uploadRecycle(countUploading + 1, message, chat);
+            }
+        });
     }
 }

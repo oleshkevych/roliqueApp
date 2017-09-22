@@ -41,6 +41,7 @@ import butterknife.OnClick;
 import butterknife.OnTouch;
 import io.rolique.cameralibrary.BaseActivity;
 import io.rolique.cameralibrary.BuildConfig;
+import io.rolique.cameralibrary.MediaLib;
 import io.rolique.cameralibrary.R;
 import io.rolique.cameralibrary.R2;
 import io.rolique.cameralibrary.data.model.Media;
@@ -48,39 +49,12 @@ import io.rolique.cameralibrary.screens.imageViewer.ImageViewerActivity;
 import io.rolique.cameralibrary.uiUtil.UiUtil;
 import timber.log.Timber;
 
-/*To use Butter Knife in a library, add the plugin to your buildscript:
-
-buildscript {
-  repositories {
-    mavenCentral()
-   }
-  dependencies {
-    classpath 'com.jakewharton:butterknife-gradle-plugin:8.8.1'
-  }
-}
-
-android {
-    dexOptions {
-        preDexLibraries = false
-    }
-}
-
- maven {
-            url 'https://oss.sonatype.org/content/repositories/snapshots/'
-        }
-
-settings.gradle include ':app', ':cameralibrary'
-*/
-
 /**
  * Created by Volodymyr Oleshkevych on 5/12/2017.
  * Copyright (c) 2017, Rolique. All rights reserved.
  */
 
 public abstract class CameraBaseActivity extends BaseActivity implements CameraContract.View {
-
-    static final int RC_CAMERA_PERMISSION = 101;
-    static final String EXTRA_IS_RADIATOR_IMAGES = "EXTRA_IS_RADIATOR_IMAGES";
 
     private static final HashSet<String> UNSUPPORTED_CAMERA2API_MODELS = new HashSet<>(Arrays.asList(
             "SM-G920F",
@@ -155,7 +129,16 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
             "HTC One M9PLUS_Prime Camera Edition"
     ));
 
-    public static Intent getStartIntent(Context context) {
+    static final int RC_CAMERA_PERMISSION = 101;
+    static final String EXTRA_STORAGE_CATEGORY = "STORAGE_CATEGORY";
+
+    public static Intent getStartIntent(Context context, @MediaLib.SavingStorageCategory int category) {
+        Intent intent = getCameraIntent(context);
+        intent.putExtra(EXTRA_STORAGE_CATEGORY, category);
+        return intent;
+    }
+
+    private static Intent getCameraIntent(Context context) {
         if (UNSUPPORTED_CAMERA2API_MODELS.contains(Build.MODEL)) {
             return Camera1Activity.getStartIntent(context);
         }
@@ -184,6 +167,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     boolean mIsImagesForRadiator;
     int mImagesCount;
     public boolean mIsFacingCameraOn;
+    public @MediaLib.SavingStorageCategory int mStorageCategory;
 
     @Inject
     protected CameraPresenter mPresenter;
@@ -192,12 +176,14 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         plantTimber();
+        mStorageCategory = getIntent().getIntExtra(EXTRA_STORAGE_CATEGORY, 0);
     }
 
     private void plantTimber() {
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree() {
-                @Override protected String createStackElementTag(StackTraceElement element) {
+                @Override
+                protected String createStackElementTag(StackTraceElement element) {
                     return super.createStackElementTag(element) + ":" + element.getLineNumber();
                 }
             });
@@ -374,6 +360,8 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
     protected File getOutputMediaFile() {
         File sdCard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        if (isAppLocalStorage())
+            sdCard = getExternalFilesDir("images");
         File mediaStorageDir = new File(sdCard, "Rolique");
         mediaStorageDir.mkdir();
         if (!mediaStorageDir.exists()) {
@@ -387,6 +375,10 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         return new File(path);
     }
 
+    public boolean isAppLocalStorage() {
+        return mStorageCategory == MediaLib.LOCAL_APP_FOLDER;
+    }
+
     @Override
     public void showSavedFileInView(File file, int height, int width) {
         Timber.d("showSavedFileInView: " + file + " - exists " + file.exists());
@@ -395,7 +387,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         mMedias.add(media);
         mImagesCount++;
         updateImagesInPreview();
-        galleryAddPic(file);
+        if (!isAppLocalStorage()) galleryAddPic(file);
     }
 
     private void galleryAddPic(File f) {

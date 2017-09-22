@@ -89,7 +89,7 @@ class ChatsPresenter implements ChatsContract.Presenter, FirebaseValues {
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             Message message = null;
                             if (dataSnapshot.getValue() instanceof String) {
-                                message = Message.getEmptyMessage(chat.getId(), mPreferences.getId());
+                                message = Message.getStartMessage(chat.getId(), mPreferences.getId());
                                 DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, message.getChatId())).push();
                                 String id = chatRef.getKey();
                                 message.setId(id);
