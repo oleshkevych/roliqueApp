@@ -15,7 +15,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.rolique.cameralibrary.R;
 import io.rolique.cameralibrary.R2;
-import io.rolique.cameralibrary.data.model.Media;
+import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.cameralibrary.uiUtil.UiUtil;
 
 /**
@@ -25,14 +25,14 @@ import io.rolique.cameralibrary.uiUtil.UiUtil;
 class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> {
 
     private LayoutInflater mInflater;
-    private List<Media> mMedias;
+    private List<MediaContent> mMediaContents;
     private float mParentHeight;
     private final int mMinHeight;
 
     interface OnImagesClickListener {
-        void onImageClick(ImageView imageView, Media media);
+        void onImageClick(ImageView imageView, MediaContent mediaContent);
 
-        void onRemoveClick(Media media);
+        void onRemoveClick(MediaContent mediaContent);
     }
 
     private OnImagesClickListener mOnImagesClickListener;
@@ -41,15 +41,15 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
         mOnImagesClickListener = onImagesClickListener;
     }
 
-    public void setMedias(List<Media> medias) {
-        if (medias == null || medias.size() == 0) return;
-        mMedias = medias;
+    public void setMediaContents(List<MediaContent> mediaContents) {
+        if (mediaContents == null || mediaContents.size() == 0) return;
+        mMediaContents = mediaContents;
         notifyDataSetChanged();
     }
 
     ImagesAdapter(Context context, int minHeight) {
         mInflater = LayoutInflater.from(context);
-        mMedias = new ArrayList<>();
+        mMediaContents = new ArrayList<>();
         mMinHeight = minHeight;
     }
 
@@ -65,44 +65,44 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
 
     @Override
     public void onBindViewHolder(ImageViewHolder holder, int position) {
-        holder.bindImage(mMedias.get(position));
+        holder.bindImage(mMediaContents.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return mMedias.size();
+        return mMediaContents.size();
     }
 
     class ImageViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(R2.id.image_button) ImageView mImageView;
-        Media mMedia;
+        MediaContent mMediaContent;
 
         ImageViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(ImageViewHolder.this, itemView);
         }
 
-        void bindImage(Media media) {
-            mMedia = media;
+        void bindImage(MediaContent mediaContent) {
+            mMediaContent = mediaContent;
             mImageView.getLayoutParams().height = (int) Math.max(mMinHeight, mParentHeight);
             mImageView.getLayoutParams().width = (int) Math.max(mMinHeight, mParentHeight) * 3 / 4;
-            UiUtil.setImageWithRoundCorners(mImageView, media.getImage());
+            UiUtil.setImageWithRoundCorners(mImageView, mediaContent.getImage());
         }
 
         @OnClick(R2.id.image_button)
         void onImageClick() {
-            mOnImagesClickListener.onImageClick(mImageView, mMedia);
+            mOnImagesClickListener.onImageClick(mImageView, mMediaContent);
         }
 
         @OnClick(R2.id.layout_delete)
         void onRemoveLayoutClick() {
-            mOnImagesClickListener.onRemoveClick(mMedia);
+            mOnImagesClickListener.onRemoveClick(mMediaContent);
         }
 
         @OnClick(R2.id.image_button_delete)
         void onRemoveButtonClick() {
-            mOnImagesClickListener.onRemoveClick(mMedia);
+            mOnImagesClickListener.onRemoveClick(mMediaContent);
         }
     }
 }

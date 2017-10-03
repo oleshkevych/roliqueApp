@@ -12,7 +12,7 @@ import java.lang.annotation.RetentionPolicy;
  * Created by Volodymyr Oleshkevych on 9/21/2017.
  * Copyright (c) 2017, Rolique. All rights reserved.
  */
-public class Media  implements Parcelable {
+public class MediaContent implements Parcelable {
 
     public static final String CATEGORY_VIDEO = "video";
     public static final String CATEGORY_IMAGE = "photo";
@@ -33,17 +33,17 @@ public class Media  implements Parcelable {
 
     private @Category String mMediaType;
 
-    public Media() {
+    public MediaContent() {
     }
 
-    public Media(File image, int height, int width, String mediaType) {
+    public MediaContent(File image, int height, int width, String mediaType) {
         mImage = image;
         mHeight = height;
         mWidth = width;
         mMediaType = mediaType;
     }
 
-    public Media(File image, String videoUrl, int height, int width, String mediaType) {
+    public MediaContent(File image, String videoUrl, int height, int width, String mediaType) {
         mImage = image;
         mVideoUrl = videoUrl;
         mHeight = height;
@@ -51,7 +51,7 @@ public class Media  implements Parcelable {
         mMediaType = mediaType;
     }
 
-    public Media(Parcel in) {
+    public MediaContent(Parcel in) {
         mImage = (File)in.readSerializable();
         mVideoUrl = in.readString();
         mHeight = in.readInt();
@@ -143,8 +143,8 @@ public class Media  implements Parcelable {
             return this;
         }
 
-        public Media create() {
-            return new Media(mImageUrl,
+        public MediaContent create() {
+            return new MediaContent(mImageUrl,
                     mVideoUrl,
                     mHeight,
                     mWidth,
@@ -152,15 +152,15 @@ public class Media  implements Parcelable {
         }
     }
 
-    public static final Creator<Media> CREATOR = new Creator<Media>() {
+    public static final Creator<MediaContent> CREATOR = new Creator<MediaContent>() {
         @Override
-        public Media createFromParcel(Parcel in) {
-            return new Media(in);
+        public MediaContent createFromParcel(Parcel in) {
+            return new MediaContent(in);
         }
 
         @Override
-        public Media[] newArray(int size) {
-            return new Media[size];
+        public MediaContent[] newArray(int size) {
+            return new MediaContent[size];
         }
     };
 

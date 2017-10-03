@@ -8,7 +8,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
-import io.rolique.cameralibrary.data.model.Media;
+import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.cameralibrary.screens.camera.CameraBaseActivity;
 
 /**
@@ -65,7 +65,7 @@ public class MediaLib {
     }
 
     public interface MediaLibListener {
-        void onSuccess(List<Media> medias);
+        void onSuccess(List<MediaContent> mediaContents);
 
         void onError(Exception e);
     }
@@ -91,9 +91,9 @@ public class MediaLib {
         if (resultCode == Activity.RESULT_OK)
             switch (requestCode) {
                 case RC_CAMERA:
-                    List<Media> medias = data.getParcelableArrayListExtra(mActivity.getString(R.string.extra_camera_images));
+                    List<MediaContent> mediaContents = data.getParcelableArrayListExtra(mActivity.getString(R.string.extra_camera_images));
                     if (mMediaLibListener != null)
-                        mMediaLibListener.onSuccess(medias);
+                        mMediaLibListener.onSuccess(mediaContents);
             }
     }
 }

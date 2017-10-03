@@ -44,7 +44,7 @@ import io.rolique.cameralibrary.BuildConfig;
 import io.rolique.cameralibrary.MediaLib;
 import io.rolique.cameralibrary.R;
 import io.rolique.cameralibrary.R2;
-import io.rolique.cameralibrary.data.model.Media;
+import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.cameralibrary.screens.imageViewer.ImageViewerActivity;
 import io.rolique.cameralibrary.uiUtil.UiUtil;
 import timber.log.Timber;
@@ -155,7 +155,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
     protected int mDisplayOrientation;
     protected boolean mIsTakingPicture;
-    protected List<Media> mMedias = new ArrayList<>();
+    protected List<MediaContent> mMediaContents = new ArrayList<>();
     private ImagesAdapter mImagesAdapter;
     int mMinSwipeDistance;
     private int mOneDp;
@@ -224,16 +224,16 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
     private ImagesAdapter.OnImagesClickListener mOnImagesClickListener = new ImagesAdapter.OnImagesClickListener() {
         @Override
-        public void onImageClick(ImageView imageView, Media media) {
-            ImageViewerActivity.start(CameraBaseActivity.this, imageView, media);
+        public void onImageClick(ImageView imageView, MediaContent mediaContent) {
+            ImageViewerActivity.start(CameraBaseActivity.this, imageView, mediaContent);
         }
 
         @Override
-        public void onRemoveClick(Media media) {
-            mMedias.remove(media);
-            mPresenter.removeFile(media.getImage());
+        public void onRemoveClick(MediaContent mediaContent) {
+            mMediaContents.remove(mediaContent);
+            mPresenter.removeFile(mediaContent.getImage());
             updateImagesInPreview();
-            if (mMedias.size() == 0) {
+            if (mMediaContents.size() == 0) {
                 toggleImagesRecyclerView();
             }
         }
@@ -248,17 +248,17 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
     private void updateImagesInPreview() {
         ImageView imageView = getViewById(R.id.image_button);
-        imageView.setVisibility(mMedias.size() == 0 ? View.GONE : View.VISIBLE);
-        changeToggleButtonVisibility(R.id.button_main_size_toggle, mMedias.size() != 0);
-        if (mMedias.size() > 0)
-            UiUtil.setImageWithRoundCorners(imageView, mMedias.get(mMedias.size() - 1).getImage());
+        imageView.setVisibility(mMediaContents.size() == 0 ? View.GONE : View.VISIBLE);
+        changeToggleButtonVisibility(R.id.button_main_size_toggle, mMediaContents.size() != 0);
+        if (mMediaContents.size() > 0)
+            UiUtil.setImageWithRoundCorners(imageView, mMediaContents.get(mMediaContents.size() - 1).getImage());
 
         TextView imagesCountTextView = getViewById(R.id.text_view_images_count);
-        imagesCountTextView.setVisibility(mMedias.size() == 0 ? View.GONE : View.VISIBLE);
+        imagesCountTextView.setVisibility(mMediaContents.size() == 0 ? View.GONE : View.VISIBLE);
         LinearLayout toggleButtonLayout = getViewById(R.id.layout_size_toggle);
-        toggleButtonLayout.setVisibility(mMedias.size() == 0 ? View.GONE : View.VISIBLE);
-        imagesCountTextView.setText(String.valueOf(mMedias.size()));
-        mImagesAdapter.setMedias(mMedias);
+        toggleButtonLayout.setVisibility(mMediaContents.size() == 0 ? View.GONE : View.VISIBLE);
+        imagesCountTextView.setText(String.valueOf(mMediaContents.size()));
+        mImagesAdapter.setMediaContents(mMediaContents);
     }
 
     void changeToggleButtonVisibility(@IdRes int viewId, boolean isVisible) {
@@ -272,7 +272,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     }
 
     void toggleImagesRecyclerView() {
-        if (mMedias.size() > 0 || mImagesRecyclerView.getLayoutParams().height > mOneDp) {
+        if (mMediaContents.size() > 0 || mImagesRecyclerView.getLayoutParams().height > mOneDp) {
             RecyclerHeightAnimation animation = new RecyclerHeightAnimation(mImagesRecyclerView, true);
             animation.setDuration(250);
             animation.setInterpolator(new LinearInterpolator());
@@ -324,7 +324,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     @OnClick(R2.id.image_view_done)
     void OnDoneButtonClick() {
         Intent intent = new Intent();
-        intent.putParcelableArrayListExtra(getString(R.string.extra_camera_images), (ArrayList<? extends Parcelable>) mMedias);
+        intent.putParcelableArrayListExtra(getString(R.string.extra_camera_images), (ArrayList<? extends Parcelable>) mMediaContents);
         setResult(RESULT_OK, intent);
         finish();
     }
@@ -383,8 +383,8 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     public void showSavedFileInView(File file, int height, int width) {
         Timber.d("showSavedFileInView: " + file + " - exists " + file.exists());
         //TODO: add video checker
-        Media media = new Media(file, height, width, Media.CATEGORY_IMAGE);
-        mMedias.add(media);
+        MediaContent mediaContent = new MediaContent(file, height, width, MediaContent.CATEGORY_IMAGE);
+        mMediaContents.add(mediaContent);
         mImagesCount++;
         updateImagesInPreview();
         if (!isAppLocalStorage()) galleryAddPic(file);
@@ -416,8 +416,8 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
     @Override
     public void onBackPressed() {
-        for (Media media : mMedias)
-            mPresenter.removeFile(media.getImage());
+        for (MediaContent mediaContent : mMediaContents)
+            mPresenter.removeFile(mediaContent.getImage());
         super.onBackPressed();
     }
 

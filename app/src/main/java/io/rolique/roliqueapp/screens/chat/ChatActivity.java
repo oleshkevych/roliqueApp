@@ -19,12 +19,13 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.rolique.cameralibrary.MediaLib;
-import io.rolique.cameralibrary.data.model.Media;
+import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.model.Chat;
+import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.data.model.Message;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.chat.adapters.MessagesAdapter;
@@ -94,17 +95,17 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     private void setUpMediaLib() {
         mediaLib = new MediaLib(ChatActivity.this, new MediaLib.MediaLibListener() {
             @Override
-            public void onSuccess(List<Media> medias) {
+            public void onSuccess(List<MediaContent> mediaContents) {
                 Timber.e("SUCCESS!!!");
-                Timber.d(medias.toString());
-                List<io.rolique.roliqueapp.data.model.Media> messageMedias = new ArrayList<>();
-                for(Media media: medias)
-                    messageMedias.add(new io.rolique.roliqueapp.data.model.Media
+                Timber.d(mediaContents.toString());
+                List<Media> messageMedias = new ArrayList<>();
+                for(MediaContent mediaContent : mediaContents)
+                    messageMedias.add(new Media
                             .Builder()
-                            .setHeight(media.getHeight())
-                            .setWidth(media.getWidth())
-                            .setImageUrl(media.getImage().getAbsolutePath())
-                            .setMediaType(io.rolique.roliqueapp.data.model.Media.CATEGORY_IMAGE)
+                            .setHeight(mediaContent.getHeight())
+                            .setWidth(mediaContent.getWidth())
+                            .setImageUrl(mediaContent.getImage().getAbsolutePath())
+                            .setMediaType(Media.CATEGORY_IMAGE)
                             .create());
                 //TODO: add preview firstly
                 mPresenter.addMediaMessage(getMediaMessage(mMessageEditText.getText().toString(), messageMedias), mChat);
@@ -118,7 +119,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         mediaLib.setStorage(MediaLib.GLOBAL_MEDIA_DEFAULT_FOLDER);
     }
 
-    private Message getMediaMessage(String messageText, List<io.rolique.roliqueapp.data.model.Media> medias) {
+    private Message getMediaMessage(String messageText, List<Media> medias) {
         Message.Builder builder = new Message.Builder();
         return builder.setChatId(mChat.getId())
                 .setSenderId(mPreferences.getId())

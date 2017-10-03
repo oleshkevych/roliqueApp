@@ -18,7 +18,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.rolique.cameralibrary.R;
 import io.rolique.cameralibrary.R2;
-import io.rolique.cameralibrary.data.model.Media;
+import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.cameralibrary.widget.TouchImageView;
 
 /**
@@ -30,9 +30,9 @@ public class ImageViewerActivity extends AppCompatActivity {
 
     private static final String EXTRA_IMAGE = "IMAGE_PATH";
 
-    public static void start(Activity activity, ImageView imageView, Media media) {
+    public static void start(Activity activity, ImageView imageView, MediaContent mediaContent) {
         Intent intent = new Intent(activity, ImageViewerActivity.class);
-        intent.putExtra(EXTRA_IMAGE, media.getImage());
+        intent.putExtra(EXTRA_IMAGE, mediaContent.getImage());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(
