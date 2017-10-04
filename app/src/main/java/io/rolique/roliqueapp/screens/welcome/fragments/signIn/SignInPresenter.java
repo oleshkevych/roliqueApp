@@ -1,7 +1,6 @@
 package io.rolique.roliqueapp.screens.welcome.fragments.signIn;
 
 import android.app.Activity;
-import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -48,13 +47,13 @@ final class SignInPresenter implements SignInContract.Presenter, FirebaseValues 
 
     @Override
     public void start() {
-        if(mQuery != null)
+        if (mQuery != null)
             mQuery.addValueEventListener(mListener);
     }
 
     @Override
     public void stop() {
-        if(mQuery != null)
+        if (mQuery != null)
             mQuery.removeEventListener(mListener);
     }
 

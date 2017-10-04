@@ -8,8 +8,8 @@
     android:layout_height="?actionBarSize"
     android:background="@color/colorPrimary"
     android:elevation="4dp"
-    app:navigationIcon="@drawable/ic_menu_white_24dp"
     app:contentInsetLeft="40dp"
+    app:navigationIcon="@drawable/ic_menu_white_24dp"
     app:subtitleTextColor="@color/white"
     app:titleTextColor="@color/white"
     tools:targetApi="lollipop">

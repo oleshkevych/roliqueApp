@@ -202,7 +202,7 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
         chat.setMemberIds(getMemberIds());
         chat.setOwnerId(mPreferences.getId());
         chat.setTitle(mChatNameEditText.getText().toString());
-        if(mIsEditingMode) {
+        if (mIsEditingMode) {
             chat.setId(mChat.getId());
             mPresenter.editChat(chat, mChat, getImageBitmap());
         } else {

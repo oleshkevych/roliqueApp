@@ -1,7 +1,6 @@
 package io.rolique.roliqueapp.widget.recyclerPicker;
 
 import android.content.Context;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,8 +10,6 @@ import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.rolique.roliqueapp.R;
-import io.rolique.roliqueapp.data.model.User;
-import io.rolique.roliqueapp.util.ui.UiUtil;
 
 /**
  * Created by Volodymyr Oleshkevych on 9/19/2017.

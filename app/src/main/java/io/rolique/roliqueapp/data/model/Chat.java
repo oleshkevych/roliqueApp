@@ -18,6 +18,17 @@ import java.util.List;
 @IgnoreExtraProperties
 public class Chat implements Parcelable {
 
+    public static final Creator<Chat> CREATOR = new Creator<Chat>() {
+        @Override
+        public Chat createFromParcel(Parcel in) {
+            return new Chat(in);
+        }
+
+        @Override
+        public Chat[] newArray(int size) {
+            return new Chat[size];
+        }
+    };
     @PropertyName("id")
     public String mId;
     @PropertyName("image_url")
@@ -44,6 +55,15 @@ public class Chat implements Parcelable {
         mMemberIds = memberIds;
         mOwnerId = ownerId;
         mTitle = title;
+    }
+
+    public Chat(Parcel in) {
+        mId = in.readString();
+        mImageUrl = in.readString();
+        in.readStringList(mMemberIds);
+        mOwnerId = in.readString();
+        mTitle = in.readString();
+        mLastMessage = in.readParcelable(Message.class.getClassLoader());
     }
 
     @Exclude
@@ -105,28 +125,6 @@ public class Chat implements Parcelable {
     public void setLastMessage(Message lastMessage) {
         mLastMessage = lastMessage;
     }
-
-    public Chat(Parcel in) {
-        mId = in.readString();
-        mImageUrl = in.readString();
-        in.readStringList(mMemberIds);
-        mOwnerId = in.readString();
-        mTitle = in.readString();
-        mLastMessage = in.readParcelable(Message.class.getClassLoader());
-    }
-
-
-    public static final Creator<Chat> CREATOR = new Creator<Chat>() {
-        @Override
-        public Chat createFromParcel(Parcel in) {
-            return new Chat(in);
-        }
-
-        @Override
-        public Chat[] newArray(int size) {
-            return new Chat[size];
-        }
-    };
 
     @Override
     public int describeContents() {

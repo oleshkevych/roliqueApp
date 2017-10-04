@@ -13,13 +13,11 @@ import io.rolique.roliqueapp.screens.BaseView;
 interface SignInContract {
 
     interface View extends BaseView<Presenter> {
-
         void showLoginInView();
         void showLoginError(String message);
     }
 
     interface Presenter extends BasePresenter {
-
         void signIn(String email, String password, Activity activity);
     }
 }

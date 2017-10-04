@@ -37,7 +37,7 @@ public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.MemberVi
     }
 
     public void removeMember(String image) {
-        for (int i = 0; i< mImages.size(); i++)
+        for (int i = 0; i < mImages.size(); i++)
             if (mImages.get(i).equals(image)) {
                 mImages.remove(i);
                 notifyItemRemoved(i);

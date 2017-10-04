@@ -21,7 +21,6 @@ import io.rolique.roliqueapp.R;
 public class SelectPickerDialog extends BottomSheetDialogFragment {
 
     private static final String ARGUMENT_FIELD_TYPE = "ARGUMENT_FIELD_TYPE";
-
     private static final String EMPTY = "EMPTY";
     public static final String PHONE_NUMBER = "PHONE_NUMBER";
     public static final String PHONE_NUMBER_AND_SELECTION = "PHONE_NUMBER_AND_SELECTION";
@@ -64,11 +63,13 @@ public class SelectPickerDialog extends BottomSheetDialogFragment {
     private OnPickListener mPickListener;
 
     @Nullable
-    @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.dialog_select_picker, container, false);
     }
 
-    @Override public void onViewCreated(View view, Bundle savedInstanceState) {
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mUnbinder = ButterKnife.bind(SelectPickerDialog.this, view);
         String fieldToShowType = getArguments().getString(ARGUMENT_FIELD_TYPE);
@@ -134,7 +135,8 @@ public class SelectPickerDialog extends BottomSheetDialogFragment {
         mPickListener = pickListener;
     }
 
-    @Override public void onDestroyView() {
+    @Override
+    public void onDestroyView() {
         mPickListener.onCancelSelection();
         super.onDestroyView();
         mUnbinder.unbind();

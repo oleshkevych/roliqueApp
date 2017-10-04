@@ -40,11 +40,10 @@ import timber.log.Timber;
 
 final class SignUpPresenter implements SignUpContract.Presenter, FirebaseValues {
 
-    private final SignUpFragment mView;
-
     final FirebaseAuth mAuth;
     final FirebaseDatabase mDatabase;
     final RoliqueApplicationPreferences mPreferences;
+    private final SignUpFragment mView;
 
     @Inject
     SignUpPresenter(RoliqueApplicationPreferences preferences,

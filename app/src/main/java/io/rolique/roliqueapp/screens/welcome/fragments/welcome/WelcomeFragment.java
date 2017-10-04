@@ -10,8 +10,8 @@ import android.view.ViewGroup;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.BaseFragment;
+import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.screens.welcome.fragments.signIn.SignInFragment;
 import io.rolique.roliqueapp.screens.welcome.fragments.signUp.SignUpFragment;
 
@@ -19,10 +19,10 @@ import io.rolique.roliqueapp.screens.welcome.fragments.signUp.SignUpFragment;
  * Created by Volodymyr Oleshkevych on 8/24/2017.
  * Copyright (c) 2017, Rolique. All rights reserved.
  */
-public class WelcomeFragment extends BaseFragment{
+public class WelcomeFragment extends BaseFragment {
 
     public static Fragment newInstance() {
-       return new WelcomeFragment();
+        return new WelcomeFragment();
     }
 
     @BindView(R.id.toolbar) Toolbar mToolbar;

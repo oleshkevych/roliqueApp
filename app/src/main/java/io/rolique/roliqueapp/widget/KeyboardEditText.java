@@ -3,9 +3,9 @@ package io.rolique.roliqueapp.widget;
 import android.content.Context;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.AppCompatEditText;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
-import android.support.v7.widget.AppCompatEditText;
 
 /**
  * Created by Volodymyr Oleshkevych on 9/13/2017.

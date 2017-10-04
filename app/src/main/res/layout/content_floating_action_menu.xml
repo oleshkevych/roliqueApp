@@ -189,7 +189,7 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:clickable="true"
-        app:backgroundTint="@color/colorPrimaryDark"
         android:src="@drawable/ic_add_white_16dp"
+        app:backgroundTint="@color/colorPrimaryDark"
         app:fabSize="normal"/>
 </merge>

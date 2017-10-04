@@ -18,6 +18,6 @@ public class ImageDecoration extends RecyclerView.ItemDecoration {
 
     @Override
     public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-       outRect.right = mOffset * -1;
+        outRect.right = mOffset * -1;
     }
 }

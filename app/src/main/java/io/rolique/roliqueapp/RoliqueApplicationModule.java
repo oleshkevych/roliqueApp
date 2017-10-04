@@ -9,7 +9,6 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
-import io.rolique.roliqueapp.screens.ViewScope;
 
 /**
  * Created by Volodymyr Oleshkevych on 8/16/2017.

@@ -1,6 +1,5 @@
 package io.rolique.roliqueapp.glide;
 
-import com.bumptech.glide.annotation.GlideModule;
 import com.bumptech.glide.module.AppGlideModule;
 
 /**
@@ -9,4 +8,5 @@ import com.bumptech.glide.module.AppGlideModule;
  */
 
 @com.bumptech.glide.annotation.GlideModule
-public final class GlideRoliqueComponent extends AppGlideModule {}
+public final class GlideRoliqueComponent extends AppGlideModule {
+}

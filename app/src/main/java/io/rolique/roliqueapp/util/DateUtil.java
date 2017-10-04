@@ -72,7 +72,7 @@ public final class DateUtil {
 
     public static String getStringMessageDate(String timeStamp) {
         Date messageDate = transformDate(timeStamp);
-        Calendar  messageCalendar = Calendar.getInstance();
+        Calendar messageCalendar = Calendar.getInstance();
         messageCalendar.setTime(messageDate);
         Calendar currentCalendar = Calendar.getInstance();
         currentCalendar.setTime(new Date());
@@ -101,7 +101,7 @@ public final class DateUtil {
 
     public static String getDetailedStringMessageDate(String timeStamp) {
         Date messageDate = transformDate(timeStamp);
-        Calendar  messageCalendar = Calendar.getInstance();
+        Calendar messageCalendar = Calendar.getInstance();
         messageCalendar.setTime(messageDate);
         Calendar currentCalendar = Calendar.getInstance();
         currentCalendar.setTime(new Date());

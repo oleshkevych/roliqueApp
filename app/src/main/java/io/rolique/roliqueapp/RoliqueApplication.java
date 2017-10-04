@@ -25,7 +25,8 @@ public class RoliqueApplication extends Application {
     private void plantTimber() {
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree() {
-                @Override protected String createStackElementTag(StackTraceElement element) {
+                @Override
+                protected String createStackElementTag(StackTraceElement element) {
                     return super.createStackElementTag(element) + ":" + element.getLineNumber();
                 }
             });

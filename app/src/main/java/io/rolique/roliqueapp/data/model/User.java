@@ -15,6 +15,17 @@ import com.google.firebase.database.PropertyName;
 @IgnoreExtraProperties
 public class User implements Parcelable {
 
+    public static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>() {
+        @Override
+        public User createFromParcel(Parcel in) {
+            return new User(in);
+        }
+
+        @Override
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
     @PropertyName("id")
     public String mId;
     @PropertyName("first_name")
@@ -42,6 +53,15 @@ public class User implements Parcelable {
         mImageUrl = imageUrl;
         mType = "user";
         mEmail = email;
+    }
+
+    public User(Parcel in) {
+        mId = in.readString();
+        mFirstName = in.readString();
+        mLastName = in.readString();
+        mImageUrl = in.readString();
+        mType = in.readString();
+        mEmail = in.readString();
     }
 
     @Exclude
@@ -93,28 +113,6 @@ public class User implements Parcelable {
     public void setType(String type) {
         mType = type;
     }
-
-    public User(Parcel in) {
-        mId = in.readString();
-        mFirstName =  in.readString();
-        mLastName =  in.readString();
-        mImageUrl =  in.readString();
-        mType =  in.readString();
-        mEmail =  in.readString();
-    }
-
-
-    public static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>() {
-        @Override
-        public User createFromParcel(Parcel in) {
-            return new User(in);
-        }
-
-        @Override
-        public User[] newArray(int size) {
-            return new User[size];
-        }
-    };
 
     @Override
     public int describeContents() {

@@ -54,15 +54,15 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
-        mNavigationImageView =  mNavigationView.getHeaderView(0).findViewById(R.id.image_view);
-        mNameTextView =  mNavigationView.getHeaderView(0).findViewById(R.id.text_view_name);
+        mNavigationImageView = mNavigationView.getHeaderView(0).findViewById(R.id.image_view);
+        mNameTextView = mNavigationView.getHeaderView(0).findViewById(R.id.text_view_name);
         mNavigationView.getHeaderView(0).findViewById(R.id.drawable_text_view_logout)
                 .setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onLogOutClicked();
-            }
-        });
+                    @Override
+                    public void onClick(View view) {
+                        onLogOutClicked();
+                    }
+                });
         mPresenter.isLogin();
     }
 

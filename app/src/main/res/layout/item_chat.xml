@@ -15,8 +15,8 @@
         android:id="@+id/image_view"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        tools:src="@color/black"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription"
+        tools:src="@color/black"/>
 
     <LinearLayout
         android:layout_width="0dp"
@@ -29,10 +29,10 @@
             android:id="@+id/text_view_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:paddingEnd="8dp"
             android:paddingStart="8dp"
-            android:maxLines="1"
-            android:ellipsize="end"
             android:textAppearance="?android:textAppearanceListItem"
             tools:text="Title"/>
 

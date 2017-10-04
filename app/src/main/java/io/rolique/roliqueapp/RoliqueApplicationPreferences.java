@@ -40,14 +40,14 @@ public class RoliqueApplicationPreferences {
         setLoggedIn(true);
     }
 
+    public String getId() {
+        return mSharedPreferences.getString(KEY_ID, "");
+    }
+
     private void setId(String email) {
         mSharedPreferences.edit()
                 .putString(KEY_ID, email)
                 .apply();
-    }
-
-    public String getId() {
-        return mSharedPreferences.getString(KEY_ID, "");
     }
 
     private void setType(String token) {
@@ -60,14 +60,18 @@ public class RoliqueApplicationPreferences {
         return mSharedPreferences.getString(KEY_TYPE, "");
     }
 
+    public String getFirstName() {
+        return mSharedPreferences.getString(KEY_FIRST_NAME, "");
+    }
+
     private void setFirstName(String firstName) {
         mSharedPreferences.edit()
                 .putString(KEY_FIRST_NAME, firstName)
                 .apply();
     }
 
-    public String getFirstName() {
-        return mSharedPreferences.getString(KEY_FIRST_NAME, "");
+    public String getLastName() {
+        return mSharedPreferences.getString(KEY_LAST_NAME, "");
     }
 
     private void setLastName(String lastName) {
@@ -76,8 +80,8 @@ public class RoliqueApplicationPreferences {
                 .apply();
     }
 
-    public String getLastName() {
-        return mSharedPreferences.getString(KEY_LAST_NAME, "");
+    public String getImageUrl() {
+        return mSharedPreferences.getString(KEY_IMAGE_URL, "");
     }
 
     private void setImageUrl(String imageUrl) {
@@ -86,18 +90,14 @@ public class RoliqueApplicationPreferences {
                 .apply();
     }
 
-    public String getImageUrl() {
-        return mSharedPreferences.getString(KEY_IMAGE_URL, "");
+    public boolean isLoggedIn() {
+        return mSharedPreferences.getBoolean(KEY_LOGGED_IN, false);
     }
 
     private void setLoggedIn(boolean loggedIn) {
         mSharedPreferences.edit()
                 .putBoolean(KEY_LOGGED_IN, loggedIn)
                 .apply();
-    }
-
-    public boolean isLoggedIn() {
-        return mSharedPreferences.getBoolean(KEY_LOGGED_IN, false);
     }
 
     public void logOut() {

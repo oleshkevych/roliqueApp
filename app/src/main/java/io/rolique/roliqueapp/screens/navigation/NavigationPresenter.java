@@ -15,8 +15,7 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
 
     private final NavigationActivity mView;
 
-    private RoliqueApplicationPreferences mPreferences;
-
+    RoliqueApplicationPreferences mPreferences;
     FirebaseAuth mAuth;
 
     @Inject

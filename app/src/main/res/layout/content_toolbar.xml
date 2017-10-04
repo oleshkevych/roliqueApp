@@ -9,12 +9,12 @@
     android:background="@color/colorPrimary"
     android:elevation="4dp"
     app:contentInsetLeft="40dp"
-    app:subtitleTextColor="@color/white"
-    app:titleTextColor="@color/white"
-    tools:targetApi="lollipop"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
-    app:layout_constraintTop_toTopOf="parent">
+    app:layout_constraintTop_toTopOf="parent"
+    app:subtitleTextColor="@color/white"
+    app:titleTextColor="@color/white"
+    tools:targetApi="lollipop">
 
     <ProgressBar
         android:id="@+id/progress_bar"

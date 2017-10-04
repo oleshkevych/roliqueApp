@@ -19,10 +19,10 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import io.rolique.roliqueapp.BaseFragment;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.screens.navigation.NavigationActivity;
-import io.rolique.roliqueapp.BaseFragment;
 
 public class SignInFragment extends BaseFragment implements SignInContract.View {
 
@@ -37,7 +37,6 @@ public class SignInFragment extends BaseFragment implements SignInContract.View 
     // UI references.
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.edit_text_email_sign_in) EditText mEmailSignInEditText;
-
     @BindView(R.id.edit_text_password_sign_in) EditText mPasswordSignInEditText;
 
     @Override

@@ -1,6 +1,5 @@
 package io.rolique.roliqueapp.screens.profile;
 
-import android.animation.ValueAnimator;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -17,7 +16,6 @@ import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.EditText;
 import android.widget.ImageView;
 
@@ -43,8 +41,8 @@ import io.rolique.roliqueapp.util.ui.UiUtil;
 import io.rolique.roliqueapp.widget.AddPickerDialog;
 import io.rolique.roliqueapp.widget.FloatingActionMenu;
 import io.rolique.roliqueapp.widget.KeyboardEditText;
-import io.rolique.roliqueapp.widget.SelectPickerDialog;
 import io.rolique.roliqueapp.widget.ProfileCategoryCard;
+import io.rolique.roliqueapp.widget.SelectPickerDialog;
 import io.rolique.roliqueapp.widget.recyclerPicker.RecyclerPickerDialog;
 
 public class ProfileActivity extends BaseActivity implements ProfileContract.View {
@@ -72,7 +70,6 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
     @BindView(R.id.floating_button_call) FloatingActionButton mCallButton;
     @BindView(R.id.floating_button_chat) FloatingActionButton mChatButton;
     @BindView(R.id.floating_button_mail) FloatingActionButton mMailButton;
-
     @BindView(R.id.coordinator_layout) CoordinatorLayout mCoordinatorLayout;
     @BindView(R.id.floating_action_menu) FloatingActionMenu mFloatingActionMenu;
 

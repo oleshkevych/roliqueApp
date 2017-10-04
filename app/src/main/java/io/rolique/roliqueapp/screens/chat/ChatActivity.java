@@ -83,7 +83,8 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         mToolbar.setTitle(chat.getTitle());
         ImageButton imageButton = findViewById(R.id.button_edit);
         if (chat.getId().equals("main")) imageButton.setVisibility(View.GONE);
-        else imageButton.setImageResource(chat.getOwnerId().equals(mPreferences.getId())? R.drawable.ic_edit_white_24dp : R.drawable.ic_move_out_white_24dp);
+        else
+            imageButton.setImageResource(chat.getOwnerId().equals(mPreferences.getId()) ? R.drawable.ic_edit_white_24dp : R.drawable.ic_move_out_white_24dp);
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -99,7 +100,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                 Timber.e("SUCCESS!!!");
                 Timber.d(mediaContents.toString());
                 List<Media> messageMedias = new ArrayList<>();
-                for(MediaContent mediaContent : mediaContents)
+                for (MediaContent mediaContent : mediaContents)
                     messageMedias.add(new Media
                             .Builder()
                             .setHeight(mediaContent.getHeight())
@@ -184,7 +185,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(mediaLib != null) mediaLib.onActivityResult(requestCode, resultCode, data);
+        if (mediaLib != null) mediaLib.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == RC_CHAT_EDIT) {
             boolean isDeleted = data.getBooleanExtra(getString(R.string.extra_chat_from_edit), false);
             if (isDeleted) onBackPressed();

@@ -15,13 +15,11 @@ import io.rolique.roliqueapp.screens.BaseView;
 interface SignUpContract {
 
     interface View extends BaseView<Presenter> {
-
         void showLoginInView();
         void showLoginError(String message);
     }
 
     interface Presenter extends BasePresenter {
-
         void uploadImage(@NonNull Bitmap bitmap, String email, String password, String firstName, String lastName, Activity activity);
     }
 }

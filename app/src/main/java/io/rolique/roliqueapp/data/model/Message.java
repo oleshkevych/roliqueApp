@@ -18,17 +18,19 @@ import io.rolique.roliqueapp.util.DateUtil;
  */
 
 @IgnoreExtraProperties
-public class Message implements Parcelable{
+public class Message implements Parcelable {
 
-    @Exclude
-    public static Message getStartMessage(String chatId, String userId) {
-        return new Message(chatId, userId, "Welcome!", DateUtil.getStringTime(), "user");
-    }
+    public static final Parcelable.Creator<Message> CREATOR = new Parcelable.Creator<Message>() {
+        @Override
+        public Message createFromParcel(Parcel in) {
+            return new Message(in);
+        }
 
-    public static Message createMediaMessage(String chatId, String userId, List<Media> medias) {
-        return new Message(chatId, userId, "Welcome!", DateUtil.getStringTime(), "user", medias);
-    }
-
+        @Override
+        public Message[] newArray(int size) {
+            return new Message[size];
+        }
+    };
     @PropertyName("id")
     public String mId;
     @PropertyName("chat_id")
@@ -43,7 +45,6 @@ public class Message implements Parcelable{
     public String mType;
     @PropertyName("images")
     public List<Media> mMedias = new ArrayList<>();
-
     public Message() {
     }
 
@@ -76,6 +77,15 @@ public class Message implements Parcelable{
         mTimeStamp = in.readString();
         mType = in.readString();
         in.readTypedList(mMedias, Media.CREATOR);
+    }
+
+    @Exclude
+    public static Message getStartMessage(String chatId, String userId) {
+        return new Message(chatId, userId, "Welcome!", DateUtil.getStringTime(), "user");
+    }
+
+    public static Message createMediaMessage(String chatId, String userId, List<Media> medias) {
+        return new Message(chatId, userId, "Welcome!", DateUtil.getStringTime(), "user", medias);
     }
 
     @Exclude
@@ -144,13 +154,13 @@ public class Message implements Parcelable{
     }
 
     @Exclude
-    public boolean isMedia() {
-        return mMedias.size() > 0;
+    public void setMedias(List<Media> medias) {
+        mMedias = medias;
     }
 
     @Exclude
-    public void setMedias(List<Media> medias) {
-        mMedias = medias;
+    public boolean isMedia() {
+        return mMedias.size() > 0;
     }
 
     @Override
@@ -164,18 +174,6 @@ public class Message implements Parcelable{
                 ", mType='" + mType + '\'' +
                 '}';
     }
-
-    public static final Parcelable.Creator<Message> CREATOR = new Parcelable.Creator<Message>() {
-        @Override
-        public Message createFromParcel(Parcel in) {
-            return new Message(in);
-        }
-
-        @Override
-        public Message[] newArray(int size) {
-            return new Message[size];
-        }
-    };
 
     @Override
     public int describeContents() {

@@ -10,8 +10,6 @@ import com.google.firebase.database.PropertyName;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Volodymyr Oleshkevych on 9/20/2017.
@@ -24,16 +22,17 @@ public class Media implements Parcelable {
     public static final String CATEGORY_VIDEO = "video";
     @Exclude
     public static final String CATEGORY_IMAGE = "photo";
+    public static final Creator<Media> CREATOR = new Creator<Media>() {
+        @Override
+        public Media createFromParcel(Parcel in) {
+            return new Media(in);
+        }
 
-    @Retention(RetentionPolicy.SOURCE)
-    @StringDef({
-            CATEGORY_IMAGE,
-            CATEGORY_VIDEO
-    })
-
-    public @interface Category {
-    }
-
+        @Override
+        public Media[] newArray(int size) {
+            return new Media[size];
+        }
+    };
     @PropertyName("image_url")
     public String mImageUrl;
     @PropertyName("video_url")
@@ -112,7 +111,9 @@ public class Media implements Parcelable {
     }
 
     @Exclude
-    public @Category String getMediaType() {
+    public
+    @Category
+    String getMediaType() {
         return mMediaType;
     }
 
@@ -130,6 +131,29 @@ public class Media implements Parcelable {
                 ", mWidth='" + mWidth + '\'' +
                 ", mMediaType='" + mMediaType + '\'' +
                 '}';
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mImageUrl);
+        dest.writeString(mVideoUrl);
+        dest.writeInt(mHeight);
+        dest.writeInt(mWidth);
+        dest.writeString(mMediaType);
+    }
+
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef({
+            CATEGORY_IMAGE,
+            CATEGORY_VIDEO
+    })
+
+    public @interface Category {
     }
 
     public static final class Builder {
@@ -172,31 +196,5 @@ public class Media implements Parcelable {
                     mWidth,
                     mMediaType);
         }
-    }
-
-    public static final Creator<Media> CREATOR = new Creator<Media>() {
-        @Override
-        public Media createFromParcel(Parcel in) {
-            return new Media(in);
-        }
-
-        @Override
-        public Media[] newArray(int size) {
-            return new Media[size];
-        }
-    };
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mImageUrl);
-        dest.writeString(mVideoUrl);
-        dest.writeInt(mHeight);
-        dest.writeInt(mWidth);
-        dest.writeString(mMediaType);
     }
 }

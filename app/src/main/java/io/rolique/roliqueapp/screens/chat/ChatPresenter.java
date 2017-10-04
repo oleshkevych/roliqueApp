@@ -38,10 +38,10 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
 
     private final ChatContract.View mView;
 
-    private RoliqueApplicationPreferences mPreferences;
-
+    RoliqueApplicationPreferences mPreferences;
     FirebaseDatabase mDatabase;
     Query mChatQuery;
+
     boolean mIsProgressActive;
 
     @Inject
@@ -72,7 +72,7 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 List<Message> messages = new ArrayList<>();
-                for (DataSnapshot postSnapshot: dataSnapshot.getChildren())
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren())
                     messages.add(postSnapshot.getValue(Message.class));
                 messages.remove(messages.size() - 1);
                 mView.showTopMessagesView(messages);
@@ -135,13 +135,13 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
     @Override
     public void addMessage(Message message, Chat chat) {
         DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, message.getChatId())).push();
-        String id  = chatRef.getKey();
+        String id = chatRef.getKey();
         message.setId(id);
 
         DatabaseReference messageRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId(), message.getId()));
         messageRef.setValue(message);
 
-        for (String memberId: chat.getMemberIds()) {
+        for (String memberId : chat.getMemberIds()) {
             DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, memberId, chat.getId()));
             memberRef.setValue(message);
         }
@@ -164,8 +164,10 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
     }
 
     private void uploadRecycle(final int countUploading, final Message message, final Chat chat) {
-        if (message.getMedias().size() == countUploading)
+        if (message.getMedias().size() == countUploading) {
             addMessage(message, chat);
+            return;
+        }
         StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(String.format("%s.jpg", new Date().getTime()));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();

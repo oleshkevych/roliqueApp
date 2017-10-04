@@ -18,9 +18,6 @@ import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.ui.UiUtil;
-import timber.log.Timber;
-
-import static io.rolique.roliqueapp.util.DateUtil.getStringMessageDate;
 
 /**
  * Created by Volodymyr Oleshkevych on 8/28/2017.
@@ -80,7 +77,6 @@ class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHolder> {
         mChats.add(chat);
         notifyItemInserted(mChats.size() - 1);
     }
-
 
     void changeChat(Chat chat) {
         for (int i = 0; i < mChats.size(); i++)

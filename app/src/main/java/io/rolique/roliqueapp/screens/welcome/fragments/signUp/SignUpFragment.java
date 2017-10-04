@@ -20,10 +20,10 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import io.rolique.roliqueapp.BaseFragment;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.screens.navigation.NavigationActivity;
-import io.rolique.roliqueapp.BaseFragment;
 
 public class SignUpFragment extends BaseFragment implements SignUpContract.View {
 
@@ -31,14 +31,12 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
         return new SignUpFragment();
     }
 
-
     private final String DEFAULT_MAIL = "@rolique.io";
 
     @Inject SignUpPresenter mPresenter;
 
     // UI references.
     @BindView(R.id.toolbar) Toolbar mToolbar;
-
     @BindView(R.id.text_view_image) TextView mUserImageTextView;
     @BindView(R.id.edit_text_email_sign_up) EditText mEmailSignUpEditText;
     @BindView(R.id.edit_text_first_name_sign_up) EditText mFirstNameSignUpEditText;

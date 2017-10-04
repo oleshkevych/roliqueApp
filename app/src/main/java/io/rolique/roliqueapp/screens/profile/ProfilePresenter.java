@@ -30,12 +30,10 @@ import io.rolique.roliqueapp.util.LinksBuilder;
 class ProfilePresenter implements ProfileContract.Presenter, FirebaseValues {
 
     private final ProfileContract.View mView;
-
-    private RoliqueApplicationPreferences mPreferences;
-
     FirebaseDatabase mDatabase;
     DatabaseReference mUserDataReference;
     ChildEventListener mChildEventListener;
+    RoliqueApplicationPreferences mPreferences;
 
     @Inject
     ProfilePresenter(RoliqueApplicationPreferences preferences,

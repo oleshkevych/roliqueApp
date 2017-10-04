@@ -1,6 +1,5 @@
 package io.rolique.roliqueapp.screens.navigation;
 
-import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.screens.BasePresenter;
 import io.rolique.roliqueapp.screens.BaseView;
 

@@ -56,17 +56,14 @@ public class ProfileCategoryCard extends FrameLayout {
     String[] mCategories;
     List<Pair<String, String>> mPairs;
     boolean mIsEditable;
-
     public ProfileCategoryCard(Context context) {
         super(context);
         init(context, null);
     }
-
     public ProfileCategoryCard(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context, attrs);
     }
-
     public ProfileCategoryCard(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context, attrs);
@@ -158,7 +155,7 @@ public class ProfileCategoryCard extends FrameLayout {
             editText.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.transparent));
             if (mIsEditable) {
                 editText.setFocusable(true);
-                editText.setInputType(getInputType()|InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+                editText.setInputType(getInputType() | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
                 editText.setTextColor(ContextCompat.getColor(editText.getContext(), R.color.black));
                 editText.setOnFocusChangeListener(new OnFocusChangeListener() {
                     @Override

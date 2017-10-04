@@ -178,8 +178,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         if (mIsItemMessage.first.size() > 2) {
             notifyItemInserted(mIsItemMessage.first.size());
             notifyItemRangeChanged(mIsItemMessage.first.size() - 2, mIsItemMessage.first.size());
-        }
-        else notifyItemInserted(mIsItemMessage.first.size());
+        } else notifyItemInserted(mIsItemMessage.first.size());
     }
 
     private Pair<List<Boolean>, List<Integer>> calculateItemsCount(List<Message> messages) {
@@ -271,8 +270,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 mMessageTextView.setVisibility(View.GONE);
                 mImageMessagesLayout.setVisibility(View.VISIBLE);
                 mImageMessagesLayout.removeAllViews();
-                for (Media media: mMessage.getMedias()) {
-                    ImageView imageView = createImageView(media.getHeight(), media.getWidth());
+                for (Media media : mMessage.getMedias()) {
+                    ImageView imageView = createImageView(media.getHeight(), media.getWidth(), isCurrentUser);
                     UiUtil.setImageWithRoundCorners(imageView, media.getImageUrl());
                     mImageMessagesLayout.addView(imageView);
                 }
@@ -286,12 +285,13 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             mMessageContainerLayout.setLayoutParams(getMessageParameters(messagePosition, isCurrentUser));
         }
 
-        private ImageView createImageView(int height, int width) {
+        private ImageView createImageView(int height, int width, boolean isCurrentUser) {
             int baseDimen = itemView.getContext().getResources().getDimensionPixelSize(R.dimen.message_image_view_base_width);
-            int imageViewHeight = height >= width ? baseDimen * height/width : baseDimen;
-            int imageViewWidth = height >= width ?  baseDimen : baseDimen * width/height;
+            int imageViewHeight = height >= width ? baseDimen * height / width : baseDimen;
+            int imageViewWidth = height >= width ? baseDimen : baseDimen * width / height;
             ImageView imageView = new ImageView(itemView.getContext());
-            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(imageViewWidth, imageViewHeight);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(imageViewWidth, imageViewHeight);
+            params.gravity = isCurrentUser ? Gravity.END : Gravity.START;
             imageView.setLayoutParams(params);
             return imageView;
         }
@@ -301,7 +301,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) mMessageContainerLayout.getLayoutParams();
             params.gravity = isCurrentUser ? Gravity.END : Gravity.START;
             params.bottomMargin = 0;
-            params.topMargin = messagePosition == TOP_MESSAGE ||messagePosition == SINGLE_MESSAGE ? 20 : 0;
+            params.topMargin = messagePosition == TOP_MESSAGE || messagePosition == SINGLE_MESSAGE ? 20 : 0;
             params.bottomMargin = (messagePosition == BOTTOM_MESSAGE || messagePosition == SINGLE_MESSAGE) ? 20 : 4;
             return params;
         }
@@ -319,7 +319,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     case SINGLE_MESSAGE:
                         return R.drawable.shape_text_view_message_user_single;
                 }
-                else
+            else
                 switch (messagePosition) {
                     case TOP_MESSAGE:
                         return R.drawable.shape_text_view_message_alien_top;

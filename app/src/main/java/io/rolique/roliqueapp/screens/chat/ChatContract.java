@@ -1,7 +1,5 @@
 package io.rolique.roliqueapp.screens.chat;
 
-import android.graphics.Bitmap;
-
 import java.util.List;
 
 import io.rolique.roliqueapp.data.model.Chat;
@@ -30,6 +28,5 @@ interface ChatContract {
         void addMessage(Message message, Chat chat);
         void leaveChat(Chat chat, String memberId);
         void addMediaMessage(Message message, Chat chat);
-
     }
 }
