@@ -49,10 +49,7 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import io.rolique.cameralibrary.R;
-import io.rolique.cameralibrary.R2;
 import io.rolique.cameralibrary.widget.AutoFitTextureView;
 import timber.log.Timber;
 
@@ -65,9 +62,7 @@ import timber.log.Timber;
 public class Camera2Activity extends CameraBaseActivity {
 
     public static Intent getStartIntent(Context context) {
-        Intent intent = new Intent(context, Camera2Activity.class);
-//        intent.putExtra(EXTRA_IS_RADIATOR_IMAGES, context instanceof RadiatorEditorActivity);
-        return intent;
+        return new Intent(context, Camera2Activity.class);
     }
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
@@ -113,13 +108,13 @@ public class Camera2Activity extends CameraBaseActivity {
     private Point mDisplaySize;
     private int mFocusCount;
 
-    @BindView(R2.id.content_camera_preview) AutoFitTextureView mTextureView;
+    AutoFitTextureView mTextureView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera2);
-        ButterKnife.bind(Camera2Activity.this);
+        mTextureView = (AutoFitTextureView) mCameraPreviewLayout;
     }
 
     @Override
@@ -363,7 +358,7 @@ public class Camera2Activity extends CameraBaseActivity {
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
                 mIsTakingPicture = false;
-                mPresenter.savePictureToFile(bytes, mFile, mPreviewSize.getWidth(), mPreviewSize.getHeight(), mScreenRotation);
+                mPresenter.savePictureToFile(bytes, mFile, mPreviewSize.getWidth(), mPreviewSize.getHeight(), mIsFacingCameraOn, mScreenRotation);
             }
         }
     };
@@ -740,6 +735,7 @@ public class Camera2Activity extends CameraBaseActivity {
         Timber.e("ORIENTATION value " + ((ORIENTATIONS.get(rotation) + mSensorOrientation + 270) % 360));
         return (ORIENTATIONS.get(rotation) + mSensorOrientation + 270) % 360;
     }
+
     private void unlockFocus() {
         try {
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,

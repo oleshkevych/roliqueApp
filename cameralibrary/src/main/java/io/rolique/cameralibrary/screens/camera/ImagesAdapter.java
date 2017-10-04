@@ -5,19 +5,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import io.rolique.cameralibrary.R;
-import io.rolique.cameralibrary.R2;
 import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.cameralibrary.uiUtil.UiUtil;
 
@@ -31,9 +24,6 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
     private List<MediaContent> mMediaContents;
     private float mParentHeight;
     private final int mMinHeight;
-    private int mRotateFrom;
-    private int mRotateTo;
-    private long mTimeOfTheLastAnimation;
 
     interface OnImagesClickListener {
         void onImageClick(ImageView imageView, MediaContent mediaContent);
@@ -81,12 +71,12 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
 
     class ImageViewHolder extends RecyclerView.ViewHolder {
 
-        @BindView(R2.id.image_view) ImageView mImageView;
+        ImageView mImageView;
         MediaContent mMediaContent;
 
         ImageViewHolder(View itemView) {
             super(itemView);
-            ButterKnife.bind(ImageViewHolder.this, itemView);
+            mImageView = itemView.findViewById(R.id.image_view);
         }
 
         void bindImage(MediaContent mediaContent) {
@@ -97,21 +87,28 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
             mImageView.getLayoutParams().height = height >= width ? maxDimensions : maxDimensions * height / width;
             mImageView.getLayoutParams().width = height >= width ? maxDimensions * width / height : maxDimensions;
             UiUtil.setImageWithRoundCorners(mImageView, mediaContent.getImage());
+            setUpActionListeners();
         }
 
-        @OnClick(R2.id.image_view)
-        void onImageClick() {
-            mOnImagesClickListener.onImageClick(mImageView, mMediaContent);
+        private void setUpActionListeners() {
+            itemView.findViewById(R.id.layout_delete).setOnClickListener(mOnDeleteClickListener);
+            itemView.findViewById(R.id.image_button_delete).setOnClickListener(mOnDeleteClickListener);
+            mImageView.setOnClickListener(mOnImageClickListener);
         }
 
-        @OnClick(R2.id.layout_delete)
-        void onRemoveLayoutClick() {
-            mOnImagesClickListener.onRemoveClick(mMediaContent);
-        }
 
-        @OnClick(R2.id.image_button_delete)
-        void onRemoveButtonClick() {
-            mOnImagesClickListener.onRemoveClick(mMediaContent);
-        }
+        View.OnClickListener mOnDeleteClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mOnImagesClickListener.onRemoveClick(mMediaContent);
+            }
+        };
+
+        View.OnClickListener mOnImageClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mOnImagesClickListener.onImageClick(mImageView, mMediaContent);
+            }
+        };
     }
 }

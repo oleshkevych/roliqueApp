@@ -15,12 +15,12 @@ interface CameraContract {
     interface View extends BaseView<Presenter> {
         void showSavedFileInView(File file, int height, int width);
         void showErrorFileSaving(Throwable t);
+        void setPresenter(CameraPresenter presenter);
     }
 
     interface Presenter extends BasePresenter {
         @Deprecated
         void savePictureToFile(byte[] data, File pictureFile, int screenWidth, int screenHeight, boolean isFrontOrientation, int orientation);
-        void savePictureToFile(final byte[] data, final File pictureFile, int screenWidth, int screenHeight, int orientation);
         void removeFile(File file);
     }
 }

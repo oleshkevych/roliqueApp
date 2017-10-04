@@ -9,8 +9,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.concurrent.Callable;
 
-import javax.inject.Inject;
-
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -28,10 +26,10 @@ class CameraPresenter implements CameraContract.Presenter {
     private CameraContract.View mView;
     private CompositeDisposable mCompositeDisposable;
 
-    @Inject
     CameraPresenter(CameraContract.View view) {
         mView = view;
         mCompositeDisposable = new CompositeDisposable();
+        mView.setPresenter(CameraPresenter.this);
     }
 
     @Override
@@ -42,7 +40,7 @@ class CameraPresenter implements CameraContract.Presenter {
                     public File call() throws Exception {
                         Bitmap bm = transformBitmap(data, screenWidth, screenHeight, isFrontOrientation, orientation);
                         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        bm.compress(Bitmap.CompressFormat.JPEG, 70, stream);
+                        bm.compress(Bitmap.CompressFormat.JPEG, 90, stream);
                         return saveToFile(stream.toByteArray(), pictureFile);
                     }
                 })
@@ -83,7 +81,13 @@ class CameraPresenter implements CameraContract.Presenter {
         int w = scaled.getWidth();
         int h = scaled.getHeight();
         Matrix mtx = new Matrix();
-        mtx.postRotate(isFrontOrientation ? orientation - 90 : orientation + 90);
+        if (isFrontOrientation) {
+            if (orientation == 0 || orientation == 180)
+                mtx.postRotate(orientation - 90);
+            else
+                mtx.postRotate(orientation + 90);
+        } else
+            mtx.postRotate(orientation + 90);
         return Bitmap.createBitmap(scaled, 0, 0, w, h, mtx, true);
     }
 
@@ -92,39 +96,39 @@ class CameraPresenter implements CameraContract.Presenter {
         file.delete();
     }
 
-    @Override
-    public void savePictureToFile(final byte[] data, final File pictureFile, final int screenWidth, final int screenHeight, final int orientation) {
-        Disposable disposable = Single.fromCallable(
-                new Callable<File>() {
-                    @Override
-                    public File call() throws Exception {
-                        Bitmap bm = transformBitmap(data, screenWidth, screenHeight, false, orientation);
-                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        bm.compress(Bitmap.CompressFormat.JPEG, 80, stream);
-                        try (FileOutputStream outputStream = new FileOutputStream(pictureFile)) {
-                            outputStream.write(stream.toByteArray());
-                            outputStream.close();
-                        }
-                        return pictureFile;
-                    }
-                })
-                .compose(RxTransformers.<File> applySingleSchedulers())
-                .subscribeWith(new DisposableSingleObserver<File>() {
-                                   @Override
-                                   public void onSuccess(File file) {
-                                       mView.showSavedFileInView(file, screenHeight, screenWidth);
-                                   }
-
-                                   @Override
-                                   public void onError(Throwable throwable) {
-                                       Timber.d(throwable);
-                                       mView.showErrorFileSaving(throwable);
-                                   }
-                               }
-
-                );
-        mCompositeDisposable.add(disposable);
-    }
+//    @Override
+//    public void savePictureToFile(final byte[] data, final File pictureFile, final int screenWidth, final int screenHeight, final int orientation) {
+//        Disposable disposable = Single.fromCallable(
+//                new Callable<File>() {
+//                    @Override
+//                    public File call() throws Exception {
+//                        Bitmap bm = transformBitmap(data, screenWidth, screenHeight, false, orientation);
+//                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//                        bm.compress(Bitmap.CompressFormat.JPEG, 80, stream);
+//                        try (FileOutputStream outputStream = new FileOutputStream(pictureFile)) {
+//                            outputStream.write(stream.toByteArray());
+//                            outputStream.close();
+//                        }
+//                        return pictureFile;
+//                    }
+//                })
+//                .compose(RxTransformers.<File> applySingleSchedulers())
+//                .subscribeWith(new DisposableSingleObserver<File>() {
+//                                   @Override
+//                                   public void onSuccess(File file) {
+//                                       mView.showSavedFileInView(file, screenHeight, screenWidth);
+//                                   }
+//
+//                                   @Override
+//                                   public void onError(Throwable throwable) {
+//                                       Timber.d(throwable);
+//                                       mView.showErrorFileSaving(throwable);
+//                                   }
+//                               }
+//
+//                );
+//        mCompositeDisposable.add(disposable);
+//    }
 
     @Override
     public void start() {

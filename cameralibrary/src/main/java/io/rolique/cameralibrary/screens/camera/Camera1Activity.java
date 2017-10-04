@@ -17,9 +17,7 @@ import android.widget.Toast;
 
 import java.io.File;
 
-import butterknife.BindView;
 import io.rolique.cameralibrary.R;
-import io.rolique.cameralibrary.R2;
 import timber.log.Timber;
 
 /**
@@ -35,7 +33,7 @@ public class Camera1Activity extends CameraBaseActivity {
         return intent;
     }
 
-    @BindView(R2.id.content_camera_preview) FrameLayout mContentCameraPreview;
+    FrameLayout mContentCameraPreview;
 
     Camera mCamera;
     CameraPreview mCameraPreview;
@@ -51,6 +49,7 @@ public class Camera1Activity extends CameraBaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera1);
+        mContentCameraPreview = (FrameLayout) mCameraPreviewLayout;
     }
 
     @Override
@@ -110,10 +109,6 @@ public class Camera1Activity extends CameraBaseActivity {
             }
             int screenWidth = getResources().getDisplayMetrics().heightPixels;
             int screenHeight = getResources().getDisplayMetrics().widthPixels;
-//            if (mScreenRotation == 270 || mScreenRotation == 90) {
-//                screenWidth = getResources().getDisplayMetrics().widthPixels;
-//                screenHeight = getResources().getDisplayMetrics().heightPixels;
-//            }
             mCountFocusing = 0;
             mPresenter.savePictureToFile(data, pictureFile, screenWidth, screenHeight, mIsFacingCameraOn, mScreenRotation);
             mCamera.stopPreview();
@@ -291,6 +286,6 @@ public class Camera1Activity extends CameraBaseActivity {
     @Override
     public void showSavedFileInView(File file, int height, int width) {
         super.showSavedFileInView(file, height, width);
-            restartCamera();
+        restartCamera();
     }
 }

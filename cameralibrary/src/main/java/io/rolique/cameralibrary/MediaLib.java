@@ -84,7 +84,8 @@ public class MediaLib {
     }
 
     public void startCamera() {
-        mActivity.startActivityForResult(CameraBaseActivity.getStartIntent(mActivity, mStorageCategory), RC_CAMERA);
+        Intent intent = CameraBaseActivity.getStartIntent(mActivity, mStorageCategory);
+        mActivity.startActivityForResult(intent, RC_CAMERA);
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

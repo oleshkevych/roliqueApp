@@ -35,16 +35,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
-import javax.inject.Inject;
-
-import butterknife.BindView;
-import butterknife.OnClick;
-import butterknife.OnTouch;
 import io.rolique.cameralibrary.BaseActivity;
 import io.rolique.cameralibrary.BuildConfig;
 import io.rolique.cameralibrary.MediaLib;
 import io.rolique.cameralibrary.R;
-import io.rolique.cameralibrary.R2;
 import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.cameralibrary.screens.imageViewer.ImageViewerActivity;
 import io.rolique.cameralibrary.uiUtil.UiUtil;
@@ -123,7 +117,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
             "HTC 0PK71",
             "HTC_M9pw",
             "HTC 0PK71",
-//            "SM-G900H",
+            "SM-G900H",
 //            "SM-G930F",
 //            "ALE-L21",
 //            "Nexus 5X",
@@ -141,6 +135,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     public static Intent getStartIntent(Context context, @MediaLib.SavingStorageCategory int category) {
         Intent intent = getCameraIntent(context);
         intent.putExtra(EXTRA_STORAGE_CATEGORY, category);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         return intent;
     }
 
@@ -155,12 +150,14 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         }
     }
 
-    @BindView(R2.id.button_flash) ImageButton mFlashButton;
-    @BindView(R2.id.button_camera_switcher) ImageButton mCameraSwitcherButton;
-    @BindView(R2.id.recycler_view_images) RecyclerView mImagesRecyclerView;
-    @BindView(R2.id.image_view_preview) ImageView mPreviewImageView;
-    @BindView(R2.id.image_view_done) ImageView mDoneImageView;
-    @BindView(R2.id.button_capture) ImageButton mCaptureButton;
+    View mCameraPreviewLayout;
+    ImageButton mFlashButton;
+    ImageButton mCameraSwitcherButton;
+    RecyclerView mImagesRecyclerView;
+    ImageView mPreviewImageView;
+    ImageView mDoneImageView;
+    ImageButton mCaptureButton;
+    TextView mImagesCountTextView;
 
     int mFlashMode = FLASH_MODE_AUTO;
     int mDisplayOrientation;
@@ -177,8 +174,8 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     boolean mIsFacingCameraOn;
     @MediaLib.SavingStorageCategory int mStorageCategory;
     int mScreenRotation;
+    int mFlashCounter;
 
-    @Inject
     protected CameraPresenter mPresenter;
 
     @Override
@@ -200,9 +197,12 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     }
 
     protected void inject() {
-        DaggerWrapper
-                .getComponent(CameraBaseActivity.this)
-                .inject(CameraBaseActivity.this);
+        new CameraPresenter(CameraBaseActivity.this);
+    }
+
+    @Override
+    public void setPresenter(CameraPresenter presenter) {
+        mPresenter = presenter;
     }
 
     protected abstract void takePicture();
@@ -212,9 +212,18 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     @Override
     public void setContentView(@LayoutRes int layoutResID) {
         super.setContentView(layoutResID);
+        mFlashButton = getViewById(R.id.button_flash);
+        mCameraSwitcherButton = getViewById(R.id.button_camera_switcher);
+        mImagesRecyclerView = getViewById(R.id.recycler_view_images);
+        mPreviewImageView = getViewById(R.id.image_view_preview);
+        mDoneImageView = getViewById(R.id.image_view_done);
+        mCaptureButton = getViewById(R.id.button_capture);
+        mCameraPreviewLayout = getViewById(R.id.content_camera_preview);
+        mImagesCountTextView = getViewById(R.id.text_view_images_count);
         mMinSwipeDistance = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, getResources().getDisplayMetrics());
         mOneDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics());
         setUpImagesRecyclerView();
+        setActionListeners();
         updateImagesInPreview();
     }
 
@@ -252,17 +261,55 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     }
 
     private void updateImagesInPreview() {
-        mPreviewImageView.setVisibility(mMediaContents.size() == 0 ? View.INVISIBLE : View.VISIBLE);
+        toggleVisibility(mPreviewImageView, mMediaContents.size() == 0);
         changeToggleButtonVisibility(R.id.button_main_size_toggle, mMediaContents.size() != 0);
         if (mMediaContents.size() > 0)
             UiUtil.setImageWithRoundCorners(mPreviewImageView, mMediaContents.get(mMediaContents.size() - 1).getImage());
 
-        TextView imagesCountTextView = getViewById(R.id.text_view_images_count);
-        imagesCountTextView.setVisibility(mMediaContents.size() == 0 ? View.INVISIBLE : View.VISIBLE);
+        toggleVisibility(mImagesCountTextView, mMediaContents.size() == 0);
         LinearLayout toggleButtonLayout = getViewById(R.id.layout_size_toggle);
         toggleButtonLayout.setVisibility(mMediaContents.size() == 0 ? View.INVISIBLE : View.VISIBLE);
-        imagesCountTextView.setText(String.valueOf(mMediaContents.size()));
+        mImagesCountTextView.setText(String.valueOf(mMediaContents.size()));
         mImagesAdapter.setMediaContents(mMediaContents);
+    }
+
+    private void toggleVisibility(final View view, boolean isHide) {
+        if (isHide) {
+            if (mScreenRotation == 0) {
+                view.clearAnimation();
+                view.setVisibility(View.GONE);
+            } else {
+                Animation an = new RotateAnimation(calculateRotation(mScreenRotation),
+                        calculateRotation(0),
+                        view.getPivotX(),
+                        view.getPivotY());
+
+                an.setDuration(250);
+                an.setRepeatCount(0);
+                an.setFillAfter(true);
+                an.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        view.clearAnimation();
+                        view.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+                view.startAnimation(an);
+            }
+        } else {
+            view.setVisibility(View.VISIBLE);
+            animateRotation(view, 0, mScreenRotation);
+        }
     }
 
     void changeToggleButtonVisibility(@IdRes int viewId, boolean isVisible) {
@@ -284,144 +331,166 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         }
     }
 
-    @OnClick(R2.id.button_camera_switcher)
-    void onCameraSwitchClick() {
-        switchCameraInView();
+    private void setActionListeners() {
+        mCameraSwitcherButton.setOnClickListener(mOnCameraSwitcherClickListener);
+        getViewById(R.id.content_controls).setOnClickListener(null);
+        mCameraPreviewLayout.setOnClickListener(mOnTakePictureClickListener);
+        mCaptureButton.setOnClickListener(mOnTakePictureClickListener);
+        mPreviewImageView.setOnClickListener(mOnToggleRecyclerClickListener);
+        mImagesCountTextView.setOnClickListener(mOnToggleRecyclerClickListener);
+        getViewById(R.id.button_main_size_toggle).setOnClickListener(mOnToggleRecyclerClickListener);
+        getViewById(R.id.button_additional_size_toggle).setOnClickListener(mOnToggleSizeClickListener);
+        mDoneImageView.setOnClickListener(mOnDoneClickListener);
+        mFlashButton.setOnClickListener(mOnFlashClickListener);
+
+        mImagesRecyclerView.setOnTouchListener(mOnPreviewTouchListener);
+        mCameraPreviewLayout.setOnTouchListener(mOnPreviewTouchListener);
     }
 
+    View.OnClickListener mOnCameraSwitcherClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switchCameraInView();
+        }
+    };
+
     private void switchCameraInView() {
-        ImageView imageView = getViewById(R.id.button_camera_switcher);
-        imageView.setImageResource(mIsFacingCameraOn ? R.drawable.ic_camera_front_white_24dp : R.drawable.ic_camera_rear_white_24dp);
+        mCameraSwitcherButton.setImageResource(mIsFacingCameraOn ? R.drawable.ic_camera_front_white_24dp : R.drawable.ic_camera_rear_white_24dp);
         mIsFacingCameraOn = !mIsFacingCameraOn;
+        toggleVisibility(mFlashButton, mIsFacingCameraOn);
+        mFlashButton.setImageResource(R.drawable.ic_flash_auto_white_24dp);
+        mFlashMode = mIsFacingCameraOn ? FLASH_MODE_OFF : FLASH_MODE_AUTO;
         switchCamera();
     }
 
-    @OnClick(R2.id.content_controls)
-    void onContentClick() {
-    }
+    View.OnClickListener mOnTakePictureClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            takePicture();
+        }
+    };
 
-    @OnClick(R2.id.content_camera_preview)
-    void onCameraPreviewContentClick() {
-        takePicture();
-    }
+    View.OnClickListener mOnToggleRecyclerClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (v.getVisibility() == View.INVISIBLE) return;
+            toggleImagesRecyclerView();
+        }
+    };
 
-    @OnClick(R2.id.button_capture)
-    void OnCaptureButtonClick() {
-        takePicture();
-    }
+    View.OnClickListener mOnToggleSizeClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (v.getVisibility() == View.INVISIBLE) return;
+            toggleHeightImagesRecyclerView();
+        }
+    };
 
-    @OnClick({R2.id.image_view_preview, R2.id.text_view_images_count, R2.id.button_main_size_toggle})
-    void onHidingToggleClick(View view) {
-        if(view.getVisibility() == View.INVISIBLE) return;
-        toggleImagesRecyclerView();
-    }
+    View.OnClickListener mOnDoneClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent();
+            intent.putParcelableArrayListExtra(getString(R.string.extra_camera_images), (ArrayList<? extends Parcelable>) mMediaContents);
+            setResult(RESULT_OK, intent);
+            mPresenter.stop();
+            finish();
+        }
+    };
 
-    @OnClick(R2.id.button_additional_size_toggle)
-    void onSizeToggleClick(View view) {
-        if(view.getVisibility() == View.INVISIBLE) return;
-        toggleHeightImagesRecyclerView();
-    }
+    View.OnClickListener mOnFlashClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            mFlashCounter++;
+            AnimationSet as = new AnimationSet(true);
+            RotateAnimation animation1 = new RotateAnimation(80f, -80f);
+            animation1.setRepeatCount(0);
+            animation1.setDuration(250);
+            animation1.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
 
-    @OnClick(R2.id.image_view_done)
-    void OnDoneButtonClick() {
-        Intent intent = new Intent();
-        intent.putParcelableArrayListExtra(getString(R.string.extra_camera_images), (ArrayList<? extends Parcelable>) mMediaContents);
-        setResult(RESULT_OK, intent);
-        finish();
-    }
-
-    private int mFlashCounter = 0;
-
-    @OnClick(R2.id.button_flash)
-    void onFlashButtonClick() {
-        mFlashCounter++;
-        AnimationSet as = new AnimationSet(true);
-        RotateAnimation animation1 = new RotateAnimation(80f, -80f);
-        animation1.setRepeatCount(0);
-        animation1.setDuration(250);
-        animation1.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                switch (mFlashCounter % 3) {
-                    case 0:
-                        mFlashButton.setImageResource(R.drawable.ic_flash_auto_white_24dp);
-                        mFlashMode = FLASH_MODE_AUTO;
-                        break;
-                    case 1:
-                        mFlashButton.setImageResource(R.drawable.ic_flash_on_white_24dp);
-                        mFlashMode = FLASH_MODE_ON;
-                        break;
-                    case 2:
-                        mFlashButton.setImageResource(R.drawable.ic_flash_off_white_24dp);
-                        mFlashMode = FLASH_MODE_OFF;
-                        break;
                 }
-            }
 
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        as.addAnimation(animation1);
-
-        RotateAnimation animation2 = new RotateAnimation(-80f, 80f);
-        animation2.setRepeatCount(0);
-        animation2.setDuration(250);
-        animation2.setStartOffset(250);
-        animation2.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                animateRotation(mFlashButton, 0, mScreenRotation);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        as.addAnimation(animation2);
-        mFlashButton.startAnimation(as);
-    }
-
-    @OnTouch({R2.id.content_camera_preview, R2.id.recycler_view_images})
-    boolean onPreviewTouch(View v, MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                mDeltaY = 0;
-                mDeltaX = 0;
-                mIsActionCalled = false;
-                mStartPositionY = event.getY();
-                mStartPositionX = event.getX();
-                break;
-            case MotionEvent.ACTION_UP:
-                mDeltaY = mStartPositionY - event.getY();
-                mDeltaX = mStartPositionX - event.getX();
-                if (Math.abs(mDeltaX) > Math.abs(mDeltaY)) break;
-                if (Math.abs(mDeltaY) > mMinSwipeDistance) {
-                    mIsActionCalled = true;
-                    if (mImagesRecyclerView.getHeight() == mMinSwipeDistance * 2 && mDeltaY > 0 ||
-                            mImagesRecyclerView.getHeight() == mMinSwipeDistance * 3 && mDeltaY < 0) {
-                        toggleHeightImagesRecyclerView();
-                    } else if (mImagesRecyclerView.getHeight() == mOneDp && mDeltaY > 0 ||
-                            mImagesRecyclerView.getHeight() > mOneDp && mDeltaY < 0) {
-                        toggleImagesRecyclerView();
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    switch (mFlashCounter % 3) {
+                        case 0:
+                            mFlashButton.setImageResource(R.drawable.ic_flash_auto_white_24dp);
+                            mFlashMode = FLASH_MODE_AUTO;
+                            break;
+                        case 1:
+                            mFlashButton.setImageResource(R.drawable.ic_flash_on_white_24dp);
+                            mFlashMode = FLASH_MODE_ON;
+                            break;
+                        case 2:
+                            mFlashButton.setImageResource(R.drawable.ic_flash_off_white_24dp);
+                            mFlashMode = FLASH_MODE_OFF;
+                            break;
                     }
                 }
-                break;
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+            as.addAnimation(animation1);
+
+            RotateAnimation animation2 = new RotateAnimation(-80f, 80f);
+            animation2.setRepeatCount(0);
+            animation2.setDuration(250);
+            animation2.setStartOffset(250);
+            animation2.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    animateRotation(mFlashButton, 0, mScreenRotation);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+            as.addAnimation(animation2);
+            mFlashButton.startAnimation(as);
         }
-        return mIsActionCalled;
-    }
+    };
+
+    View.OnTouchListener mOnPreviewTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    mDeltaY = 0;
+                    mDeltaX = 0;
+                    mIsActionCalled = false;
+                    mStartPositionY = event.getY();
+                    mStartPositionX = event.getX();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    mDeltaY = mStartPositionY - event.getY();
+                    mDeltaX = mStartPositionX - event.getX();
+                    if (Math.abs(mDeltaX) > Math.abs(mDeltaY)) break;
+                    if (Math.abs(mDeltaY) > mMinSwipeDistance) {
+                        mIsActionCalled = true;
+                        if (mImagesRecyclerView.getHeight() == mMinSwipeDistance * 2 && mDeltaY > 0 ||
+                                mImagesRecyclerView.getHeight() == mMinSwipeDistance * 3 && mDeltaY < 0) {
+                            toggleHeightImagesRecyclerView();
+                        } else if (mImagesRecyclerView.getHeight() == mOneDp && mDeltaY > 0 ||
+                                mImagesRecyclerView.getHeight() > mOneDp && mDeltaY < 0) {
+                            toggleImagesRecyclerView();
+                        }
+                    }
+                    break;
+            }
+            return mIsActionCalled;
+        }
+    };
 
     protected File getOutputMediaFile() {
         File sdCard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
@@ -491,12 +560,15 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
     protected void toggleOrientation(int orientation) {
         Timber.e("Orientation " + orientation);
-        animateRotation(mFlashButton, mScreenRotation, orientation);
+        if (mFlashButton.getVisibility() == View.VISIBLE)
+            animateRotation(mFlashButton, mScreenRotation, orientation);
         animateRotation(mCameraSwitcherButton, mScreenRotation, orientation);
-        animateRotation(mPreviewImageView, mScreenRotation, orientation);
+        if (mPreviewImageView.getVisibility() == View.VISIBLE)
+            animateRotation(mPreviewImageView, mScreenRotation, orientation);
         animateRotation(mCaptureButton, mScreenRotation, orientation);
         animateRotation(mDoneImageView, mScreenRotation, orientation);
-        animateRotation(getViewById(R.id.text_view_images_count), mScreenRotation, orientation);
+        if (mImagesCountTextView.getVisibility() == View.VISIBLE)
+            animateRotation(mImagesCountTextView, mScreenRotation, orientation);
         mScreenRotation = orientation;
     }
 
@@ -530,7 +602,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         super.onBackPressed();
     }
 
-    class RecyclerHeightAnimation extends Animation {
+    private class RecyclerHeightAnimation extends Animation {
 
         private final boolean mIsToggleHiding;
         private View mView;

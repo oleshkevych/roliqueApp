@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.jakewharton.butterknife'
 
 android {
     compileSdkVersion 26
@@ -32,14 +31,6 @@ dependencies {
     compile "com.android.support:support-v4:$SUPPORT_LIBRARY_VERSION"
     compile "com.android.support:appcompat-v7:$SUPPORT_LIBRARY_VERSION"
     compile "com.android.support:support-annotations:$SUPPORT_LIBRARY_VERSION"
-
-    final DAGGER_VERSION = '2.10'
-    compile "com.google.dagger:dagger:$DAGGER_VERSION"
-    annotationProcessor "com.google.dagger:dagger-compiler:$DAGGER_VERSION"
-
-    final BUTTER_KNIFE_LIBRARY_VERSION = '8.8.1'
-    compile "com.jakewharton:butterknife:$BUTTER_KNIFE_LIBRARY_VERSION"
-    annotationProcessor "com.jakewharton:butterknife-compiler:$BUTTER_KNIFE_LIBRARY_VERSION"
 
     compile 'com.squareup.picasso:picasso:2.5.3-SNAPSHOT'
     compile 'jp.wasabeef:picasso-transformations:2.1.0'

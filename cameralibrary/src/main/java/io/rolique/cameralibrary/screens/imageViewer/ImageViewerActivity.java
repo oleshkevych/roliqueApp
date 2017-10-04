@@ -16,10 +16,7 @@ import com.squareup.picasso.Picasso;
 
 import java.io.File;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import io.rolique.cameralibrary.R;
-import io.rolique.cameralibrary.R2;
 import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.cameralibrary.widget.TouchImageView;
 
@@ -49,7 +46,7 @@ public class ImageViewerActivity extends AppCompatActivity {
         }
     }
 
-    @BindView(R2.id.touch_image_view) TouchImageView mImageView;
+    TouchImageView mImageView;
 
     int height;
     int width;
@@ -58,7 +55,7 @@ public class ImageViewerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_viewer);
-        ButterKnife.bind(ImageViewerActivity.this);
+        mImageView = (TouchImageView) findViewById(R.id.touch_image_view);
         ActivityCompat.postponeEnterTransition(ImageViewerActivity.this);
         setUpToolbar();
         File file = (File) getIntent().getSerializableExtra(EXTRA_IMAGE);

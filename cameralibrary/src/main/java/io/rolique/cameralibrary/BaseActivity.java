@@ -12,9 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 /**
  * Created by Volodymyr Oleshkevych on 8/16/2017.
  * Copyright (c) 2017, Rolique. All rights reserved.
@@ -22,7 +19,7 @@ import butterknife.ButterKnife;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
-    @BindView(android.R.id.content) ViewGroup mContent;
+    ViewGroup mContent;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -33,7 +30,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     public void setContentView(@LayoutRes int layoutResID) {
         super.setContentView(layoutResID);
-        ButterKnife.bind(BaseActivity.this);
+        mContent = (ViewGroup) findViewById(android.R.id.content);
     }
 
     protected abstract void inject();
@@ -53,11 +50,11 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     protected <T extends View> T getViewById(@IdRes int id) {
-        return ButterKnife.findById(BaseActivity.this, id);
+        return (T) findViewById(id);
     }
 
     protected <T extends View> T getViewById(View view, @IdRes int id) {
-        return ButterKnife.findById(view, id);
+        return (T) view.findViewById(id);
     }
 
     protected void showSnackbar(@StringRes int textRes, @IdRes int layoutId) {
