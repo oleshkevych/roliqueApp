@@ -35,12 +35,12 @@ class CameraPresenter implements CameraContract.Presenter {
     }
 
     @Override
-    public void savePictureToFile(final byte[] data, final File pictureFile, final int screenWidth, final int screenHeight, final boolean isFrontOrientation) {
+    public void savePictureToFile(final byte[] data, final File pictureFile, final int screenWidth, final int screenHeight, final boolean isFrontOrientation, final int orientation) {
         Disposable disposable = Single.fromCallable(
                 new Callable<File>() {
                     @Override
                     public File call() throws Exception {
-                        Bitmap bm = transformBitmap(data, screenWidth, screenHeight, isFrontOrientation);
+                        Bitmap bm = transformBitmap(data, screenWidth, screenHeight, isFrontOrientation, orientation);
                         ByteArrayOutputStream stream = new ByteArrayOutputStream();
                         bm.compress(Bitmap.CompressFormat.JPEG, 70, stream);
                         return saveToFile(stream.toByteArray(), pictureFile);
@@ -75,15 +75,15 @@ class CameraPresenter implements CameraContract.Presenter {
         return file;
     }
 
-    private Bitmap transformBitmap(byte[] data, int screenWidth, int screenHeight, boolean isFrontOrientation) {
+    private Bitmap transformBitmap(byte[] data, int screenWidth, int screenHeight, boolean isFrontOrientation, int orientation) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 4;
         Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0, options);
-        Bitmap scaled = Bitmap.createScaledBitmap(bitmap, screenWidth / 2, screenHeight / 2, true);
+        Bitmap scaled = Bitmap.createScaledBitmap(bitmap, screenWidth, screenHeight, true);
         int w = scaled.getWidth();
         int h = scaled.getHeight();
         Matrix mtx = new Matrix();
-        mtx.postRotate(isFrontOrientation ? -90 : 90);
+        mtx.postRotate(isFrontOrientation ? orientation - 90 : orientation + 90);
         return Bitmap.createBitmap(scaled, 0, 0, w, h, mtx, true);
     }
 
@@ -93,13 +93,17 @@ class CameraPresenter implements CameraContract.Presenter {
     }
 
     @Override
-    public void savePictureToFile(final byte[] data, final File pictureFile, final int screenWidth, final int screenHeight) {
+    public void savePictureToFile(final byte[] data, final File pictureFile, final int screenWidth, final int screenHeight, final int orientation) {
         Disposable disposable = Single.fromCallable(
                 new Callable<File>() {
                     @Override
                     public File call() throws Exception {
+                        Bitmap bm = transformBitmap(data, screenWidth, screenHeight, false, orientation);
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        bm.compress(Bitmap.CompressFormat.JPEG, 80, stream);
                         try (FileOutputStream outputStream = new FileOutputStream(pictureFile)) {
-                            outputStream.write(data);
+                            outputStream.write(stream.toByteArray());
+                            outputStream.close();
                         }
                         return pictureFile;
                     }

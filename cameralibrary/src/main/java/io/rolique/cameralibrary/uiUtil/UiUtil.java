@@ -19,7 +19,8 @@ public class UiUtil {
     public static void setImageWithRoundCorners(final ImageView imageView, File file) {
         int cornerRadius = imageView.getContext().getResources().getDimensionPixelSize(R.dimen.image_view_corner_radius);
         Picasso picasso = new Picasso.Builder(imageView.getContext()).listener(new Picasso.Listener() {
-            @Override public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
+            @Override
+            public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
                 exception.printStackTrace();
             }
         }).build();

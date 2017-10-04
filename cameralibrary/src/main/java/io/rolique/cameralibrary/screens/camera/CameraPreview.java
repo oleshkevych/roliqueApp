@@ -19,9 +19,9 @@ import timber.log.Timber;
 @SuppressWarnings("deprecation")
 class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Camera.ErrorCallback {
 
+    private final List<Camera.Size> mSupportedPreviewSizes;
     private SurfaceHolder mHolder;
     private Camera mCamera;
-    private final List<Camera.Size> mSupportedPreviewSizes;
     private Camera1Activity mCamera1Activity;
     private Camera.Size mPreviewSize;
 
@@ -90,13 +90,6 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Camer
             parameters.setJpegQuality(80);
             if (parameters.getColorEffect().contains(Camera.Parameters.EFFECT_WHITEBOARD))
                 parameters.setColorEffect(Camera.Parameters.EFFECT_WHITEBOARD);
-            if (mCamera1Activity.checkFlashAvailability() && !mCamera1Activity.mIsFacingCameraOn) {
-                if (parameters.getSupportedFlashModes().contains(Camera.Parameters.FLASH_MODE_TORCH)) {
-                    parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-                } else {
-                    parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
-                }
-            }
             mCamera.setParameters(parameters);
         } catch (Exception e) {
             e.printStackTrace();

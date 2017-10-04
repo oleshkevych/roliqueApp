@@ -41,7 +41,7 @@
                 android:layout_gravity="center"
                 android:background="?selectableItemBackground"
                 android:paddingBottom="16dp"
-                android:paddingEnd="8dp"
+                android:paddingEnd="16dp"
                 android:paddingStart="16dp"
                 android:paddingTop="16dp"
                 android:src="@drawable/ic_add_a_photo_blue_24dp"

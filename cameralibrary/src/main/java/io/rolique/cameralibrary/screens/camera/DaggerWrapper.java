@@ -15,7 +15,7 @@ public class DaggerWrapper {
         return mComponent;
     }
 
-    private static void initComponent (CameraContract.View view) {
+    private static void initComponent(CameraContract.View view) {
         mComponent = DaggerCameraComponent
                 .builder()
                 .cameraPresenterModule(new CameraPresenterModule(view))

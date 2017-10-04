@@ -32,7 +32,6 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v13.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Surface;
@@ -207,8 +206,8 @@ public class Camera2Activity extends CameraBaseActivity {
     };
 
     private boolean lacksPermissions(String[] permissions) {
-        for(String permission: permissions)
-            if(ActivityCompat.checkSelfPermission(Camera2Activity.this, permission) != PackageManager.PERMISSION_GRANTED)
+        for (String permission : permissions)
+            if (ActivityCompat.checkSelfPermission(Camera2Activity.this, permission) != PackageManager.PERMISSION_GRANTED)
                 return true;
         return false;
     }
@@ -364,8 +363,7 @@ public class Camera2Activity extends CameraBaseActivity {
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
                 mIsTakingPicture = false;
-                //TODO: check orientation
-                mPresenter.savePictureToFile(bytes, mFile, mPreviewSize.getWidth(), mPreviewSize.getHeight());
+                mPresenter.savePictureToFile(bytes, mFile, mPreviewSize.getWidth(), mPreviewSize.getHeight(), mScreenRotation);
             }
         }
     };
@@ -481,7 +479,7 @@ public class Camera2Activity extends CameraBaseActivity {
                             mCaptureSession = cameraCaptureSession;
                             try {
                                 setCameraFocusMode(mPreviewRequestBuilder);
-                                setCameraFlash(mPreviewRequestBuilder);
+                                setCurrentFlash(mPreviewRequestBuilder);
                                 mPreviewRequest = mPreviewRequestBuilder.build();
                                 mCaptureSession.setRepeatingRequest(mPreviewRequest,
                                         mCaptureCallback, mBackgroundHandler);
@@ -646,10 +644,38 @@ public class Camera2Activity extends CameraBaseActivity {
         captureBuilder.addTarget(mImageReader.getSurface());
         setCameraFocusMode(captureBuilder);
         captureBuilder.set(CaptureRequest.TONEMAP_MODE, CaptureRequest.TONEMAP_MODE_HIGH_QUALITY);
-        setCameraFlash(captureBuilder);
         setCameraStabilization(captureBuilder);
         captureBuilder.set(CaptureRequest.JPEG_QUALITY, (byte) 90);
         captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, getOrientation(mDisplayOrientation));
+        setCurrentFlash(captureBuilder);
+    }
+
+    private void setCurrentFlash(CaptureRequest.Builder requestBuilder) {
+        if (mIsFlashSupported) {
+            switch (mFlashMode) {
+                case FLASH_MODE_ON:
+                    Timber.e("FLASH_MODE_ON " + CameraMetadata.CONTROL_AE_MODE_ON + " " + CameraMetadata.FLASH_MODE_SINGLE);
+                    requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+                    requestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_SINGLE);
+                    requestBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_FLUORESCENT);
+                    break;
+
+                case FLASH_MODE_OFF:
+                    Timber.e("FLASH_MODE_OFF " + CameraMetadata.CONTROL_AE_MODE_ON + " " + CameraMetadata.FLASH_MODE_OFF);
+                    requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
+                    requestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_OFF);
+                    requestBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_DAYLIGHT);
+                    break;
+
+                case FLASH_MODE_AUTO:
+                default:
+                    Timber.e("FLASH_MODE_AUTO " + CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH + " " + CameraMetadata.FLASH_MODE_SINGLE);
+                    requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                    requestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_SINGLE);
+                    requestBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_DAYLIGHT);
+                    break;
+            }
+        }
     }
 
     private void setCameraStabilization(CaptureRequest.Builder captureBuilder) {
@@ -711,14 +737,14 @@ public class Camera2Activity extends CameraBaseActivity {
     }
 
     private int getOrientation(int rotation) {
+        Timber.e("ORIENTATION value " + ((ORIENTATIONS.get(rotation) + mSensorOrientation + 270) % 360));
         return (ORIENTATIONS.get(rotation) + mSensorOrientation + 270) % 360;
     }
-
     private void unlockFocus() {
         try {
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
                     CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
-            setCameraFlash(mPreviewRequestBuilder);
+            setCurrentFlash(mPreviewRequestBuilder);
             mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback,
                     mBackgroundHandler);
             mState = STATE_PREVIEW;
@@ -739,15 +765,6 @@ public class Camera2Activity extends CameraBaseActivity {
                     mBackgroundHandler);
         } catch (CameraAccessException e) {
             e.printStackTrace();
-        }
-    }
-
-    private void setCameraFlash(CaptureRequest.Builder requestBuilder) {
-        if (mIsFlashSupported) {
-//            Timber.e("FLASH_MODE_ON " + CameraMetadata.CONTROL_AE_MODE_ON + " " + CameraMetadata.FLASH_MODE_TORCH);
-            requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-//            requestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_TORCH);
-            requestBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_FLUORESCENT);
         }
     }
 

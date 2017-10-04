@@ -19,8 +19,8 @@ interface CameraContract {
 
     interface Presenter extends BasePresenter {
         @Deprecated
-        void savePictureToFile(byte[] data, File pictureFile, int screenWidth, int screenHeight, boolean isFrontOrientation);
-        void savePictureToFile(final byte[] data, final File pictureFile, int screenWidth, int screenHeight);
+        void savePictureToFile(byte[] data, File pictureFile, int screenWidth, int screenHeight, boolean isFrontOrientation, int orientation);
+        void savePictureToFile(final byte[] data, final File pictureFile, int screenWidth, int screenHeight, int orientation);
         void removeFile(File file);
     }
 }

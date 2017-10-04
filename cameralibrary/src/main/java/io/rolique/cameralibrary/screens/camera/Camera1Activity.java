@@ -58,12 +58,16 @@ public class Camera1Activity extends CameraBaseActivity {
         Timber.d("getting picture");
         try {
             if (!mIsTakingPicture) {
+                if (mIsFlashSupported) setFlashMode();
                 mCamera.cancelAutoFocus();
                 mCaptureButton.setEnabled(false);
                 mCountFocusing++;
                 final Camera.Parameters parameters = mCamera.getParameters();
                 Timber.e("FOCUS_MODE " + parameters.getFocusMode());
                 if (parameters.getFlashMode() != null && parameters.getFlashMode().equals(Camera.Parameters.FLASH_MODE_ON)) {
+                    mCountFocusing = 4;
+                }
+                if (!mIsAutoFocusNeed) {
                     mIsTakingPicture = true;
                     mCamera.takePicture(null, null, mPictureCallback);
                     return;
@@ -104,10 +108,14 @@ public class Camera1Activity extends CameraBaseActivity {
                 Toast.makeText(Camera1Activity.this, getResources().getString(R.string.activity_camera_storage_permission_error), Toast.LENGTH_LONG).show();
                 return;
             }
-            int screenWidth = getResources().getDisplayMetrics().widthPixels;
-            int screenHeight = getResources().getDisplayMetrics().heightPixels;
+            int screenWidth = getResources().getDisplayMetrics().heightPixels;
+            int screenHeight = getResources().getDisplayMetrics().widthPixels;
+//            if (mScreenRotation == 270 || mScreenRotation == 90) {
+//                screenWidth = getResources().getDisplayMetrics().widthPixels;
+//                screenHeight = getResources().getDisplayMetrics().heightPixels;
+//            }
             mCountFocusing = 0;
-            mPresenter.savePictureToFile(data, pictureFile, screenWidth, screenHeight, mIsFacingCameraOn);
+            mPresenter.savePictureToFile(data, pictureFile, screenWidth, screenHeight, mIsFacingCameraOn, mScreenRotation);
             mCamera.stopPreview();
         }
     };
@@ -222,7 +230,24 @@ public class Camera1Activity extends CameraBaseActivity {
             Camera.Parameters parameters = mCamera.getParameters();
             mIsFlashSupported = parameters.getFlashMode() != null;
         }
+        setFlashMode();
         return mIsFlashSupported;
+    }
+
+    private void setFlashMode() {
+        Camera.Parameters parameters = mCamera.getParameters();
+        switch (mFlashMode) {
+            case 1:
+                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
+                break;
+            case 2:
+                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+                break;
+            case 3:
+                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                break;
+        }
+        mCamera.setParameters(parameters);
     }
 
     private void requestCameraPermission() {
@@ -266,7 +291,6 @@ public class Camera1Activity extends CameraBaseActivity {
     @Override
     public void showSavedFileInView(File file, int height, int width) {
         super.showSavedFileInView(file, height, width);
-        if (mImagesCount != 3)
             restartCamera();
     }
 }

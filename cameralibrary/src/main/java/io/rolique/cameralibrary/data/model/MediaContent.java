@@ -52,7 +52,7 @@ public class MediaContent implements Parcelable {
     }
 
     public MediaContent(Parcel in) {
-        mImage = (File)in.readSerializable();
+        mImage = (File) in.readSerializable();
         mVideoUrl = in.readString();
         mHeight = in.readInt();
         mWidth = in.readInt();

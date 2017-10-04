@@ -5,9 +5,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -28,6 +31,9 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
     private List<MediaContent> mMediaContents;
     private float mParentHeight;
     private final int mMinHeight;
+    private int mRotateFrom;
+    private int mRotateTo;
+    private long mTimeOfTheLastAnimation;
 
     interface OnImagesClickListener {
         void onImageClick(ImageView imageView, MediaContent mediaContent);
@@ -37,20 +43,20 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
 
     private OnImagesClickListener mOnImagesClickListener;
 
-    void setOnImagesClickListener(OnImagesClickListener onImagesClickListener) {
-        mOnImagesClickListener = onImagesClickListener;
-    }
-
-    public void setMediaContents(List<MediaContent> mediaContents) {
-        if (mediaContents == null || mediaContents.size() == 0) return;
-        mMediaContents = mediaContents;
-        notifyDataSetChanged();
-    }
-
     ImagesAdapter(Context context, int minHeight) {
         mInflater = LayoutInflater.from(context);
         mMediaContents = new ArrayList<>();
         mMinHeight = minHeight;
+    }
+
+    void setOnImagesClickListener(OnImagesClickListener onImagesClickListener) {
+        mOnImagesClickListener = onImagesClickListener;
+    }
+
+    void setMediaContents(List<MediaContent> mediaContents) {
+        if (mediaContents == null || mediaContents.size() == 0) return;
+        mMediaContents = mediaContents;
+        notifyDataSetChanged();
     }
 
     void updateAdapter(float parentHeight) {
@@ -75,7 +81,7 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
 
     class ImageViewHolder extends RecyclerView.ViewHolder {
 
-        @BindView(R2.id.image_button) ImageView mImageView;
+        @BindView(R2.id.image_view) ImageView mImageView;
         MediaContent mMediaContent;
 
         ImageViewHolder(View itemView) {
@@ -85,12 +91,15 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
 
         void bindImage(MediaContent mediaContent) {
             mMediaContent = mediaContent;
-            mImageView.getLayoutParams().height = (int) Math.max(mMinHeight, mParentHeight);
-            mImageView.getLayoutParams().width = (int) Math.max(mMinHeight, mParentHeight) * 3 / 4;
+            int height = mediaContent.getHeight();
+            int width = mediaContent.getWidth();
+            int maxDimensions = (int) Math.max(mMinHeight, mParentHeight);
+            mImageView.getLayoutParams().height = height >= width ? maxDimensions : maxDimensions * height / width;
+            mImageView.getLayoutParams().width = height >= width ? maxDimensions * width / height : maxDimensions;
             UiUtil.setImageWithRoundCorners(mImageView, mediaContent.getImage());
         }
 
-        @OnClick(R2.id.image_button)
+        @OnClick(R2.id.image_view)
         void onImageClick() {
             mOnImagesClickListener.onImageClick(mImageView, mMediaContent);
         }

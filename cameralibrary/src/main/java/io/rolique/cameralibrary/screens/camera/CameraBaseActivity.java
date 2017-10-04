@@ -13,12 +13,13 @@ import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
 import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.view.animation.Transformation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -130,7 +131,12 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     ));
 
     static final int RC_CAMERA_PERMISSION = 101;
+
     static final String EXTRA_STORAGE_CATEGORY = "STORAGE_CATEGORY";
+
+    static final int FLASH_MODE_AUTO = 1;
+    static final int FLASH_MODE_ON = 2;
+    static final int FLASH_MODE_OFF = 3;
 
     public static Intent getStartIntent(Context context, @MediaLib.SavingStorageCategory int category) {
         Intent intent = getCameraIntent(context);
@@ -149,13 +155,17 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         }
     }
 
+    @BindView(R2.id.button_flash) ImageButton mFlashButton;
+    @BindView(R2.id.button_camera_switcher) ImageButton mCameraSwitcherButton;
     @BindView(R2.id.recycler_view_images) RecyclerView mImagesRecyclerView;
+    @BindView(R2.id.image_view_preview) ImageView mPreviewImageView;
+    @BindView(R2.id.image_view_done) ImageView mDoneImageView;
     @BindView(R2.id.button_capture) ImageButton mCaptureButton;
-    @BindView(R2.id.toolbar) Toolbar mToolbar;
 
-    protected int mDisplayOrientation;
-    protected boolean mIsTakingPicture;
-    protected List<MediaContent> mMediaContents = new ArrayList<>();
+    int mFlashMode = FLASH_MODE_AUTO;
+    int mDisplayOrientation;
+    boolean mIsTakingPicture;
+    List<MediaContent> mMediaContents = new ArrayList<>();
     private ImagesAdapter mImagesAdapter;
     int mMinSwipeDistance;
     private int mOneDp;
@@ -164,10 +174,9 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     boolean mIsActionCalled;
     float mStartPositionY;
     float mStartPositionX;
-    boolean mIsImagesForRadiator;
-    int mImagesCount;
-    public boolean mIsFacingCameraOn;
-    public @MediaLib.SavingStorageCategory int mStorageCategory;
+    boolean mIsFacingCameraOn;
+    @MediaLib.SavingStorageCategory int mStorageCategory;
+    int mScreenRotation;
 
     @Inject
     protected CameraPresenter mPresenter;
@@ -205,12 +214,8 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         super.setContentView(layoutResID);
         mMinSwipeDistance = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, getResources().getDisplayMetrics());
         mOneDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics());
-        setUpToolbar();
         setUpImagesRecyclerView();
-    }
-
-    private void setUpToolbar() {
-        mToolbar.setVisibility(mIsImagesForRadiator ? View.VISIBLE : View.GONE);
+        updateImagesInPreview();
     }
 
     private void setUpImagesRecyclerView() {
@@ -247,16 +252,15 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     }
 
     private void updateImagesInPreview() {
-        ImageView imageView = getViewById(R.id.image_button);
-        imageView.setVisibility(mMediaContents.size() == 0 ? View.GONE : View.VISIBLE);
+        mPreviewImageView.setVisibility(mMediaContents.size() == 0 ? View.INVISIBLE : View.VISIBLE);
         changeToggleButtonVisibility(R.id.button_main_size_toggle, mMediaContents.size() != 0);
         if (mMediaContents.size() > 0)
-            UiUtil.setImageWithRoundCorners(imageView, mMediaContents.get(mMediaContents.size() - 1).getImage());
+            UiUtil.setImageWithRoundCorners(mPreviewImageView, mMediaContents.get(mMediaContents.size() - 1).getImage());
 
         TextView imagesCountTextView = getViewById(R.id.text_view_images_count);
-        imagesCountTextView.setVisibility(mMediaContents.size() == 0 ? View.GONE : View.VISIBLE);
+        imagesCountTextView.setVisibility(mMediaContents.size() == 0 ? View.INVISIBLE : View.VISIBLE);
         LinearLayout toggleButtonLayout = getViewById(R.id.layout_size_toggle);
-        toggleButtonLayout.setVisibility(mMediaContents.size() == 0 ? View.GONE : View.VISIBLE);
+        toggleButtonLayout.setVisibility(mMediaContents.size() == 0 ? View.INVISIBLE : View.VISIBLE);
         imagesCountTextView.setText(String.valueOf(mMediaContents.size()));
         mImagesAdapter.setMediaContents(mMediaContents);
     }
@@ -280,18 +284,13 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         }
     }
 
-    @OnClick(R2.id.image_view_camera_switcher)
+    @OnClick(R2.id.button_camera_switcher)
     void onCameraSwitchClick() {
         switchCameraInView();
     }
 
-    @OnClick(R2.id.image_view_camera_switcher_toolbar)
-    void onCameraSwitchToolbarClick() {
-        switchCameraInView();
-    }
-
     private void switchCameraInView() {
-        ImageView imageView = getViewById(mImagesCount < 3 ? R.id.image_view_camera_switcher_toolbar : R.id.image_view_camera_switcher);
+        ImageView imageView = getViewById(R.id.button_camera_switcher);
         imageView.setImageResource(mIsFacingCameraOn ? R.drawable.ic_camera_front_white_24dp : R.drawable.ic_camera_rear_white_24dp);
         mIsFacingCameraOn = !mIsFacingCameraOn;
         switchCamera();
@@ -311,13 +310,15 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         takePicture();
     }
 
-    @OnClick({R2.id.image_button, R2.id.text_view_images_count, R2.id.button_main_size_toggle})
-    void onHidingToggleClick() {
+    @OnClick({R2.id.image_view_preview, R2.id.text_view_images_count, R2.id.button_main_size_toggle})
+    void onHidingToggleClick(View view) {
+        if(view.getVisibility() == View.INVISIBLE) return;
         toggleImagesRecyclerView();
     }
 
     @OnClick(R2.id.button_additional_size_toggle)
-    void onSizeToggleClick() {
+    void onSizeToggleClick(View view) {
+        if(view.getVisibility() == View.INVISIBLE) return;
         toggleHeightImagesRecyclerView();
     }
 
@@ -327,6 +328,70 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         intent.putParcelableArrayListExtra(getString(R.string.extra_camera_images), (ArrayList<? extends Parcelable>) mMediaContents);
         setResult(RESULT_OK, intent);
         finish();
+    }
+
+    private int mFlashCounter = 0;
+
+    @OnClick(R2.id.button_flash)
+    void onFlashButtonClick() {
+        mFlashCounter++;
+        AnimationSet as = new AnimationSet(true);
+        RotateAnimation animation1 = new RotateAnimation(80f, -80f);
+        animation1.setRepeatCount(0);
+        animation1.setDuration(250);
+        animation1.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                switch (mFlashCounter % 3) {
+                    case 0:
+                        mFlashButton.setImageResource(R.drawable.ic_flash_auto_white_24dp);
+                        mFlashMode = FLASH_MODE_AUTO;
+                        break;
+                    case 1:
+                        mFlashButton.setImageResource(R.drawable.ic_flash_on_white_24dp);
+                        mFlashMode = FLASH_MODE_ON;
+                        break;
+                    case 2:
+                        mFlashButton.setImageResource(R.drawable.ic_flash_off_white_24dp);
+                        mFlashMode = FLASH_MODE_OFF;
+                        break;
+                }
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        as.addAnimation(animation1);
+
+        RotateAnimation animation2 = new RotateAnimation(-80f, 80f);
+        animation2.setRepeatCount(0);
+        animation2.setDuration(250);
+        animation2.setStartOffset(250);
+        animation2.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                animateRotation(mFlashButton, 0, mScreenRotation);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        as.addAnimation(animation2);
+        mFlashButton.startAnimation(as);
     }
 
     @OnTouch({R2.id.content_camera_preview, R2.id.recycler_view_images})
@@ -383,9 +448,10 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     public void showSavedFileInView(File file, int height, int width) {
         Timber.d("showSavedFileInView: " + file + " - exists " + file.exists());
         //TODO: add video checker
-        MediaContent mediaContent = new MediaContent(file, height, width, MediaContent.CATEGORY_IMAGE);
+        int heightWithRotation = mScreenRotation == 90 || mScreenRotation == 270 ? height : width;
+        int widthWithRotation = mScreenRotation == 90 || mScreenRotation == 270 ? width : height;
+        MediaContent mediaContent = new MediaContent(file, heightWithRotation, widthWithRotation, MediaContent.CATEGORY_IMAGE);
         mMediaContents.add(mediaContent);
-        mImagesCount++;
         updateImagesInPreview();
         if (!isAppLocalStorage()) galleryAddPic(file);
     }
@@ -406,12 +472,55 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     protected void onResume() {
         super.onResume();
         mDisplayOrientation = getWindowManager().getDefaultDisplay().getRotation();
+        SensorOrientationChangeNotifier.getInstance(getApplicationContext()).addListener(mListener);
     }
 
     @Override
     protected void onPause() {
         mPresenter.stop();
+        SensorOrientationChangeNotifier.getInstance(getApplicationContext()).remove(mListener);
         super.onPause();
+    }
+
+    SensorOrientationChangeNotifier.Listener mListener = new SensorOrientationChangeNotifier.Listener() {
+        @Override
+        public void onOrientationChange(int orientation) {
+            toggleOrientation(orientation);
+        }
+    };
+
+    protected void toggleOrientation(int orientation) {
+        Timber.e("Orientation " + orientation);
+        animateRotation(mFlashButton, mScreenRotation, orientation);
+        animateRotation(mCameraSwitcherButton, mScreenRotation, orientation);
+        animateRotation(mPreviewImageView, mScreenRotation, orientation);
+        animateRotation(mCaptureButton, mScreenRotation, orientation);
+        animateRotation(mDoneImageView, mScreenRotation, orientation);
+        animateRotation(getViewById(R.id.text_view_images_count), mScreenRotation, orientation);
+        mScreenRotation = orientation;
+    }
+
+    private void animateRotation(View view, int rotationFrom, int rotationTo) {
+        Animation an = new RotateAnimation(calculateRotation(rotationFrom),
+                calculateRotation(rotationTo),
+                view.getPivotX(),
+                view.getPivotY());
+
+        an.setDuration(400);
+        an.setRepeatCount(0);
+        an.setFillAfter(true);
+        view.startAnimation(an);
+    }
+
+    private int calculateRotation(int rotation) {
+        switch (rotation) {
+            case 90:
+                return -90;
+            case 270:
+                return 90;
+            default:
+                return rotation;
+        }
     }
 
     @Override
@@ -423,9 +532,9 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
     class RecyclerHeightAnimation extends Animation {
 
+        private final boolean mIsToggleHiding;
         private View mView;
         private int mInitialHeight;
-        private final boolean mIsToggleHiding;
         private boolean mIsButtonsToggled;
 
         RecyclerHeightAnimation(View view, boolean isToggleHiding) {
