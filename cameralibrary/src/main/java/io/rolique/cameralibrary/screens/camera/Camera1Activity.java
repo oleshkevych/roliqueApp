@@ -1,21 +1,19 @@
 package io.rolique.cameralibrary.screens.camera;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v13.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.view.Surface;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.IOException;
 
 import io.rolique.cameralibrary.R;
 import timber.log.Timber;
@@ -29,16 +27,17 @@ import timber.log.Timber;
 public class Camera1Activity extends CameraBaseActivity {
 
     public static Intent getStartIntent(Context context) {
-        Intent intent = new Intent(context, Camera1Activity.class);
-        return intent;
+        return new Intent(context, Camera1Activity.class);
     }
 
     FrameLayout mContentCameraPreview;
 
     Camera mCamera;
     CameraPreview mCameraPreview;
+    MediaRecorder mMediaRecorder;
     boolean mIsFlashSupported;
     boolean mIsAutoFocusNeed;
+
     int mCountFocusing;
 
     public Camera getCamera() {
@@ -56,7 +55,7 @@ public class Camera1Activity extends CameraBaseActivity {
     protected void takePicture() {
         Timber.d("getting picture");
         try {
-            if (!mIsTakingPicture) {
+            if (!mIsCameraBusy) {
                 if (mIsFlashSupported) setFlashMode();
                 mCamera.cancelAutoFocus();
                 mCaptureButton.setEnabled(false);
@@ -67,7 +66,7 @@ public class Camera1Activity extends CameraBaseActivity {
                     mCountFocusing = 4;
                 }
                 if (!mIsAutoFocusNeed) {
-                    mIsTakingPicture = true;
+                    mIsCameraBusy = true;
                     mCamera.takePicture(null, null, mPictureCallback);
                     return;
                 }
@@ -75,7 +74,7 @@ public class Camera1Activity extends CameraBaseActivity {
                     @Override
                     public void onAutoFocus(boolean success, Camera camera) {
                         if (success || mCountFocusing > 3) {
-                            mIsTakingPicture = true;
+                            mIsCameraBusy = true;
                             mCamera.takePicture(null, null, mPictureCallback);
                         } else {
                             Camera.Parameters parameters = camera.getParameters();
@@ -84,7 +83,7 @@ public class Camera1Activity extends CameraBaseActivity {
                                 mIsAutoFocusNeed = true;
                             }
                             mCamera.setParameters(parameters);
-                            mIsTakingPicture = false;
+                            mIsCameraBusy = false;
                             takePicture();
                         }
                     }
@@ -94,7 +93,7 @@ public class Camera1Activity extends CameraBaseActivity {
             Timber.d("Error Taking Picture: " + e.getMessage());
             e.printStackTrace();
             mCaptureButton.setEnabled(true);
-            mIsTakingPicture = false;
+            mIsCameraBusy = false;
             restartCamera();
         }
     }
@@ -119,14 +118,13 @@ public class Camera1Activity extends CameraBaseActivity {
         mCamera.startPreview();
         mCaptureButton.setEnabled(true);
         mCameraPreview.setCameraParameters();
-        mIsTakingPicture = false;
+        mIsCameraBusy = false;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (ContextCompat.checkSelfPermission(Camera1Activity.this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
+        if (lacksPermissions(PERMISSIONS)) {
             requestCameraPermission();
             return;
         }
@@ -139,6 +137,104 @@ public class Camera1Activity extends CameraBaseActivity {
         Timber.d("Camera started");
     }
 
+    private boolean prepareVideoRecorder(){
+
+        mMediaRecorder = new MediaRecorder();
+        setFlashMode();
+        // Step 1: Unlock and set camera to MediaRecorder
+        mCamera.unlock();
+        mMediaRecorder.setCamera(mCamera);
+
+        // Step 2: Set sources
+        mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+        mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
+
+        // Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
+//        mMediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
+        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        mMediaRecorder.setVideoEncodingBitRate(1000000);
+        mMediaRecorder.setVideoFrameRate(25);
+        mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+        mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+
+        // Step 4: Set output file
+        mFile = getOutputMediaFile();
+        mMediaRecorder.setOutputFile(mFile.getPath());
+
+//         Step 5: Set the preview output
+        mMediaRecorder.setPreviewDisplay(mCameraPreview.getHolder().getSurface());
+
+        switch (mScreenRotation) {
+            case 0:
+                mMediaRecorder.setOrientationHint(mIsFacingCameraOn ? 270 : 90);
+                break;
+            case 90:
+                mMediaRecorder.setOrientationHint(180);
+                break;
+            case 180:
+                mMediaRecorder.setOrientationHint(mIsFacingCameraOn ? 90 : 270);
+                break;
+            case 270:
+                mMediaRecorder.setOrientationHint(0);
+                break;
+        }
+        try {
+            Timber.d("Starting MediaRecorder");
+            mMediaRecorder.prepare();
+            Timber.d("Started Recorder");
+        } catch (IllegalStateException e) {
+            Timber.e("IllegalStateException preparing MediaRecorder: " + e.getMessage());
+            releaseMediaRecorder();
+            return false;
+        } catch (IOException e) {
+            Timber.e("IOException preparing MediaRecorder: " + e.getMessage());
+            releaseMediaRecorder();
+            return false;
+        }
+        return true;
+    }
+
+    private void releaseMediaRecorder(){
+        if (mMediaRecorder != null) {
+            mMediaRecorder.reset();
+            mMediaRecorder.release();
+            mMediaRecorder = null;
+            mCamera.lock();
+            if (mFlashMode == FLASH_MODE_ON) {
+                Camera.Parameters p = mCamera.getParameters();
+                p.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                mCamera.setParameters(p);
+            }
+        }
+    }
+
+    @Override
+    public void startRecord() {
+        if (prepareVideoRecorder()) {
+            mMediaRecorder.start();
+            mIsCameraBusy = true;
+        } else {
+            Timber.e("Some troubles with media recorder");
+            releaseMediaRecorder();
+        }
+    }
+
+    @Override
+    public void stopRecord(){
+        if (mIsCameraBusy) {
+            mMediaRecorder.stop();
+            releaseMediaRecorder();
+            mCamera.lock();
+
+            mIsCameraBusy = false;
+            int screenWidth = getResources().getDisplayMetrics().heightPixels;
+            int screenHeight = getResources().getDisplayMetrics().widthPixels;
+            mPresenter.createVideoPreview(mFile, getPreviewFile(), screenWidth, screenHeight);
+            mCamera.stopPreview();
+            restartCamera();
+        }
+    }
+
     @Override
     public void switchCamera() {
         stopCamera();
@@ -147,7 +243,7 @@ public class Camera1Activity extends CameraBaseActivity {
         mContentCameraPreview.addView(mCameraPreview);
         mCamera.startPreview();
         mCaptureButton.setEnabled(true);
-        mIsTakingPicture = false;
+        mIsCameraBusy = false;
     }
 
     private Camera getCameraInstance() {
@@ -232,44 +328,23 @@ public class Camera1Activity extends CameraBaseActivity {
     private void setFlashMode() {
         Camera.Parameters parameters = mCamera.getParameters();
         switch (mFlashMode) {
-            case 1:
+            case FLASH_MODE_AUTO:
                 parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
                 break;
-            case 2:
-                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+            case FLASH_MODE_ON:
+                parameters.setFlashMode(mIsVideoMode ? Camera.Parameters.FLASH_MODE_TORCH : Camera.Parameters.FLASH_MODE_ON);
                 break;
-            case 3:
+            case FLASH_MODE_OFF:
                 parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
                 break;
         }
         mCamera.setParameters(parameters);
     }
 
-    private void requestCameraPermission() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
-            //TODO: Show OK/Cancel confirmation dialog about camera permission.
-        } else {
-            ActivityCompat.requestPermissions(Camera1Activity.this, new String[]{Manifest.permission.CAMERA},
-                    RC_CAMERA_PERMISSION);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode == RC_CAMERA_PERMISSION) {
-            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                //TODO: Show error message
-                finish();
-            }
-        } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-    }
-
     @Override
     public void onPause() {
         super.onPause();
+        stopRecord();
         stopCamera();
     }
 
@@ -284,8 +359,8 @@ public class Camera1Activity extends CameraBaseActivity {
     }
 
     @Override
-    public void showSavedFileInView(File file, int height, int width) {
-        super.showSavedFileInView(file, height, width);
+    public void showSavedPictureInView(File file, int height, int width) {
+        super.showSavedPictureInView(file, height, width);
         restartCamera();
     }
 }

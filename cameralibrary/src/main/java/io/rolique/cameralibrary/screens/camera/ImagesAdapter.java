@@ -1,18 +1,29 @@
 package io.rolique.cameralibrary.screens.camera;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.media.ThumbnailUtils;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import io.rolique.cameralibrary.R;
 import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.cameralibrary.uiUtil.UiUtil;
+import timber.log.Timber;
 
 /**
  * Created by Volodymyr Oleshkevych on 5/16/2017.
@@ -45,7 +56,8 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
 
     void setMediaContents(List<MediaContent> mediaContents) {
         if (mediaContents == null || mediaContents.size() == 0) return;
-        mMediaContents = mediaContents;
+        mMediaContents.clear();
+        mMediaContents.addAll(mediaContents);
         notifyDataSetChanged();
     }
 
@@ -86,8 +98,11 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
             int maxDimensions = (int) Math.max(mMinHeight, mParentHeight);
             mImageView.getLayoutParams().height = height >= width ? maxDimensions : maxDimensions * height / width;
             mImageView.getLayoutParams().width = height >= width ? maxDimensions * width / height : maxDimensions;
-            UiUtil.setImageWithRoundCorners(mImageView, mediaContent.getImage());
             setUpActionListeners();
+            UiUtil.setImageWithRoundCorners(mImageView, mediaContent.getImage());
+            itemView.findViewById(R.id.image_view_play_video)
+                    .setVisibility(mMediaContent.getMediaType().equals(MediaContent.CATEGORY_VIDEO) ?
+                            View.VISIBLE : View.GONE);
         }
 
         private void setUpActionListeners() {
@@ -95,7 +110,6 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
             itemView.findViewById(R.id.image_button_delete).setOnClickListener(mOnDeleteClickListener);
             mImageView.setOnClickListener(mOnImageClickListener);
         }
-
 
         View.OnClickListener mOnDeleteClickListener = new View.OnClickListener() {
             @Override

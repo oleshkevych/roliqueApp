@@ -3,6 +3,8 @@ package io.rolique.cameralibrary.screens.camera;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.media.ThumbnailUtils;
+import android.provider.MediaStore;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -33,6 +35,36 @@ class CameraPresenter implements CameraContract.Presenter {
     }
 
     @Override
+    public void createVideoPreview(final File video, final File previewFile, final int screenWidth, final int screenHeight) {
+        Disposable disposable = Single.fromCallable(
+                new Callable<File>() {
+                    @Override
+                    public File call() throws Exception {
+                        Bitmap thumb = ThumbnailUtils.createVideoThumbnail(video.getPath(),
+                                MediaStore.Images.Thumbnails.MINI_KIND);
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        thumb.compress(Bitmap.CompressFormat.JPEG, 90, stream);
+                        return saveToFile(stream.toByteArray(), previewFile);
+                    }
+                }).compose(RxTransformers.<File> applySingleSchedulers())
+                .subscribeWith(new DisposableSingleObserver<File>() {
+                                   @Override
+                                   public void onSuccess(File file) {
+                                       mView.showSavedVideoInView(video, file, screenHeight, screenWidth);
+                                   }
+
+                                   @Override
+                                   public void onError(Throwable throwable) {
+                                       Timber.d(throwable);
+                                       mView.showErrorFileSaving(throwable);
+                                   }
+                               }
+
+                );
+        mCompositeDisposable.add(disposable);
+    }
+
+    @Override
     public void savePictureToFile(final byte[] data, final File pictureFile, final int screenWidth, final int screenHeight, final boolean isFrontOrientation, final int orientation) {
         Disposable disposable = Single.fromCallable(
                 new Callable<File>() {
@@ -48,7 +80,7 @@ class CameraPresenter implements CameraContract.Presenter {
                 .subscribeWith(new DisposableSingleObserver<File>() {
                                    @Override
                                    public void onSuccess(File file) {
-                                       mView.showSavedFileInView(file, screenHeight, screenWidth);
+                                       mView.showSavedPictureInView(file, screenHeight, screenWidth);
                                    }
 
                                    @Override
@@ -93,7 +125,7 @@ class CameraPresenter implements CameraContract.Presenter {
 
     @Override
     public void removeFile(File file) {
-        boolean b = file.delete();
+        file.delete();
     }
 
 //    @Override
@@ -114,7 +146,7 @@ class CameraPresenter implements CameraContract.Presenter {
 //                .subscribeWith(new DisposableSingleObserver<File>() {
 //                                   @Override
 //                                   public void onSuccess(File file) {
-//                                       mView.showSavedFileInView(file, screenHeight, screenWidth);
+//                                       mView.showSavedPictureInView(file, screenHeight, screenWidth);
 //                                   }
 //
 //                                   @Override

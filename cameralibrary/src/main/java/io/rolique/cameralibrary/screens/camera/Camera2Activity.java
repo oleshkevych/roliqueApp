@@ -80,9 +80,6 @@ public class Camera2Activity extends CameraBaseActivity {
     public @interface StateMode {
     }
 
-    private static String[] PERMISSIONS = {Manifest.permission.CAMERA,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE};
-
     @StateMode private int mState = STATE_PREVIEW;
     private static final int STATE_PREVIEW = 0;
     private static final int STATE_WAITING_LOCK = 1;
@@ -98,7 +95,6 @@ public class Camera2Activity extends CameraBaseActivity {
     private HandlerThread mBackgroundThread;
     private Handler mBackgroundHandler;
     private ImageReader mImageReader;
-    private File mFile;
     private CaptureRequest.Builder mPreviewRequestBuilder;
     private CaptureRequest mPreviewRequest;
     private Semaphore mCameraOpenCloseLock = new Semaphore(1);
@@ -199,30 +195,6 @@ public class Camera2Activity extends CameraBaseActivity {
         }
 
     };
-
-    private boolean lacksPermissions(String[] permissions) {
-        for (String permission : permissions)
-            if (ActivityCompat.checkSelfPermission(Camera2Activity.this, permission) != PackageManager.PERMISSION_GRANTED)
-                return true;
-        return false;
-    }
-
-    private void requestCameraPermission() {
-        ActivityCompat.requestPermissions(Camera2Activity.this, PERMISSIONS, RC_CAMERA_PERMISSION);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode == RC_CAMERA_PERMISSION) {
-            if (lacksPermissions(PERMISSIONS)) {
-                //TODO: Show error message
-                finish();
-            }
-        } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-    }
 
     private void setUpCameraOutputs(int width, int height) {
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
@@ -357,7 +329,7 @@ public class Camera2Activity extends CameraBaseActivity {
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
-                mIsTakingPicture = false;
+                mIsCameraBusy = false;
                 mPresenter.savePictureToFile(bytes, mFile, mPreviewSize.getWidth(), mPreviewSize.getHeight(), mIsFacingCameraOn, mScreenRotation);
             }
         }
@@ -500,6 +472,7 @@ public class Camera2Activity extends CameraBaseActivity {
 
         private void process(CaptureResult result) {
             switch (mState) {
+                case STATE_PICTURE_TAKEN:
                 case STATE_PREVIEW: {
                     break;
                 }
@@ -599,8 +572,8 @@ public class Camera2Activity extends CameraBaseActivity {
                 Timber.d("     mCameraDevice == null");
                 return;
             }
-            if (mIsTakingPicture) return;
-            mIsTakingPicture = true;
+            if (mIsCameraBusy) return;
+            mIsCameraBusy = true;
             final CaptureRequest.Builder captureBuilder =
                     mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
 
@@ -615,7 +588,7 @@ public class Camera2Activity extends CameraBaseActivity {
                                                @NonNull TotalCaptureResult result) {
                     Timber.d("Saved to %s", mFile.toString());
                     Timber.d("Saved to %s", mFile.getTotalSpace());
-                    mIsTakingPicture = false;
+                    mIsCameraBusy = false;
                     unlockFocus();
                 }
 
@@ -651,7 +624,7 @@ public class Camera2Activity extends CameraBaseActivity {
                 case FLASH_MODE_ON:
                     Timber.e("FLASH_MODE_ON " + CameraMetadata.CONTROL_AE_MODE_ON + " " + CameraMetadata.FLASH_MODE_SINGLE);
                     requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-                    requestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_SINGLE);
+                    requestBuilder.set(CaptureRequest.FLASH_MODE, (mIsVideoMode ? CameraMetadata.FLASH_MODE_TORCH : CameraMetadata.FLASH_MODE_SINGLE));
                     requestBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_FLUORESCENT);
                     break;
 
@@ -770,6 +743,16 @@ public class Camera2Activity extends CameraBaseActivity {
         lockFocus();
     }
 
+    @Override
+    protected void startRecord() {
+        //TODO:
+    }
+
+    @Override
+    protected void stopRecord() {
+        //TODO:
+    }
+
     private void lockFocus() {
         try {
             if (mIsFacingCameraOn) {
@@ -790,7 +773,7 @@ public class Camera2Activity extends CameraBaseActivity {
             Timber.e(e);
         } catch (Exception e) {
             Timber.e("EXCEPTION" + e);
-            mIsTakingPicture = false;
+            mIsCameraBusy = false;
             restartCamera();
         }
     }

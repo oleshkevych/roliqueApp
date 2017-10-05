@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="@color/black_alpha_50">
+        android:background="@color/black_alpha_80">
 
         <FrameLayout
             android:layout_width="80dp"
@@ -48,6 +48,14 @@
                 android:textStyle="bold"
                 android:visibility="gone"/>
 
+            <ImageView
+                android:id="@+id/image_view_play_video"
+                android:layout_gravity="end|bottom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/ic_play_24dp"
+                android:visibility="gone"
+                tools:ignore="ContentDescription"/>
         </FrameLayout>
 
         <ImageButton
@@ -57,7 +65,18 @@
             android:layout_gravity="center"
             android:background="?selectableItemBackground"
             android:padding="16dp"
+            android:visibility="gone"
             app:srcCompat="@drawable/ic_camera_white_48dp"
+            tools:ignore="ContentDescription"/>
+
+        <ImageButton
+            android:id="@+id/button_video"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="?selectableItemBackground"
+            android:padding="16dp"
+            app:srcCompat="@drawable/ic_videocam_white_24dp"
             tools:ignore="ContentDescription"/>
 
         <ImageView

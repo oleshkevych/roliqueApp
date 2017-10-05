@@ -23,11 +23,11 @@ public class MediaContent implements Parcelable {
             CATEGORY_VIDEO
     })
 
-    public  @interface Category {
+    public @interface Category {
     }
 
     private File mImage;
-    private String mVideoUrl;
+    private File mVideo;
     private int mHeight;
     private int mWidth;
 
@@ -36,16 +36,17 @@ public class MediaContent implements Parcelable {
     public MediaContent() {
     }
 
-    public MediaContent(File image, int height, int width, String mediaType) {
-        mImage = image;
+    public MediaContent(File file, int height, int width, String mediaType) {
+        if (mediaType.equals(CATEGORY_IMAGE)) mImage = file;
+        else mVideo = file;
         mHeight = height;
         mWidth = width;
         mMediaType = mediaType;
     }
 
-    public MediaContent(File image, String videoUrl, int height, int width, String mediaType) {
-        mImage = image;
-        mVideoUrl = videoUrl;
+    public MediaContent(File video, File videoPreview, int height, int width, String mediaType) {
+        mVideo = video;
+        mImage = videoPreview;
         mHeight = height;
         mWidth = width;
         mMediaType = mediaType;
@@ -53,7 +54,7 @@ public class MediaContent implements Parcelable {
 
     public MediaContent(Parcel in) {
         mImage = (File) in.readSerializable();
-        mVideoUrl = in.readString();
+        mVideo = (File) in.readSerializable();
         mHeight = in.readInt();
         mWidth = in.readInt();
         mMediaType = in.readString();
@@ -67,12 +68,12 @@ public class MediaContent implements Parcelable {
         mImage = image;
     }
 
-    public String getVideoUrl() {
-        return mVideoUrl;
+    public File getVideo() {
+        return mVideo;
     }
 
-    public void setVideoUrl(String videoUrl) {
-        mVideoUrl = videoUrl;
+    public void setVideo(File video) {
+        mVideo = video;
     }
 
     public int getHeight() {
@@ -91,7 +92,9 @@ public class MediaContent implements Parcelable {
         mWidth = width;
     }
 
-    public @Category String getMediaType() {
+    public
+    @Category
+    String getMediaType() {
         return mMediaType;
     }
 
@@ -103,7 +106,7 @@ public class MediaContent implements Parcelable {
     public String toString() {
         return "Media{" +
                 "mImage='" + mImage + '\'' +
-                ", mVideoUrl='" + mVideoUrl + '\'' +
+                ", mVideo='" + mVideo + '\'' +
                 ", mHeight='" + mHeight + '\'' +
                 ", mWidth='" + mWidth + '\'' +
                 ", mMediaType='" + mMediaType + '\'' +
@@ -112,19 +115,19 @@ public class MediaContent implements Parcelable {
 
     public static final class Builder {
 
-        private File mImageUrl;
-        private String mVideoUrl;
+        private File mImage;
+        private File mVideo;
         private int mHeight;
         private int mWidth;
         private @Category String mMediaType;
 
-        public Builder setImageUrl(File imageUrl) {
-            mImageUrl = imageUrl;
+        public Builder setImage(File image) {
+            mImage = image;
             return this;
         }
 
-        public Builder setVideoUrl(String videoUrl) {
-            mVideoUrl = videoUrl;
+        public Builder setVideo(File video) {
+            mVideo = video;
             return this;
         }
 
@@ -144,8 +147,8 @@ public class MediaContent implements Parcelable {
         }
 
         public MediaContent create() {
-            return new MediaContent(mImageUrl,
-                    mVideoUrl,
+            return new MediaContent(mImage,
+                    mVideo,
                     mHeight,
                     mWidth,
                     mMediaType);
@@ -172,7 +175,7 @@ public class MediaContent implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeSerializable(mImage);
-        dest.writeString(mVideoUrl);
+        dest.writeSerializable(mVideo);
         dest.writeInt(mHeight);
         dest.writeInt(mWidth);
         dest.writeString(mMediaType);

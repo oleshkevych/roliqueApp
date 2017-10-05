@@ -10,12 +10,14 @@ import java.io.File;
 
 interface CameraContract {
     interface View<Presenter> {
-        void showSavedFileInView(File file, int height, int width);
+        void showSavedPictureInView(File file, int height, int width);
+        void showSavedVideoInView(File video, File preview, int height, int width);
         void showErrorFileSaving(Throwable t);
         void setPresenter(CameraPresenter presenter);
     }
 
     interface Presenter {
+        void createVideoPreview(File video, File preview, int screenWidth, int screenHeight);
         void savePictureToFile(byte[] data, File pictureFile, int screenWidth, int screenHeight, boolean isFrontOrientation, int orientation);
         void removeFile(File file);
         void start();

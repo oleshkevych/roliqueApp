@@ -1,7 +1,9 @@
 package io.rolique.cameralibrary.screens.camera;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -10,7 +12,9 @@ import android.os.Parcelable;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v13.app.ActivityCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
@@ -138,6 +142,10 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     static final int FLASH_MODE_ON = 2;
     static final int FLASH_MODE_OFF = 3;
 
+    static String[] PERMISSIONS = {Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.RECORD_AUDIO,};
+
     public static Intent getStartIntent(Context context,
                                         int category,
                                         boolean isRotationEnabled,
@@ -173,13 +181,15 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     ImageButton mCameraSwitcherButton;
     RecyclerView mImagesRecyclerView;
     ImageView mPreviewImageView;
+    ImageView mPlayVideoImageView;
     ImageView mDoneImageView;
     ImageButton mCaptureButton;
+    ImageButton mVideoButton;
     TextView mImagesCountTextView;
 
     int mFlashMode = FLASH_MODE_AUTO;
     int mDisplayOrientation;
-    boolean mIsTakingPicture;
+    boolean mIsCameraBusy;
     List<MediaContent> mMediaContents = new ArrayList<>();
     private ImagesAdapter mImagesAdapter;
     int mMinSwipeDistance;
@@ -192,6 +202,8 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     boolean mIsFacingCameraOn;
     int mScreenRotation;
     int mFlashCounter;
+    boolean mIsVideoMode;
+    File mFile;
 
     private int mStorageCategory;
     private boolean mIsRotationEnable;
@@ -238,6 +250,10 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
     protected abstract void takePicture();
 
+    protected abstract void startRecord();
+
+    protected abstract void stopRecord();
+
     protected abstract void switchCamera();
 
     @Override
@@ -247,8 +263,10 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         mCameraSwitcherButton = getViewById(R.id.button_camera_switcher);
         mImagesRecyclerView = getViewById(R.id.recycler_view_images);
         mPreviewImageView = getViewById(R.id.image_view_preview);
+        mPlayVideoImageView = getViewById(R.id.image_view_play_video);
         mDoneImageView = getViewById(R.id.image_view_done);
         mCaptureButton = getViewById(R.id.button_capture);
+        mVideoButton = getViewById(R.id.button_video);
         mCameraPreviewLayout = getViewById(R.id.content_camera_preview);
         mImagesCountTextView = getViewById(R.id.text_view_images_count);
         mMinSwipeDistance = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, getResources().getDisplayMetrics());
@@ -257,10 +275,12 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         setUpImagesRecyclerView();
         setActionListeners();
         updateImagesInPreview();
+        mIsVideoMode = true;
     }
 
     private void setUpProperties() {
         mCameraSwitcherButton.setVisibility(mIsFrontCameraEnable ? View.VISIBLE : View.GONE);
+        setFlashDrawable();
         if (!mIsFlashModsSelectable) {
             mFlashButton.setVisibility(View.GONE);
             mFlashMode = mDefaultFlashMode;
@@ -293,7 +313,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         @Override
         public void onRemoveClick(MediaContent mediaContent) {
             mMediaContents.remove(mediaContent);
-            mPresenter.removeFile(mediaContent.getImage());
+            mPresenter.removeFile(mediaContent.getImage() == null ? mediaContent.getVideo() : mediaContent.getImage());
             updateImagesInPreview();
             if (mMediaContents.size() == 0) {
                 toggleImagesRecyclerView();
@@ -310,6 +330,9 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
     private void updateImagesInPreview() {
         toggleVisibility(mPreviewImageView, mMediaContents.size() == 0);
+        toggleVisibility(mPlayVideoImageView,
+                (mMediaContents.size() == 0 || !mMediaContents.get(mMediaContents.size() - 1)
+                        .getMediaType().equals(MediaContent.CATEGORY_VIDEO)));
         changeToggleButtonVisibility(R.id.button_main_size_toggle, mMediaContents.size() != 0);
         if (mMediaContents.size() > 0)
             UiUtil.setImageWithRoundCorners(mPreviewImageView, mMediaContents.get(mMediaContents.size() - 1).getImage());
@@ -382,8 +405,9 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     private void setActionListeners() {
         mCameraSwitcherButton.setOnClickListener(mOnCameraSwitcherClickListener);
         getViewById(R.id.content_controls).setOnClickListener(null);
-        mCameraPreviewLayout.setOnClickListener(mOnTakePictureClickListener);
-        mCaptureButton.setOnClickListener(mOnTakePictureClickListener);
+        mCameraPreviewLayout.setOnClickListener(mOnCameraActionClickListener);
+        mCaptureButton.setOnClickListener(mOnCameraActionClickListener);
+        mVideoButton.setOnClickListener(mOnCameraActionClickListener);
         mPreviewImageView.setOnClickListener(mOnToggleRecyclerClickListener);
         mImagesCountTextView.setOnClickListener(mOnToggleRecyclerClickListener);
         getViewById(R.id.button_main_size_toggle).setOnClickListener(mOnToggleRecyclerClickListener);
@@ -406,17 +430,56 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         mCameraSwitcherButton.setImageResource(mIsFacingCameraOn ? R.drawable.ic_camera_front_white_24dp : R.drawable.ic_camera_rear_white_24dp);
         mIsFacingCameraOn = !mIsFacingCameraOn;
         toggleVisibility(mFlashButton, mIsFacingCameraOn);
-        mFlashButton.setImageResource(R.drawable.ic_flash_auto_white_24dp);
-        mFlashMode = mIsFacingCameraOn ? FLASH_MODE_OFF : mDefaultFlashMode;
+        if (mIsFacingCameraOn) setFlashDrawable();
+        else mFlashMode = FLASH_MODE_OFF;
         switchCamera();
     }
 
-    View.OnClickListener mOnTakePictureClickListener = new View.OnClickListener() {
+    private void setFlashDrawable() {
+        if (mIsVideoMode) {
+            mFlashCounter = 0;
+            mFlashButton.setImageResource(R.drawable.ic_flash_off_white_24dp);
+            mFlashMode = FLASH_MODE_OFF;
+        } else {
+            switch (mDefaultFlashMode) {
+                case FLASH_MODE_AUTO:
+                    mFlashButton.setImageResource(R.drawable.ic_flash_auto_white_24dp);
+                    mFlashMode = FLASH_MODE_AUTO;
+                    mFlashCounter = 0;
+                    break;
+                case FLASH_MODE_ON:
+                    mFlashButton.setImageResource(R.drawable.ic_flash_on_white_24dp);
+                    mFlashMode = FLASH_MODE_ON;
+                    mFlashCounter = 1;
+                    break;
+                case FLASH_MODE_OFF:
+                    mFlashButton.setImageResource(R.drawable.ic_flash_off_white_24dp);
+                    mFlashMode = FLASH_MODE_OFF;
+                    mFlashCounter = 2;
+                    break;
+            }
+        }
+    }
+
+    View.OnClickListener mOnCameraActionClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            takePicture();
+            if (mIsVideoMode) onChangeVideoState();
+            else takePicture();
         }
     };
+
+    private void onChangeVideoState() {
+        if(mIsCameraBusy) {
+            stopRecord();
+            mFlashButton.setVisibility(mIsFlashModsSelectable ? View.VISIBLE : View.GONE);
+        }
+        else {
+            startRecord();
+            mFlashButton.setVisibility(View.GONE);
+        }
+        mVideoButton.setImageResource(mIsCameraBusy ? R.drawable.ic_stop_white_48dp : R.drawable.ic_videocam_white_24dp);
+    }
 
     View.OnClickListener mOnToggleRecyclerClickListener = new View.OnClickListener() {
         @Override
@@ -465,19 +528,32 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
-                    switch (mFlashCounter % 3) {
-                        case 0:
-                            mFlashButton.setImageResource(R.drawable.ic_flash_auto_white_24dp);
-                            mFlashMode = FLASH_MODE_AUTO;
-                            break;
-                        case 1:
+                    if (mIsVideoMode) {
+                        switch (mFlashCounter % 2) {
+                            case 1:
+                                mFlashButton.setImageResource(R.drawable.ic_flash_off_white_24dp);
+                                mFlashMode = FLASH_MODE_OFF;
+                                break;
+                            case 0:
                             mFlashButton.setImageResource(R.drawable.ic_flash_on_white_24dp);
                             mFlashMode = FLASH_MODE_ON;
                             break;
-                        case 2:
-                            mFlashButton.setImageResource(R.drawable.ic_flash_off_white_24dp);
-                            mFlashMode = FLASH_MODE_OFF;
-                            break;
+                        }
+                    } else {
+                        switch (mFlashCounter % 3) {
+                            case 0:
+                                mFlashButton.setImageResource(R.drawable.ic_flash_auto_white_24dp);
+                                mFlashMode = FLASH_MODE_AUTO;
+                                break;
+                            case 1:
+                                mFlashButton.setImageResource(R.drawable.ic_flash_on_white_24dp);
+                                mFlashMode = FLASH_MODE_ON;
+                                break;
+                            case 2:
+                                mFlashButton.setImageResource(R.drawable.ic_flash_off_white_24dp);
+                                mFlashMode = FLASH_MODE_OFF;
+                                break;
+                        }
                     }
                 }
 
@@ -547,7 +623,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     protected File getOutputMediaFile() {
         File sdCard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         if (isAppLocalStorage())
-            sdCard = getExternalFilesDir("images");
+            sdCard = new File(Environment.getExternalStorageDirectory(), "data");
         File mediaStorageDir = new File(sdCard, "Rolique");
         if (!mediaStorageDir.mkdir() && !mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
@@ -556,7 +632,8 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
             }
         }
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-        String path = mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg";
+        String stringMediaType = mIsVideoMode ? ".mp4" : ".jpg";
+        String path = mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + stringMediaType;
         return new File(path);
     }
 
@@ -565,16 +642,35 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     }
 
     @Override
-    public void showSavedFileInView(File file, int height, int width) {
-        Timber.d("showSavedFileInView: " + file + " - exists " + file.exists());
-        //TODO: add video checker
+    public void showSavedPictureInView(File file, int height, int width) {
+        Timber.d("showSavedPictureInView: " + file + " - exists " + file.exists());
         int heightWithRotation = mScreenRotation == 90 || mScreenRotation == 270 ? height : width;
         int widthWithRotation = mScreenRotation == 90 || mScreenRotation == 270 ? width : height;
-        MediaContent mediaContent = new MediaContent(file, heightWithRotation, widthWithRotation, MediaContent.CATEGORY_IMAGE);
+        MediaContent mediaContent = new MediaContent(file,
+                heightWithRotation,
+                widthWithRotation,
+                MediaContent.CATEGORY_IMAGE);
         mMediaContents.add(mediaContent);
+        showSavedInView(file);
+    }
+
+    protected void showSavedInView(File file) {
         if (!isAppLocalStorage()) galleryAddPic(file);
         if (mIsSinglePhoto) onDoneClick();
         updateImagesInPreview();
+    }
+
+    @Override
+    public void showSavedVideoInView(File video, File preview, int height, int width) {
+        int heightWithRotation = mScreenRotation == 90 || mScreenRotation == 270 ? height : width;
+        int widthWithRotation = mScreenRotation == 90 || mScreenRotation == 270 ? width : height;
+        MediaContent mediaContent = new MediaContent(video,
+                preview,
+                heightWithRotation,
+                widthWithRotation,
+                MediaContent.CATEGORY_VIDEO);
+        mMediaContents.add(mediaContent);
+        showSavedInView(video);
     }
 
     private void galleryAddPic(File f) {
@@ -616,7 +712,9 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         animateRotation(mFlashButton, mScreenRotation, orientation);
         animateRotation(mCameraSwitcherButton, mScreenRotation, orientation);
         animateRotation(mPreviewImageView, mScreenRotation, orientation);
+        animateRotation(mPlayVideoImageView, mScreenRotation, orientation);
         animateRotation(mCaptureButton, mScreenRotation, orientation);
+        animateRotation(mVideoButton, mScreenRotation, orientation);
         animateRotation(mDoneImageView, mScreenRotation, orientation);
         animateRotation(mImagesCountTextView, mScreenRotation, orientation);
         mScreenRotation = orientation;
@@ -749,5 +847,43 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         public boolean willChangeBounds() {
             return true;
         }
+    }
+
+    boolean lacksPermissions(String[] permissions) {
+        for (String permission : permissions)
+            if (ActivityCompat.checkSelfPermission(CameraBaseActivity.this, permission) != PackageManager.PERMISSION_GRANTED)
+                return true;
+        return false;
+    }
+
+    void requestCameraPermission() {
+        ActivityCompat.requestPermissions(CameraBaseActivity.this, PERMISSIONS, RC_CAMERA_PERMISSION);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (requestCode == RC_CAMERA_PERMISSION) {
+            if (lacksPermissions(PERMISSIONS)) {
+                //TODO: Show error message
+                finish();
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+    protected File getPreviewFile() {
+        File mediaStorageDir = new File(Environment.getExternalStorageDirectory(), "data");
+        if (!mediaStorageDir.mkdir() && !mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Timber.d("failed to create directory");
+                return null;
+            }
+        }
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        String stringMediaType = ".jpg";
+        String path = mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + stringMediaType;
+        return new File(path);
     }
 }
