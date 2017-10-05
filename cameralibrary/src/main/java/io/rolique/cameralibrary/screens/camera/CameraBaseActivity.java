@@ -126,16 +126,34 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
     static final int RC_CAMERA_PERMISSION = 101;
 
-    static final String EXTRA_STORAGE_CATEGORY = "STORAGE_CATEGORY";
+    private static final String EXTRA_STORAGE_CATEGORY = "STORAGE_CATEGORY";
+    private static final String EXTRA_ROTATION_ENABLED = "ROTATION_ENABLED";
+    private static final String EXTRA_FRONT_CAMERA_ENABLED = "FRONT_CAMERA_ENABLED";
+    private static final String EXTRA_SINGLE_PHOTO_MODE = "SINGLE_PHOTO_MODE";
+    private static final String EXTRA_SINGLE_FRONT_CAMERA = "SINGLE_FRONT_CAMERA";
+    private static final String EXTRA_FLASH_MODS_SELECTABLE = "FLASH_MODS_SELECTABLE";
+    private static final String EXTRA_DEFAULT_FLASH_MODE = "DEFAULT_FLASH_MODE";
 
     static final int FLASH_MODE_AUTO = 1;
     static final int FLASH_MODE_ON = 2;
     static final int FLASH_MODE_OFF = 3;
 
-    public static Intent getStartIntent(Context context, @MediaLib.SavingStorageCategory int category) {
+    public static Intent getStartIntent(Context context,
+                                        int category,
+                                        boolean isRotationEnabled,
+                                        boolean isFrontCameraEnabled,
+                                        boolean isSinglePhotoMode,
+                                        boolean isSingleFrontCamera,
+                                        boolean isFlashModsSelectable,
+                                        int defaultFlashMod) {
         Intent intent = getCameraIntent(context);
         intent.putExtra(EXTRA_STORAGE_CATEGORY, category);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra(EXTRA_ROTATION_ENABLED, isRotationEnabled);
+        intent.putExtra(EXTRA_FRONT_CAMERA_ENABLED, isFrontCameraEnabled);
+        intent.putExtra(EXTRA_SINGLE_PHOTO_MODE, isSinglePhotoMode);
+        intent.putExtra(EXTRA_SINGLE_FRONT_CAMERA, isSingleFrontCamera);
+        intent.putExtra(EXTRA_FLASH_MODS_SELECTABLE, isFlashModsSelectable);
+        intent.putExtra(EXTRA_DEFAULT_FLASH_MODE, defaultFlashMod);
         return intent;
     }
 
@@ -172,9 +190,16 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     float mStartPositionY;
     float mStartPositionX;
     boolean mIsFacingCameraOn;
-    @MediaLib.SavingStorageCategory int mStorageCategory;
     int mScreenRotation;
     int mFlashCounter;
+
+    private int mStorageCategory;
+    private boolean mIsRotationEnable;
+    private boolean mIsFrontCameraEnable;
+    private boolean mIsSinglePhoto;
+    private boolean mIsFlashModsSelectable;
+    private int mDefaultFlashMode;
+    private boolean mIsSingleFrontCamera;
 
     protected CameraPresenter mPresenter;
 
@@ -183,6 +208,12 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         super.onCreate(savedInstanceState);
         plantTimber();
         mStorageCategory = getIntent().getIntExtra(EXTRA_STORAGE_CATEGORY, 0);
+        mIsRotationEnable = getIntent().getBooleanExtra(EXTRA_ROTATION_ENABLED, false);
+        mIsFrontCameraEnable = getIntent().getBooleanExtra(EXTRA_FRONT_CAMERA_ENABLED, false);
+        mIsSinglePhoto = getIntent().getBooleanExtra(EXTRA_SINGLE_PHOTO_MODE, false);
+        mIsSingleFrontCamera = getIntent().getBooleanExtra(EXTRA_SINGLE_FRONT_CAMERA, false);
+        mIsFlashModsSelectable = getIntent().getBooleanExtra(EXTRA_FLASH_MODS_SELECTABLE, false);
+        mDefaultFlashMode = getIntent().getIntExtra(EXTRA_DEFAULT_FLASH_MODE, FLASH_MODE_AUTO);
     }
 
     private void plantTimber() {
@@ -222,9 +253,26 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         mImagesCountTextView = getViewById(R.id.text_view_images_count);
         mMinSwipeDistance = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, getResources().getDisplayMetrics());
         mOneDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics());
+        setUpProperties();
         setUpImagesRecyclerView();
         setActionListeners();
         updateImagesInPreview();
+    }
+
+    private void setUpProperties() {
+        mCameraSwitcherButton.setVisibility(mIsFrontCameraEnable ? View.VISIBLE : View.GONE);
+        if (!mIsFlashModsSelectable) {
+            mFlashButton.setVisibility(View.GONE);
+            mFlashMode = mDefaultFlashMode;
+        }
+        if (mIsSingleFrontCamera) {
+            mFlashMode = FLASH_MODE_OFF;
+            mCameraSwitcherButton.setVisibility(View.GONE);
+            mIsFacingCameraOn = true;
+            mFlashButton.setVisibility(View.GONE);
+        }
+        if (mIsSinglePhoto)
+            mDoneImageView.setVisibility(View.GONE);
     }
 
     private void setUpImagesRecyclerView() {
@@ -359,7 +407,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         mIsFacingCameraOn = !mIsFacingCameraOn;
         toggleVisibility(mFlashButton, mIsFacingCameraOn);
         mFlashButton.setImageResource(R.drawable.ic_flash_auto_white_24dp);
-        mFlashMode = mIsFacingCameraOn ? FLASH_MODE_OFF : FLASH_MODE_AUTO;
+        mFlashMode = mIsFacingCameraOn ? FLASH_MODE_OFF : mDefaultFlashMode;
         switchCamera();
     }
 
@@ -389,13 +437,17 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     View.OnClickListener mOnDoneClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Intent intent = new Intent();
-            intent.putParcelableArrayListExtra(getString(R.string.extra_camera_images), (ArrayList<? extends Parcelable>) mMediaContents);
-            setResult(RESULT_OK, intent);
-            mPresenter.stop();
-            finish();
+            onDoneClick();
         }
     };
+
+    void onDoneClick() {
+        Intent intent = new Intent();
+        intent.putParcelableArrayListExtra(getString(R.string.extra_camera_images), (ArrayList<? extends Parcelable>) mMediaContents);
+        setResult(RESULT_OK, intent);
+        mPresenter.stop();
+        finish();
+    }
 
     View.OnClickListener mOnFlashClickListener = new View.OnClickListener() {
         @Override
@@ -497,8 +549,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         if (isAppLocalStorage())
             sdCard = getExternalFilesDir("images");
         File mediaStorageDir = new File(sdCard, "Rolique");
-        mediaStorageDir.mkdir();
-        if (!mediaStorageDir.exists()) {
+        if (!mediaStorageDir.mkdir() && !mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
                 Timber.d("failed to create directory");
                 return null;
@@ -521,8 +572,9 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         int widthWithRotation = mScreenRotation == 90 || mScreenRotation == 270 ? width : height;
         MediaContent mediaContent = new MediaContent(file, heightWithRotation, widthWithRotation, MediaContent.CATEGORY_IMAGE);
         mMediaContents.add(mediaContent);
-        updateImagesInPreview();
         if (!isAppLocalStorage()) galleryAddPic(file);
+        if (mIsSinglePhoto) onDoneClick();
+        updateImagesInPreview();
     }
 
     private void galleryAddPic(File f) {
@@ -541,13 +593,15 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     protected void onResume() {
         super.onResume();
         mDisplayOrientation = getWindowManager().getDefaultDisplay().getRotation();
-        SensorOrientationChangeNotifier.getInstance(getApplicationContext()).addListener(mListener);
+        if (mIsRotationEnable)
+            SensorOrientationChangeNotifier.getInstance(getApplicationContext()).addListener(mListener);
     }
 
     @Override
     protected void onPause() {
         mPresenter.stop();
-        SensorOrientationChangeNotifier.getInstance(getApplicationContext()).remove(mListener);
+        if (mIsRotationEnable)
+            SensorOrientationChangeNotifier.getInstance(getApplicationContext()).remove(mListener);
         super.onPause();
     }
 
@@ -559,20 +613,17 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     };
 
     protected void toggleOrientation(int orientation) {
-        Timber.e("Orientation " + orientation);
-        if (mFlashButton.getVisibility() == View.VISIBLE)
-            animateRotation(mFlashButton, mScreenRotation, orientation);
+        animateRotation(mFlashButton, mScreenRotation, orientation);
         animateRotation(mCameraSwitcherButton, mScreenRotation, orientation);
-        if (mPreviewImageView.getVisibility() == View.VISIBLE)
-            animateRotation(mPreviewImageView, mScreenRotation, orientation);
+        animateRotation(mPreviewImageView, mScreenRotation, orientation);
         animateRotation(mCaptureButton, mScreenRotation, orientation);
         animateRotation(mDoneImageView, mScreenRotation, orientation);
-        if (mImagesCountTextView.getVisibility() == View.VISIBLE)
-            animateRotation(mImagesCountTextView, mScreenRotation, orientation);
+        animateRotation(mImagesCountTextView, mScreenRotation, orientation);
         mScreenRotation = orientation;
     }
 
     private void animateRotation(View view, int rotationFrom, int rotationTo) {
+        if (view.getVisibility() != View.VISIBLE) return;
         Animation an = new RotateAnimation(calculateRotation(rotationFrom),
                 calculateRotation(rotationTo),
                 view.getPivotX(),

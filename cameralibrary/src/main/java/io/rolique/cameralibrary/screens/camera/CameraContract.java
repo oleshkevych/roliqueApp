@@ -2,9 +2,6 @@ package io.rolique.cameralibrary.screens.camera;
 
 import java.io.File;
 
-import io.rolique.cameralibrary.BasePresenter;
-import io.rolique.cameralibrary.BaseView;
-
 
 /**
  * Created by Volodymyr Oleshkevych on 5/12/2017.
@@ -12,15 +9,16 @@ import io.rolique.cameralibrary.BaseView;
  */
 
 interface CameraContract {
-    interface View extends BaseView<Presenter> {
+    interface View<Presenter> {
         void showSavedFileInView(File file, int height, int width);
         void showErrorFileSaving(Throwable t);
         void setPresenter(CameraPresenter presenter);
     }
 
-    interface Presenter extends BasePresenter {
-        @Deprecated
+    interface Presenter {
         void savePictureToFile(byte[] data, File pictureFile, int screenWidth, int screenHeight, boolean isFrontOrientation, int orientation);
         void removeFile(File file);
+        void start();
+        void stop();
     }
 }

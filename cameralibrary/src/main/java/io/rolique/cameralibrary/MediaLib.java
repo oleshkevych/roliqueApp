@@ -14,19 +14,17 @@ import io.rolique.cameralibrary.screens.camera.CameraBaseActivity;
 /**
  * Created by Volodymyr Oleshkevych on 9/22/2017.
  * Copyright (c) 2017, Rolique. All rights reserved.
- */
-
-/**
- * To use Butter Knife in a library, add the plugin to your buildscript:
- * <p>
- * buildscript {
- * repositories {
- * mavenCentral()
- * }
- * dependencies {
- * classpath 'com.jakewharton:butterknife-gradle-plugin:8.8.1'
- * }
- * }
+ *
+// * To use Butter Knife in a library, add the plugin to your buildscript:
+// * <p>
+// * buildscript {
+// * repositories {
+// * mavenCentral()
+// * }
+// * dependencies {
+// * classpath 'com.jakewharton:butterknife-gradle-plugin:8.8.1'
+// * }
+// * }
  * <p>
  * android {
  * dexOptions {
@@ -46,7 +44,7 @@ import io.rolique.cameralibrary.screens.camera.CameraBaseActivity;
  * in your Activity.onActivityResult method
  * <p>
  * Set parameters in sets and call MediaLib.startCamera
- **/
+ */
 
 public class MediaLib {
 
@@ -55,14 +53,9 @@ public class MediaLib {
     public final static int LOCAL_APP_FOLDER = 0;
     public final static int GLOBAL_MEDIA_DEFAULT_FOLDER = 1;
 
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef({
-            LOCAL_APP_FOLDER,
-            GLOBAL_MEDIA_DEFAULT_FOLDER
-    })
-
-    public @interface SavingStorageCategory {
-    }
+    public static final int FLASH_MODE_AUTO = 1;
+    public static final int FLASH_MODE_ON = 2;
+    public static final int FLASH_MODE_OFF = 3;
 
     public interface MediaLibListener {
         void onSuccess(List<MediaContent> mediaContents);
@@ -72,19 +65,77 @@ public class MediaLib {
 
     private MediaLibListener mMediaLibListener;
     private Activity mActivity;
-    private @SavingStorageCategory int mStorageCategory;
+    private int mStorageCategory = LOCAL_APP_FOLDER;
+    private boolean mIsRotationEnable = true;
+    private boolean mIsFrontCameraEnable;
+    private boolean mIsSingleFrontCamera;
+    private boolean mIsSinglePhoto;
+    private boolean mIsFlashModsSelectable;
+    private int mFlashMode = FLASH_MODE_AUTO;
 
     public MediaLib(Activity activity, MediaLibListener mediaLibListener) {
         mMediaLibListener = mediaLibListener;
         mActivity = activity;
     }
 
-    public void setStorage(@SavingStorageCategory int category) {
+    /**
+     * Set where saved files will be stored. Local cash is default
+     * **/
+    public void setStorage(int category) {
         mStorageCategory = category;
     }
 
+    /**
+     * Set is landscape mode enabled
+     * **/
+    public void setEnableRotation(boolean isEnabled) {
+        mIsRotationEnable = isEnabled;
+    }
+
+    /**
+     * Set is front camera enabled
+     * **/
+    public void setEnableFrontCamera(boolean isEnabled) {
+        mIsFrontCameraEnable = isEnabled;
+    }
+
+    /**
+     * Set is flash mods selectable
+     * **/
+    public void setIsSelectableFlash(boolean isSelectable) {
+        mIsFlashModsSelectable = isSelectable;
+    }
+
+    /**
+     * Set flash mod
+     * **/
+    public void setFlashMode(int flashMode) {
+        mFlashMode = flashMode;
+    }
+
+    /**
+     * Set single photo mod
+     * **/
+    public void setIsSinglePhoto(boolean isSinglePhoto) {
+        mIsSinglePhoto = isSinglePhoto;
+    }
+
+    /**
+     * Set single photo mod
+     * **/
+    public void setSingleFrontCamera(boolean isSingleFrontCamera) {
+        mIsSingleFrontCamera = isSingleFrontCamera;
+    }
+
     public void startCamera() {
-        Intent intent = CameraBaseActivity.getStartIntent(mActivity, mStorageCategory);
+        Intent intent = CameraBaseActivity.getStartIntent(mActivity,
+                mStorageCategory,
+                mIsRotationEnable,
+                mIsFrontCameraEnable,
+                mIsSinglePhoto,
+                mIsSingleFrontCamera,
+                mIsFlashModsSelectable,
+                mFlashMode);
         mActivity.startActivityForResult(intent, RC_CAMERA);
     }
 

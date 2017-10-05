@@ -93,7 +93,7 @@ class CameraPresenter implements CameraContract.Presenter {
 
     @Override
     public void removeFile(File file) {
-        file.delete();
+        boolean b = file.delete();
     }
 
 //    @Override
@@ -102,9 +102,7 @@ class CameraPresenter implements CameraContract.Presenter {
 //                new Callable<File>() {
 //                    @Override
 //                    public File call() throws Exception {
-//                        Bitmap bm = transformBitmap(data, screenWidth, screenHeight, false, orientation);
-//                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//                        bm.compress(Bitmap.CompressFormat.JPEG, 80, stream);
+//
 //                        try (FileOutputStream outputStream = new FileOutputStream(pictureFile)) {
 //                            outputStream.write(stream.toByteArray());
 //                            outputStream.close();
