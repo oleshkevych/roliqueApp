@@ -16,9 +16,13 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 import butterknife.BindView;
+import io.rolique.cameralibrary.MediaLib;
+import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
@@ -55,6 +59,7 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
         mNavigationImageView = mNavigationView.getHeaderView(0).findViewById(R.id.image_view);
+        mNavigationImageView.setOnClickListener(mOnImageClickListener);
         mNameTextView = mNavigationView.getHeaderView(0).findViewById(R.id.text_view_name);
         mNavigationView.getHeaderView(0).findViewById(R.id.drawable_text_view_logout)
                 .setOnClickListener(new View.OnClickListener() {
@@ -149,6 +154,40 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
         }
         mToolbar.setTitle(R.string.fragment_chats_title);
         mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.CHATS, false);
+    }
+
+    MediaLib mMediaLib;
+
+    View.OnClickListener mOnImageClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            mMediaLib = new MediaLib(NavigationActivity.this, new MediaLib.MediaLibListener() {
+                @Override
+                public void onSuccess(List<MediaContent> mediaContents) {
+                    UiUtil.setImage(mNavigationImageView, mediaContents.get(0).getImage());
+                }
+
+                @Override
+                public void onEmpty() {
+
+                }
+
+                @Override
+                public void onError(Exception e) {
+
+                }
+            });
+            mMediaLib.setStorage(MediaLib.GLOBAL_MEDIA_DEFAULT_FOLDER);
+            mMediaLib.setEnableFrontCamera(true);
+            mMediaLib.setIsSelectableFlash(true);
+            mMediaLib.startCamera();
+        }
+    };
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mMediaLib.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override

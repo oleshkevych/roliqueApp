@@ -20,6 +20,7 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 
+import java.io.File;
 import java.util.List;
 
 import io.rolique.roliqueapp.R;
@@ -35,6 +36,13 @@ public class UiUtil {
     public static void setImage(ImageView imageView, String path) {
         GlideApp.with(imageView.getContext())
                 .load(path)
+                .apply(new RequestOptions().transforms(new CircleCrop()))
+                .into(imageView);
+    }
+
+    public static void setImage(ImageView imageView, File file) {
+        GlideApp.with(imageView.getContext())
+                .load(file)
                 .apply(new RequestOptions().transforms(new CircleCrop()))
                 .into(imageView);
     }

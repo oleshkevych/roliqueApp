@@ -24,6 +24,7 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -36,8 +37,9 @@ import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Surface;
 import android.view.TextureView;
+import android.widget.Toast;
 
-import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
@@ -330,7 +332,8 @@ public class Camera2Activity extends CameraBaseActivity {
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
                 mIsCameraBusy = false;
-                mPresenter.savePictureToFile(bytes, mFile, mPreviewSize.getWidth(), mPreviewSize.getHeight(), mIsFacingCameraOn, mScreenRotation);
+                //TODO:
+                mPresenter.savePictureToFile(bytes, mFile, reader.getWidth(), reader.getHeight(), mIsFacingCameraOn, mScreenRotation);
             }
         }
     };
@@ -446,7 +449,7 @@ public class Camera2Activity extends CameraBaseActivity {
                             mCaptureSession = cameraCaptureSession;
                             try {
                                 setCameraFocusMode(mPreviewRequestBuilder);
-                                setCurrentFlash(mPreviewRequestBuilder);
+                                setCurrentFlash(mPreviewRequestBuilder, false);
                                 mPreviewRequest = mPreviewRequestBuilder.build();
                                 mCaptureSession.setRepeatingRequest(mPreviewRequest,
                                         mCaptureCallback, mBackgroundHandler);
@@ -615,16 +618,16 @@ public class Camera2Activity extends CameraBaseActivity {
         setCameraStabilization(captureBuilder);
         captureBuilder.set(CaptureRequest.JPEG_QUALITY, (byte) 90);
         captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, getOrientation(mDisplayOrientation));
-        setCurrentFlash(captureBuilder);
+        setCurrentFlash(captureBuilder, false);
     }
 
-    private void setCurrentFlash(CaptureRequest.Builder requestBuilder) {
+    private void setCurrentFlash(CaptureRequest.Builder requestBuilder, boolean isRecordSession) {
         if (mIsFlashSupported) {
             switch (mFlashMode) {
                 case FLASH_MODE_ON:
                     Timber.e("FLASH_MODE_ON " + CameraMetadata.CONTROL_AE_MODE_ON + " " + CameraMetadata.FLASH_MODE_SINGLE);
                     requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-                    requestBuilder.set(CaptureRequest.FLASH_MODE, (mIsVideoMode ? CameraMetadata.FLASH_MODE_TORCH : CameraMetadata.FLASH_MODE_SINGLE));
+                    requestBuilder.set(CaptureRequest.FLASH_MODE, (mIsVideoMode && isRecordSession ? CameraMetadata.FLASH_MODE_TORCH : CameraMetadata.FLASH_MODE_SINGLE));
                     requestBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_FLUORESCENT);
                     break;
 
@@ -713,7 +716,7 @@ public class Camera2Activity extends CameraBaseActivity {
         try {
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
                     CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
-            setCurrentFlash(mPreviewRequestBuilder);
+            setCurrentFlash(mPreviewRequestBuilder, false);
             mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback,
                     mBackgroundHandler);
             mState = STATE_PREVIEW;
@@ -741,16 +744,6 @@ public class Camera2Activity extends CameraBaseActivity {
     protected void takePicture() {
         mFile = getOutputMediaFile();
         lockFocus();
-    }
-
-    @Override
-    protected void startRecord() {
-        //TODO:
-    }
-
-    @Override
-    protected void stopRecord() {
-        //TODO:
     }
 
     private void lockFocus() {
@@ -784,6 +777,7 @@ public class Camera2Activity extends CameraBaseActivity {
     }
 
     private void restartCamera() {
+        closePreviewSession();
         closeCamera();
         startBackgroundThread();
         if (mTextureView.isAvailable()) {
@@ -815,6 +809,10 @@ public class Camera2Activity extends CameraBaseActivity {
                 mImageReader.close();
                 mImageReader = null;
             }
+            if (null != mMediaRecorder) {
+                mMediaRecorder.release();
+                mMediaRecorder = null;
+            }
             mTextureView.setSurfaceTextureListener(null);
         } catch (InterruptedException e) {
             throw new RuntimeException("Interrupted while trying to lock camera closing.", e);
@@ -831,6 +829,157 @@ public class Camera2Activity extends CameraBaseActivity {
             mBackgroundHandler = null;
         } catch (InterruptedException e) {
             Timber.e(e);
+        }
+    }
+
+    MediaRecorder mMediaRecorder;
+
+    @Override
+    protected void startRecord() {
+        if (null == mCameraDevice || !mTextureView.isAvailable() || null == mPreviewSize) {
+            return;
+        }
+        try {
+            mIsCameraBusy = true;
+            closePreviewSession();
+            setUpMediaRecorder();
+            SurfaceTexture texture = mTextureView.getSurfaceTexture();
+            assert texture != null;
+            texture.setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
+            mPreviewRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
+            List<Surface> surfaces = new ArrayList<>();
+
+            // Set up Surface for the camera preview
+            Surface previewSurface = new Surface(texture);
+            surfaces.add(previewSurface);
+            mPreviewRequestBuilder.addTarget(previewSurface);
+
+            // Set up Surface for the MediaRecorder
+            Surface mRecorderSurface = mMediaRecorder.getSurface();
+            surfaces.add(mRecorderSurface);
+            mPreviewRequestBuilder.addTarget(mRecorderSurface);
+
+            // Start a capture session
+            // Once the session starts, we can update the UI and start recording
+            mCameraDevice.createCaptureSession(surfaces, new CameraCaptureSession.StateCallback() {
+
+                @Override
+                public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
+                    if (null == mCameraDevice) {
+                        mIsCameraBusy = false;
+                        return;
+                    }
+                    mCaptureSession = cameraCaptureSession;
+                    updatePreview();
+
+                    Camera2Activity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mIsCameraBusy = true;
+                            mMediaRecorder.start();
+                        }
+                    });
+                }
+
+                @Override
+                public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
+                    Toast.makeText(getApplicationContext(), "Recording Failed", Toast.LENGTH_SHORT).show();
+                }
+            }, mBackgroundHandler);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updatePreview() {
+        if (null == mCameraDevice) {
+            return;
+        }
+        try {
+            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+            setCurrentFlash(mPreviewRequestBuilder, true);
+            mPreviewRequest = mPreviewRequestBuilder.build();
+            HandlerThread thread = new HandlerThread("CameraPreview");
+            thread.start();
+            mCaptureSession.setRepeatingRequest(mPreviewRequest, null, mBackgroundHandler);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void closePreviewSession() {
+        if (mCaptureSession != null) {
+            mCaptureSession.close();
+            mCaptureSession = null;
+        }
+    }
+
+    private boolean setUpMediaRecorder() {
+        mMediaRecorder = new MediaRecorder();
+        mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        mFile = getOutputMediaFile();
+        mMediaRecorder.setOutputFile(mFile.getPath());
+        mMediaRecorder.setVideoEncodingBitRate(10000000);
+        mMediaRecorder.setVideoFrameRate(30);
+        mMediaRecorder.setVideoSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
+        mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+        mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        switch (mScreenRotation) {
+            case 0:
+                mMediaRecorder.setOrientationHint(mIsFacingCameraOn ? 270 : 90);
+                break;
+            case 90:
+                mMediaRecorder.setOrientationHint(180);
+                break;
+            case 180:
+                mMediaRecorder.setOrientationHint(mIsFacingCameraOn ? 90 : 270);
+                break;
+            case 270:
+                mMediaRecorder.setOrientationHint(0);
+                break;
+        }
+        try {
+            Timber.d("Starting MediaRecorder");
+            mMediaRecorder.prepare();
+            Timber.d("Started Recorder");
+        } catch (IllegalStateException e) {
+            Timber.e("IllegalStateException preparing MediaRecorder: " + e.getMessage());
+            releaseMediaRecorder();
+            return false;
+        } catch (IOException e) {
+            Timber.e("IOException preparing MediaRecorder: " + e.getMessage());
+            releaseMediaRecorder();
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    protected void stopRecord() {
+        if (mMediaRecorder != null) {
+            try {
+                mCaptureSession.stopRepeating();
+                mCaptureSession.abortCaptures();
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
+            mMediaRecorder.stop();
+            mIsCameraBusy = false;
+            releaseMediaRecorder();
+            mPresenter.createVideoPreview(mFile, getPreviewFile(), mPreviewSize.getWidth(), mPreviewSize.getHeight());
+        }
+    }
+
+    private void releaseMediaRecorder() {
+        if (mMediaRecorder != null) {
+            mMediaRecorder.reset();
+            mMediaRecorder.release();
+            mMediaRecorder = null;
+            restartCamera();
         }
     }
 }

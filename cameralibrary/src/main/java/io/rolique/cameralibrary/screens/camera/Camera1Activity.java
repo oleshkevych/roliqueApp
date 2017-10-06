@@ -141,29 +141,18 @@ public class Camera1Activity extends CameraBaseActivity {
 
         mMediaRecorder = new MediaRecorder();
         setFlashMode();
-        // Step 1: Unlock and set camera to MediaRecorder
         mCamera.unlock();
         mMediaRecorder.setCamera(mCamera);
-
-        // Step 2: Set sources
         mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
-
-        // Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
-//        mMediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
         mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mMediaRecorder.setVideoEncodingBitRate(1000000);
         mMediaRecorder.setVideoFrameRate(25);
         mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
         mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-
-        // Step 4: Set output file
         mFile = getOutputMediaFile();
         mMediaRecorder.setOutputFile(mFile.getPath());
-
-//         Step 5: Set the preview output
         mMediaRecorder.setPreviewDisplay(mCameraPreview.getHolder().getSurface());
-
         switch (mScreenRotation) {
             case 0:
                 mMediaRecorder.setOrientationHint(mIsFacingCameraOn ? 270 : 90);

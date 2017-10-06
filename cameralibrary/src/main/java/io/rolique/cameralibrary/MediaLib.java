@@ -60,6 +60,8 @@ public class MediaLib {
     public interface MediaLibListener {
         void onSuccess(List<MediaContent> mediaContents);
 
+        void onEmpty();
+
         void onError(Exception e);
     }
 
@@ -144,8 +146,10 @@ public class MediaLib {
             switch (requestCode) {
                 case RC_CAMERA:
                     List<MediaContent> mediaContents = data.getParcelableArrayListExtra(mActivity.getString(R.string.extra_camera_images));
-                    if (mMediaLibListener != null)
-                        mMediaLibListener.onSuccess(mediaContents);
+                    if (mMediaLibListener != null) {
+                        if (mediaContents.isEmpty()) mMediaLibListener.onEmpty();
+                        else mMediaLibListener.onSuccess(mediaContents);
+                    }
             }
     }
 }

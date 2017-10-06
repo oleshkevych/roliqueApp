@@ -113,6 +113,11 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
             }
 
             @Override
+            public void onEmpty() {
+
+            }
+
+            @Override
             public void onError(Exception e) {
 
             }

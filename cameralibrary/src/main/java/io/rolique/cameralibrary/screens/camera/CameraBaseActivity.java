@@ -20,11 +20,13 @@ import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.view.animation.Transformation;
+import android.view.animation.TranslateAnimation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -121,7 +123,12 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
             "HTC 0PK71",
             "HTC_M9pw",
             "HTC 0PK71",
-            "SM-G900H",
+            "D6502",
+            "D6503",
+            "D6543",
+            "SO-03F",
+            "D6563",
+//            "SM-G900H",
 //            "SM-G930F",
 //            "ALE-L21",
 //            "Nexus 5X",
@@ -193,6 +200,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     List<MediaContent> mMediaContents = new ArrayList<>();
     private ImagesAdapter mImagesAdapter;
     int mMinSwipeDistance;
+    int mMinSwipeCaptureButtonDistance;
     private int mOneDp;
     float mDeltaY;
     float mDeltaX;
@@ -270,21 +278,22 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         mCameraPreviewLayout = getViewById(R.id.content_camera_preview);
         mImagesCountTextView = getViewById(R.id.text_view_images_count);
         mMinSwipeDistance = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, getResources().getDisplayMetrics());
+        mMinSwipeCaptureButtonDistance = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, getResources().getDisplayMetrics());
         mOneDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics());
         setUpProperties();
         setUpImagesRecyclerView();
         setActionListeners();
         updateImagesInPreview();
-        mIsVideoMode = true;
+        setUpActionButtons();
     }
 
     private void setUpProperties() {
         mCameraSwitcherButton.setVisibility(mIsFrontCameraEnable ? View.VISIBLE : View.GONE);
-        setFlashDrawable();
         if (!mIsFlashModsSelectable) {
             mFlashButton.setVisibility(View.GONE);
             mFlashMode = mDefaultFlashMode;
         }
+        setFlashDrawable();
         if (mIsSingleFrontCamera) {
             mFlashMode = FLASH_MODE_OFF;
             mCameraSwitcherButton.setVisibility(View.GONE);
@@ -417,6 +426,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
         mImagesRecyclerView.setOnTouchListener(mOnPreviewTouchListener);
         mCameraPreviewLayout.setOnTouchListener(mOnPreviewTouchListener);
+        mVideoButton.setOnTouchListener(mOnActionButtonTouchListener);
     }
 
     View.OnClickListener mOnCameraSwitcherClickListener = new View.OnClickListener() {
@@ -470,15 +480,14 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     };
 
     private void onChangeVideoState() {
-        if(mIsCameraBusy) {
+        if (mIsCameraBusy) {
             stopRecord();
             mFlashButton.setVisibility(mIsFlashModsSelectable ? View.VISIBLE : View.GONE);
-        }
-        else {
+        } else {
             startRecord();
             mFlashButton.setVisibility(View.GONE);
         }
-        mVideoButton.setImageResource(mIsCameraBusy ? R.drawable.ic_stop_white_48dp : R.drawable.ic_videocam_white_24dp);
+        mVideoButton.setImageResource(mIsCameraBusy ? R.drawable.ic_stop_white_48dp : R.drawable.ic_videocam_white_48dp);
     }
 
     View.OnClickListener mOnToggleRecyclerClickListener = new View.OnClickListener() {
@@ -535,9 +544,9 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
                                 mFlashMode = FLASH_MODE_OFF;
                                 break;
                             case 0:
-                            mFlashButton.setImageResource(R.drawable.ic_flash_on_white_24dp);
-                            mFlashMode = FLASH_MODE_ON;
-                            break;
+                                mFlashButton.setImageResource(R.drawable.ic_flash_on_white_24dp);
+                                mFlashMode = FLASH_MODE_ON;
+                                break;
                         }
                     } else {
                         switch (mFlashCounter % 3) {
@@ -619,6 +628,78 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
             return mIsActionCalled;
         }
     };
+
+    View.OnTouchListener mOnActionButtonTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    mDeltaY = 0;
+                    mDeltaX = 0;
+                    mStartPositionY = event.getY();
+                    mStartPositionX = event.getX();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    mDeltaY = mStartPositionY - event.getY();
+                    mDeltaX = mStartPositionX - event.getX();
+                    if (Math.abs(mDeltaY) > Math.abs(mDeltaX)) break;
+                    if ((mDeltaX) > mMinSwipeCaptureButtonDistance) {
+                        if(mIsVideoMode) return true;
+                        mCaptureButton.setOnTouchListener(mOnActionButtonTouchListener);
+                        mVideoButton.setOnTouchListener(null);
+                        mIsVideoMode = true;
+                        startAppearAnimation(mVideoButton);
+                        startDisappearAnimation(mCaptureButton);
+                        setFlashDrawable();
+                    } else if (-1 * (mDeltaX) > mMinSwipeCaptureButtonDistance){
+                        if(!mIsVideoMode) return true;
+                        mCaptureButton.setOnTouchListener(null);
+                        mVideoButton.setOnTouchListener(mOnActionButtonTouchListener);
+                        mIsVideoMode = false;
+                        startAppearAnimation(mCaptureButton);
+                        startDisappearAnimation(mVideoButton);
+                        setFlashDrawable();
+                    }
+                    break;
+            }
+            return true;
+        }
+    };
+
+    private void startDisappearAnimation(final ImageButton imageButton) {
+        imageButton.setClickable(false);
+        boolean isVideoButton = imageButton == mVideoButton;
+        final float translateToX = isVideoButton ? 70 * mOneDp : - 70 * mOneDp;
+        imageButton.setTranslationX(translateToX);
+        imageButton.setAlpha(0.5f);
+        AnimationSet animationSet = new AnimationSet(true);
+        Animation animation1 = new TranslateAnimation(0, translateToX, 0, 0);
+        animationSet.addAnimation(animation1);
+        Animation animation2 = new AlphaAnimation(1.0f, 0.5f);
+        animationSet.addAnimation(animation2);
+        animationSet.setDuration(1000);
+        imageButton.startAnimation(animationSet);
+    }
+
+    private void startAppearAnimation(final ImageButton imageButton) {
+        imageButton.setClickable(true);
+        boolean isVideoButton = imageButton == mVideoButton;
+        final float translateFromX = isVideoButton ?  - 70 * mOneDp :  70 * mOneDp;
+        imageButton.setTranslationX(0);
+        imageButton.setAlpha(1.0f);
+        AnimationSet animationSet = new AnimationSet(true);
+        Animation animation1 = new TranslateAnimation(translateFromX, 0, 0, 0);
+        animationSet.addAnimation(animation1);
+        Animation animation2 = new AlphaAnimation(0.5f, 1.0f);
+        animationSet.addAnimation(animation2);
+        animationSet.setDuration(1000);
+        imageButton.startAnimation(animationSet);
+    }
+
+    private void setUpActionButtons() {
+        mVideoButton.setAlpha(0.5f);
+        mVideoButton.setTranslationX(70 * mOneDp);
+    }
 
     protected File getOutputMediaFile() {
         File sdCard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
@@ -746,8 +827,12 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
     @Override
     public void onBackPressed() {
-        for (MediaContent mediaContent : mMediaContents)
-            mPresenter.removeFile(mediaContent.getImage());
+        for (MediaContent mediaContent : mMediaContents) {
+            if (mediaContent.getVideo() != null)
+                mPresenter.removeFile(mediaContent.getVideo());
+            if (mediaContent.getImage() != null)
+                mPresenter.removeFile(mediaContent.getImage());
+        }
         super.onBackPressed();
     }
 
@@ -874,7 +959,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     }
 
     protected File getPreviewFile() {
-        File mediaStorageDir = new File(Environment.getExternalStorageDirectory(), "data");
+        File mediaStorageDir = new File(getCacheDir(), "data");
         if (!mediaStorageDir.mkdir() && !mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
                 Timber.d("failed to create directory");
