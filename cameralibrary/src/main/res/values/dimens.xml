@@ -5,5 +5,5 @@
     <dimen name="image_button_size_big">72dp</dimen>
     <dimen name="image_view_corner_radius">12dp</dimen>
     <dimen name="message_image_view_base_width">160dp</dimen>
-    <dimen name="circle_indicator_radius">12dp</dimen>
+    <dimen name="circle_indicator_radius">10dp</dimen>
 </resources>

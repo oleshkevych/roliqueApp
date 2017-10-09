@@ -158,6 +158,21 @@
 
     </LinearLayout>
 
+    <io.rolique.cameralibrary.widget.RecordingCounterTextView
+        android:id="@+id/text_view_recording_time"
+        android:layout_width="110dp"
+        android:layout_height="54dp"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="end|center"
+        android:drawablePadding="8dp"
+        android:layout_marginTop="16dp"
+        android:padding="16dp"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+        android:textColor="@color/red_700"
+        android:visibility="gone"
+        app:drawableLeftCompat="@drawable/ic_dot_red_24dp"
+        tools:text="0:05"/>
+
     <ImageButton
         android:id="@+id/button_camera_switcher"
         android:layout_width="@dimen/image_button_size_medium"

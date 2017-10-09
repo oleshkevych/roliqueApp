@@ -18,8 +18,10 @@ import android.support.v13.app.ActivityCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.LinearInterpolator;
@@ -48,6 +50,7 @@ import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.cameralibrary.screens.imageViewer.ImageViewerActivity;
 import io.rolique.cameralibrary.uiUtil.UiUtil;
 import io.rolique.cameralibrary.widget.DotsProgressBar;
+import io.rolique.cameralibrary.widget.RecordingCounterTextView;
 import timber.log.Timber;
 
 /**
@@ -198,6 +201,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     TextView mImagesCountTextView;
     FrameLayout mProgressLayout;
     DotsProgressBar mProgressView;
+    RecordingCounterTextView mRecordingCountTextView;
 
     int mFlashMode = FLASH_MODE_AUTO;
     int mDisplayOrientation;
@@ -286,6 +290,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         mImagesCountTextView = getViewById(R.id.text_view_images_count);
         mProgressLayout = getViewById(R.id.progress_layout);
         mProgressView = getViewById(R.id.progress_view);
+        mRecordingCountTextView = getViewById(R.id.text_view_recording_time);
         mMinSwipeDistance = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, getResources().getDisplayMetrics());
         mMinSwipeCaptureButtonDistance = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, getResources().getDisplayMetrics());
         mOneDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics());
@@ -485,11 +490,11 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     View.OnClickListener mOnPreviewClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            cameraAction();
+            startCameraAction();
         }
     };
 
-    protected void cameraAction() {
+    protected void startCameraAction() {
         if (mIsVideoMode) onChangeVideoState();
         else {
             takePicture();
@@ -506,9 +511,9 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     View.OnClickListener mOnActionButtonClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (v != mVideoButton && mIsVideoMode && mIsCameraBusy) cameraAction();
+            if (v != mVideoButton && mIsVideoMode && mIsCameraBusy) startCameraAction();
             if (v == mVideoButton) {
-                if (mIsVideoMode) cameraAction();
+                if (mIsVideoMode) startCameraAction();
                 else {
                     mIsVideoMode = true;
                     mVideoButton.setAlpha(1.0f);
@@ -521,20 +526,25 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
                     mCaptureButton.setAlpha(1.0f);
                     mVideoButton.setAlpha(0.5f);
                     setFlashDrawable();
-                } else cameraAction();
+                } else startCameraAction();
             }
         }
     };
 
     private void onChangeVideoState() {
         mVideoButton.setImageResource(mIsCameraBusy ? R.drawable.ic_videocam_white_48dp : R.drawable.ic_stop_white_48dp);
+        if (mIsFlashModsSelectable) toggleVisibility(mFlashButton, !mIsCameraBusy);
+        if (mIsFrontCameraEnable) toggleVisibility(mCameraSwitcherButton, !mIsCameraBusy);
+        toggleVisibility(mRecordingCountTextView, mIsCameraBusy);
         if (mIsCameraBusy) {
             stopRecord();
-            mFlashButton.setVisibility(mIsFlashModsSelectable ? View.VISIBLE : View.GONE);
             toggleProgressView(true);
+            mRecordingCountTextView.stop();
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         } else {
             startRecord();
-            mFlashButton.setVisibility(View.GONE);
+            mRecordingCountTextView.start();
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }
 
@@ -759,9 +769,16 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
     @Override
     protected void onPause() {
-        mPresenter.stop();
         if (mIsRotationEnable)
             SensorOrientationChangeNotifier.getInstance(getApplicationContext()).remove(mListener);
+        if (mRecordingCountTextView.getVisibility() == View.VISIBLE) {
+            toggleVisibility(mRecordingCountTextView, true);
+            mVideoButton.setImageResource(R.drawable.ic_videocam_white_48dp);
+            if (mIsFlashModsSelectable) toggleVisibility(mFlashButton, false);
+            if (mIsFrontCameraEnable) toggleVisibility(mCameraSwitcherButton, false);
+            mRecordingCountTextView.stop();
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
         super.onPause();
     }
 
@@ -775,6 +792,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     protected void toggleOrientation(int orientation) {
         animateRotation(mFlashButton, mScreenRotation, orientation);
         animateRotation(mCameraSwitcherButton, mScreenRotation, orientation);
+        animateRotation(mRecordingCountTextView, mScreenRotation, orientation);
         animateRotation(mPreviewImageView, mScreenRotation, orientation);
         animateRotation(mPlayVideoImageView, mScreenRotation, orientation);
         animateRotation(mCaptureButton, mScreenRotation, orientation);
@@ -953,5 +971,14 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         String stringMediaType = ".jpg";
         String path = mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + stringMediaType;
         return new File(path);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            startCameraAction();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

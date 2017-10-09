@@ -332,9 +332,9 @@ public class Camera1Activity extends CameraBaseActivity {
 
     @Override
     public void onPause() {
-        super.onPause();
         stopRecord();
         stopCamera();
+        super.onPause();
     }
 
     private void stopCamera() {

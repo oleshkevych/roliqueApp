@@ -777,6 +777,7 @@ public class Camera2Activity extends CameraBaseActivity {
     }
 
     private void restartCamera() {
+
         closeCamera();
         startBackgroundThread();
         if (mTextureView.isAvailable()) {
@@ -788,6 +789,20 @@ public class Camera2Activity extends CameraBaseActivity {
 
     @Override
     public void onPause() {
+        if (mMediaRecorder != null) {
+            try {
+                mCaptureSession.stopRepeating();
+                mCaptureSession.abortCaptures();
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
+            mMediaRecorder.stop();
+            mIsCameraBusy = false;
+            mMediaRecorder.reset();
+            mMediaRecorder.release();
+            mMediaRecorder = null;
+            mPresenter.createVideoPreview(mFile, getPreviewFile(), mPreviewSize.getWidth(), mPreviewSize.getHeight());
+        }
         closeCamera();
         stopBackgroundThread();
         super.onPause();
@@ -874,6 +889,7 @@ public class Camera2Activity extends CameraBaseActivity {
                     Camera2Activity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            mIsCameraBusy = true;
                             mMediaRecorder.start();
                         }
                     });
@@ -977,6 +993,7 @@ public class Camera2Activity extends CameraBaseActivity {
             mMediaRecorder.reset();
             mMediaRecorder.release();
             mMediaRecorder = null;
+            closeCamera();
             restartCamera();
         }
     }
