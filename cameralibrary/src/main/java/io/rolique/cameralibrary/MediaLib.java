@@ -2,10 +2,7 @@ package io.rolique.cameralibrary;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.annotation.IntDef;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 import io.rolique.cameralibrary.data.model.MediaContent;
@@ -69,9 +66,10 @@ public class MediaLib {
     private Activity mActivity;
     private int mStorageCategory = LOCAL_APP_FOLDER;
     private boolean mIsRotationEnable = true;
-    private boolean mIsFrontCameraEnable;
+    private boolean mIsFrontCamera;
     private boolean mIsSingleFrontCamera;
     private boolean mIsSinglePhoto;
+    private boolean mIsVideoEnabled;
     private boolean mIsFlashModsSelectable;
     private int mFlashMode = FLASH_MODE_AUTO;
 
@@ -90,21 +88,21 @@ public class MediaLib {
     /**
      * Set is landscape mode enabled
      * **/
-    public void setEnableRotation(boolean isEnabled) {
+    public void setRotation(boolean isEnabled) {
         mIsRotationEnable = isEnabled;
     }
 
     /**
      * Set is front camera enabled
      * **/
-    public void setEnableFrontCamera(boolean isEnabled) {
-        mIsFrontCameraEnable = isEnabled;
+    public void setFrontCamera(boolean isEnabled) {
+        mIsFrontCamera = isEnabled;
     }
 
     /**
      * Set is flash mods selectable
      * **/
-    public void setIsSelectableFlash(boolean isSelectable) {
+    public void setSelectableFlash(boolean isSelectable) {
         mIsFlashModsSelectable = isSelectable;
     }
 
@@ -116,9 +114,16 @@ public class MediaLib {
     }
 
     /**
+     * Set flash mod
+     * **/
+    public void setRecordVideo(boolean isVideoEnabled) {
+        mIsVideoEnabled = isVideoEnabled;
+    }
+
+    /**
      * Set single photo mod
      * **/
-    public void setIsSinglePhoto(boolean isSinglePhoto) {
+    public void setSinglePhoto(boolean isSinglePhoto) {
         mIsSinglePhoto = isSinglePhoto;
     }
 
@@ -133,10 +138,11 @@ public class MediaLib {
         Intent intent = CameraBaseActivity.getStartIntent(mActivity,
                 mStorageCategory,
                 mIsRotationEnable,
-                mIsFrontCameraEnable,
+                mIsFrontCamera,
                 mIsSinglePhoto,
                 mIsSingleFrontCamera,
                 mIsFlashModsSelectable,
+                mIsVideoEnabled,
                 mFlashMode);
         mActivity.startActivityForResult(intent, RC_CAMERA);
     }

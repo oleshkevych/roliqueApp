@@ -20,13 +20,12 @@ import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.view.animation.Transformation;
-import android.view.animation.TranslateAnimation;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -48,6 +47,7 @@ import io.rolique.cameralibrary.R;
 import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.cameralibrary.screens.imageViewer.ImageViewerActivity;
 import io.rolique.cameralibrary.uiUtil.UiUtil;
+import io.rolique.cameralibrary.widget.DotsProgressBar;
 import timber.log.Timber;
 
 /**
@@ -144,6 +144,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     private static final String EXTRA_SINGLE_FRONT_CAMERA = "SINGLE_FRONT_CAMERA";
     private static final String EXTRA_FLASH_MODS_SELECTABLE = "FLASH_MODS_SELECTABLE";
     private static final String EXTRA_DEFAULT_FLASH_MODE = "DEFAULT_FLASH_MODE";
+    private static final String EXTRA_VIDEO_RECORD_ENABLED = "VIDEO_RECORD_ENABLED";
 
     static final int FLASH_MODE_AUTO = 1;
     static final int FLASH_MODE_ON = 2;
@@ -160,6 +161,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
                                         boolean isSinglePhotoMode,
                                         boolean isSingleFrontCamera,
                                         boolean isFlashModsSelectable,
+                                        boolean isVideoRecordEnabled,
                                         int defaultFlashMod) {
         Intent intent = getCameraIntent(context);
         intent.putExtra(EXTRA_STORAGE_CATEGORY, category);
@@ -168,6 +170,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         intent.putExtra(EXTRA_SINGLE_PHOTO_MODE, isSinglePhotoMode);
         intent.putExtra(EXTRA_SINGLE_FRONT_CAMERA, isSingleFrontCamera);
         intent.putExtra(EXTRA_FLASH_MODS_SELECTABLE, isFlashModsSelectable);
+        intent.putExtra(EXTRA_VIDEO_RECORD_ENABLED, isVideoRecordEnabled);
         intent.putExtra(EXTRA_DEFAULT_FLASH_MODE, defaultFlashMod);
         return intent;
     }
@@ -193,6 +196,8 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     ImageButton mCaptureButton;
     ImageButton mVideoButton;
     TextView mImagesCountTextView;
+    FrameLayout mProgressLayout;
+    DotsProgressBar mProgressView;
 
     int mFlashMode = FLASH_MODE_AUTO;
     int mDisplayOrientation;
@@ -220,6 +225,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     private boolean mIsFlashModsSelectable;
     private int mDefaultFlashMode;
     private boolean mIsSingleFrontCamera;
+    private boolean mIsVideoRecord;
 
     protected CameraPresenter mPresenter;
 
@@ -233,6 +239,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         mIsSinglePhoto = getIntent().getBooleanExtra(EXTRA_SINGLE_PHOTO_MODE, false);
         mIsSingleFrontCamera = getIntent().getBooleanExtra(EXTRA_SINGLE_FRONT_CAMERA, false);
         mIsFlashModsSelectable = getIntent().getBooleanExtra(EXTRA_FLASH_MODS_SELECTABLE, false);
+        mIsVideoRecord = getIntent().getBooleanExtra(EXTRA_VIDEO_RECORD_ENABLED, false);
         mDefaultFlashMode = getIntent().getIntExtra(EXTRA_DEFAULT_FLASH_MODE, FLASH_MODE_AUTO);
     }
 
@@ -277,6 +284,8 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         mVideoButton = getViewById(R.id.button_video);
         mCameraPreviewLayout = getViewById(R.id.content_camera_preview);
         mImagesCountTextView = getViewById(R.id.text_view_images_count);
+        mProgressLayout = getViewById(R.id.progress_layout);
+        mProgressView = getViewById(R.id.progress_view);
         mMinSwipeDistance = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, getResources().getDisplayMetrics());
         mMinSwipeCaptureButtonDistance = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, getResources().getDisplayMetrics());
         mOneDp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics());
@@ -284,7 +293,6 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         setUpImagesRecyclerView();
         setActionListeners();
         updateImagesInPreview();
-        setUpActionButtons();
     }
 
     private void setUpProperties() {
@@ -302,6 +310,8 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         }
         if (mIsSinglePhoto)
             mDoneImageView.setVisibility(View.GONE);
+        if (mIsVideoRecord)
+            mVideoButton.setVisibility(View.VISIBLE);
     }
 
     private void setUpImagesRecyclerView() {
@@ -351,6 +361,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         toggleButtonLayout.setVisibility(mMediaContents.size() == 0 ? View.INVISIBLE : View.VISIBLE);
         mImagesCountTextView.setText(String.valueOf(mMediaContents.size()));
         mImagesAdapter.setMediaContents(mMediaContents);
+        toggleProgressView(false);
     }
 
     private void toggleVisibility(final View view, boolean isHide) {
@@ -414,19 +425,19 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     private void setActionListeners() {
         mCameraSwitcherButton.setOnClickListener(mOnCameraSwitcherClickListener);
         getViewById(R.id.content_controls).setOnClickListener(null);
-        mCameraPreviewLayout.setOnClickListener(mOnCameraActionClickListener);
-        mCaptureButton.setOnClickListener(mOnCameraActionClickListener);
-        mVideoButton.setOnClickListener(mOnCameraActionClickListener);
+        mCameraPreviewLayout.setOnClickListener(mOnPreviewClickListener);
         mPreviewImageView.setOnClickListener(mOnToggleRecyclerClickListener);
         mImagesCountTextView.setOnClickListener(mOnToggleRecyclerClickListener);
         getViewById(R.id.button_main_size_toggle).setOnClickListener(mOnToggleRecyclerClickListener);
         getViewById(R.id.button_additional_size_toggle).setOnClickListener(mOnToggleSizeClickListener);
         mDoneImageView.setOnClickListener(mOnDoneClickListener);
         mFlashButton.setOnClickListener(mOnFlashClickListener);
+        mCaptureButton.setOnClickListener(mOnActionButtonClickListener);
+        mVideoButton.setOnClickListener(mOnActionButtonClickListener);
+        mProgressLayout.setOnTouchListener(mOnProgressTouchListener);
 
         mImagesRecyclerView.setOnTouchListener(mOnPreviewTouchListener);
         mCameraPreviewLayout.setOnTouchListener(mOnPreviewTouchListener);
-        mVideoButton.setOnTouchListener(mOnActionButtonTouchListener);
     }
 
     View.OnClickListener mOnCameraSwitcherClickListener = new View.OnClickListener() {
@@ -471,23 +482,60 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         }
     }
 
-    View.OnClickListener mOnCameraActionClickListener = new View.OnClickListener() {
+    View.OnClickListener mOnPreviewClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (mIsVideoMode) onChangeVideoState();
-            else takePicture();
+            cameraAction();
+        }
+    };
+
+    protected void cameraAction() {
+        if (mIsVideoMode) onChangeVideoState();
+        else {
+            takePicture();
+            toggleProgressView(true);
+        }
+    }
+
+    private void toggleProgressView(boolean isActive) {
+        if (isActive) mProgressView.start();
+        else mProgressView.stop();
+        mProgressLayout.setVisibility(isActive ? View.VISIBLE : View.GONE);
+    }
+
+    View.OnClickListener mOnActionButtonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (v != mVideoButton && mIsVideoMode && mIsCameraBusy) cameraAction();
+            if (v == mVideoButton) {
+                if (mIsVideoMode) cameraAction();
+                else {
+                    mIsVideoMode = true;
+                    mVideoButton.setAlpha(1.0f);
+                    mCaptureButton.setAlpha(0.5f);
+                    setFlashDrawable();
+                }
+            } else {
+                if (mIsVideoMode) {
+                    mIsVideoMode = false;
+                    mCaptureButton.setAlpha(1.0f);
+                    mVideoButton.setAlpha(0.5f);
+                    setFlashDrawable();
+                } else cameraAction();
+            }
         }
     };
 
     private void onChangeVideoState() {
+        mVideoButton.setImageResource(mIsCameraBusy ? R.drawable.ic_videocam_white_48dp : R.drawable.ic_stop_white_48dp);
         if (mIsCameraBusy) {
             stopRecord();
             mFlashButton.setVisibility(mIsFlashModsSelectable ? View.VISIBLE : View.GONE);
+            toggleProgressView(true);
         } else {
             startRecord();
             mFlashButton.setVisibility(View.GONE);
         }
-        mVideoButton.setImageResource(mIsCameraBusy ? R.drawable.ic_stop_white_48dp : R.drawable.ic_videocam_white_48dp);
     }
 
     View.OnClickListener mOnToggleRecyclerClickListener = new View.OnClickListener() {
@@ -598,6 +646,13 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         }
     };
 
+    View.OnTouchListener mOnProgressTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            return true;
+        }
+    };
+
     View.OnTouchListener mOnPreviewTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -628,78 +683,6 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
             return mIsActionCalled;
         }
     };
-
-    View.OnTouchListener mOnActionButtonTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    mDeltaY = 0;
-                    mDeltaX = 0;
-                    mStartPositionY = event.getY();
-                    mStartPositionX = event.getX();
-                    break;
-                case MotionEvent.ACTION_UP:
-                    mDeltaY = mStartPositionY - event.getY();
-                    mDeltaX = mStartPositionX - event.getX();
-                    if (Math.abs(mDeltaY) > Math.abs(mDeltaX)) break;
-                    if ((mDeltaX) > mMinSwipeCaptureButtonDistance) {
-                        if(mIsVideoMode) return true;
-                        mCaptureButton.setOnTouchListener(mOnActionButtonTouchListener);
-                        mVideoButton.setOnTouchListener(null);
-                        mIsVideoMode = true;
-                        startAppearAnimation(mVideoButton);
-                        startDisappearAnimation(mCaptureButton);
-                        setFlashDrawable();
-                    } else if (-1 * (mDeltaX) > mMinSwipeCaptureButtonDistance){
-                        if(!mIsVideoMode) return true;
-                        mCaptureButton.setOnTouchListener(null);
-                        mVideoButton.setOnTouchListener(mOnActionButtonTouchListener);
-                        mIsVideoMode = false;
-                        startAppearAnimation(mCaptureButton);
-                        startDisappearAnimation(mVideoButton);
-                        setFlashDrawable();
-                    }
-                    break;
-            }
-            return true;
-        }
-    };
-
-    private void startDisappearAnimation(final ImageButton imageButton) {
-        imageButton.setClickable(false);
-        boolean isVideoButton = imageButton == mVideoButton;
-        final float translateToX = isVideoButton ? 70 * mOneDp : - 70 * mOneDp;
-        imageButton.setTranslationX(translateToX);
-        imageButton.setAlpha(0.5f);
-        AnimationSet animationSet = new AnimationSet(true);
-        Animation animation1 = new TranslateAnimation(0, translateToX, 0, 0);
-        animationSet.addAnimation(animation1);
-        Animation animation2 = new AlphaAnimation(1.0f, 0.5f);
-        animationSet.addAnimation(animation2);
-        animationSet.setDuration(1000);
-        imageButton.startAnimation(animationSet);
-    }
-
-    private void startAppearAnimation(final ImageButton imageButton) {
-        imageButton.setClickable(true);
-        boolean isVideoButton = imageButton == mVideoButton;
-        final float translateFromX = isVideoButton ?  - 70 * mOneDp :  70 * mOneDp;
-        imageButton.setTranslationX(0);
-        imageButton.setAlpha(1.0f);
-        AnimationSet animationSet = new AnimationSet(true);
-        Animation animation1 = new TranslateAnimation(translateFromX, 0, 0, 0);
-        animationSet.addAnimation(animation1);
-        Animation animation2 = new AlphaAnimation(0.5f, 1.0f);
-        animationSet.addAnimation(animation2);
-        animationSet.setDuration(1000);
-        imageButton.startAnimation(animationSet);
-    }
-
-    private void setUpActionButtons() {
-        mVideoButton.setAlpha(0.5f);
-        mVideoButton.setTranslationX(70 * mOneDp);
-    }
 
     protected File getOutputMediaFile() {
         File sdCard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);

@@ -34,7 +34,9 @@
                 android:id="@+id/image_view_preview"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
-                tools:ignore="ContentDescription"/>
+                tools:background="@color/black"
+                tools:ignore="ContentDescription"
+                tools:visibility="visible"/>
 
             <TextView
                 android:id="@+id/text_view_images_count"
@@ -50,34 +52,42 @@
 
             <ImageView
                 android:id="@+id/image_view_play_video"
-                android:layout_gravity="end|bottom"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:srcCompat="@drawable/ic_play_24dp"
+                android:layout_gravity="end|bottom"
                 android:visibility="gone"
+                app:srcCompat="@drawable/ic_play_24dp"
                 tools:ignore="ContentDescription"/>
         </FrameLayout>
 
-        <ImageButton
-            android:id="@+id/button_capture"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:background="?selectableItemBackground"
-            android:padding="16dp"
-            app:srcCompat="@drawable/ic_camera_white_48dp"
-            tools:ignore="ContentDescription"/>
+            android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/button_video"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="?selectableItemBackground"
-            android:padding="16dp"
-            android:clickable="false"
-            app:srcCompat="@drawable/ic_videocam_white_48dp"
-            tools:ignore="ContentDescription"/>
+            <ImageButton
+                android:id="@+id/button_capture"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?selectableItemBackground"
+                android:padding="16dp"
+                app:srcCompat="@drawable/ic_camera_white_48dp"
+                tools:ignore="ContentDescription"/>
+
+            <ImageButton
+                android:id="@+id/button_video"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="-8dp"
+                android:alpha="0.5"
+                android:background="?selectableItemBackground"
+                android:padding="16dp"
+                android:visibility="gone"
+                app:srcCompat="@drawable/ic_videocam_white_48dp"
+                tools:ignore="ContentDescription"
+                />
+        </LinearLayout>
 
         <ImageView
             android:id="@+id/image_view_done"
@@ -170,4 +180,18 @@
         android:padding="16dp"
         app:srcCompat="@drawable/ic_flash_auto_white_24dp"
         tools:ignore="ContentDescription"/>
+
+    <FrameLayout
+        android:id="@+id/progress_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black_alpha_50"
+        android:visibility="gone">
+
+        <io.rolique.cameralibrary.widget.DotsProgressBar
+            android:id="@+id/progress_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+    </FrameLayout>
 </RelativeLayout>

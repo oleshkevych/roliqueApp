@@ -777,7 +777,6 @@ public class Camera2Activity extends CameraBaseActivity {
     }
 
     private void restartCamera() {
-        closePreviewSession();
         closeCamera();
         startBackgroundThread();
         if (mTextureView.isAvailable()) {
@@ -855,9 +854,9 @@ public class Camera2Activity extends CameraBaseActivity {
             mPreviewRequestBuilder.addTarget(previewSurface);
 
             // Set up Surface for the MediaRecorder
-            Surface mRecorderSurface = mMediaRecorder.getSurface();
-            surfaces.add(mRecorderSurface);
-            mPreviewRequestBuilder.addTarget(mRecorderSurface);
+            Surface recorderSurface = mMediaRecorder.getSurface();
+            surfaces.add(recorderSurface);
+            mPreviewRequestBuilder.addTarget(recorderSurface);
 
             // Start a capture session
             // Once the session starts, we can update the UI and start recording
@@ -875,7 +874,6 @@ public class Camera2Activity extends CameraBaseActivity {
                     Camera2Activity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mIsCameraBusy = true;
                             mMediaRecorder.start();
                         }
                     });
