@@ -26,5 +26,9 @@
             android:name=".screens.imageViewer.ImageViewerActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Fullscreen"/>
+        <activity
+            android:name=".screens.videoViewer.VideoViewerActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.Fullscreen"/>
     </application>
 </manifest>

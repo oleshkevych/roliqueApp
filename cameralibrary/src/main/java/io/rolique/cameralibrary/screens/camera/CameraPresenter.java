@@ -94,17 +94,6 @@ class CameraPresenter implements CameraContract.Presenter {
         mCompositeDisposable.add(disposable);
     }
 
-    private File saveToFile(byte[] byteArray, File file) {
-        try {
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.write(byteArray);
-            fos.close();
-        } catch (Exception e) {
-            Timber.e(e);
-        }
-        return file;
-    }
-
     private Bitmap transformBitmap(byte[] data, int screenWidth, int screenHeight, boolean isFrontOrientation, int orientation) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 4;
@@ -121,6 +110,17 @@ class CameraPresenter implements CameraContract.Presenter {
         } else
             mtx.postRotate(orientation + 90);
         return Bitmap.createBitmap(scaled, 0, 0, w, h, mtx, true);
+    }
+
+    private File saveToFile(byte[] byteArray, File file) {
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(byteArray);
+            fos.close();
+        } catch (Exception e) {
+            Timber.e(e);
+        }
+        return file;
     }
 
     @Override

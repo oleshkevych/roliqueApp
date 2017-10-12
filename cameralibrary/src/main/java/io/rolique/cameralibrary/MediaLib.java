@@ -45,7 +45,7 @@ import io.rolique.cameralibrary.screens.camera.CameraBaseActivity;
 
 public class MediaLib {
 
-    private final static int RC_CAMERA = 101;
+    private final static int RC_CAMERA = 65526;
 
     public final static int LOCAL_APP_FOLDER = 0;
     public final static int GLOBAL_MEDIA_DEFAULT_FOLDER = 1;

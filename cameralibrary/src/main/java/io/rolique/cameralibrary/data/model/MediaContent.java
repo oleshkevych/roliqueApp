@@ -92,6 +92,14 @@ public class MediaContent implements Parcelable {
         mWidth = width;
     }
 
+    public boolean isVideo() {
+        return mMediaType.equals(CATEGORY_VIDEO);
+    }
+
+    public boolean isImage() {
+        return mMediaType.equals(CATEGORY_IMAGE);
+    }
+
     public
     @Category
     String getMediaType() {

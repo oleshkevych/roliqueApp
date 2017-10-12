@@ -54,7 +54,6 @@
                         android:layout_height="wrap_content"
                         android:ellipsize="end"
                         android:hint="@string/activity_new_chat_chat_name"
-                        android:inputType="textEmailAddress"
                         android:maxLines="1"/>
 
                     <android.support.v7.widget.RecyclerView

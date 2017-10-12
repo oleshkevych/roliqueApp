@@ -48,6 +48,7 @@ import io.rolique.cameralibrary.MediaLib;
 import io.rolique.cameralibrary.R;
 import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.cameralibrary.screens.imageViewer.ImageViewerActivity;
+import io.rolique.cameralibrary.screens.videoViewer.VideoViewerActivity;
 import io.rolique.cameralibrary.uiUtil.UiUtil;
 import io.rolique.cameralibrary.widget.DotsProgressBar;
 import io.rolique.cameralibrary.widget.RecordingCounterTextView;
@@ -60,7 +61,7 @@ import timber.log.Timber;
 
 public abstract class CameraBaseActivity extends BaseActivity implements CameraContract.View {
 
-    private static final HashSet<String> UNSUPPORTED_CAMERA2API_MODELS = new HashSet<>(Arrays.asList(
+    private static HashSet<String> UNSUPPORTED_CAMERA2API_MODELS = new HashSet<>(Arrays.asList(
             "SM-G920F",
             "SM-G920I",
             "SM-G920X",
@@ -166,7 +167,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
                                         boolean isFlashModsSelectable,
                                         boolean isVideoRecordEnabled,
                                         int defaultFlashMod) {
-        Intent intent = getCameraIntent(context);
+        Intent intent = getCameraIntent(context, isRotationEnabled);
         intent.putExtra(EXTRA_STORAGE_CATEGORY, category);
         intent.putExtra(EXTRA_ROTATION_ENABLED, isRotationEnabled);
         intent.putExtra(EXTRA_FRONT_CAMERA_ENABLED, isFrontCameraEnabled);
@@ -178,7 +179,10 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         return intent;
     }
 
-    private static Intent getCameraIntent(Context context) {
+    private static Intent getCameraIntent(Context context, boolean isRotationEnabled) {
+        if (isRotationEnabled) {
+            UNSUPPORTED_CAMERA2API_MODELS.add("ALE-L21");
+        }
         if (UNSUPPORTED_CAMERA2API_MODELS.contains(Build.MODEL)) {
             return Camera1Activity.getStartIntent(context);
         }
@@ -221,6 +225,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     int mFlashCounter;
     boolean mIsVideoMode;
     File mFile;
+    long mStartRecordTime;
 
     private int mStorageCategory;
     private boolean mIsRotationEnable;
@@ -331,7 +336,15 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     private ImagesAdapter.OnImagesClickListener mOnImagesClickListener = new ImagesAdapter.OnImagesClickListener() {
         @Override
         public void onImageClick(ImageView imageView, MediaContent mediaContent) {
-            ImageViewerActivity.start(CameraBaseActivity.this, imageView, mediaContent);
+            if (mediaContent.isImage())
+                ImageViewerActivity.start(CameraBaseActivity.this, imageView, mediaContent);
+            else {
+                List<MediaContent> mediaContents = new ArrayList<>();
+                for (MediaContent content: mMediaContents)
+                    if (content.isVideo())
+                        mediaContents.add(content);
+                startActivity(VideoViewerActivity.getStartIntent(CameraBaseActivity.this, mediaContents, mediaContents.indexOf(mediaContent)));
+            }
         }
 
         @Override
@@ -355,8 +368,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     private void updateImagesInPreview() {
         toggleVisibility(mPreviewImageView, mMediaContents.size() == 0);
         toggleVisibility(mPlayVideoImageView,
-                (mMediaContents.size() == 0 || !mMediaContents.get(mMediaContents.size() - 1)
-                        .getMediaType().equals(MediaContent.CATEGORY_VIDEO)));
+                (mMediaContents.size() == 0 || !mMediaContents.get(mMediaContents.size() - 1).isVideo()));
         changeToggleButtonVisibility(R.id.button_main_size_toggle, mMediaContents.size() != 0);
         if (mMediaContents.size() > 0)
             UiUtil.setImageWithRoundCorners(mPreviewImageView, mMediaContents.get(mMediaContents.size() - 1).getImage());
@@ -532,6 +544,8 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     };
 
     private void onChangeVideoState() {
+        if (mStartRecordTime + 1500 > new Date().getTime()) return;
+        mStartRecordTime = new Date().getTime();
         mVideoButton.setImageResource(mIsCameraBusy ? R.drawable.ic_videocam_white_48dp : R.drawable.ic_stop_white_48dp);
         if (mIsFlashModsSelectable) toggleVisibility(mFlashButton, !mIsCameraBusy);
         if (mIsFrontCameraEnable) toggleVisibility(mCameraSwitcherButton, !mIsCameraBusy);
