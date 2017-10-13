@@ -1,24 +1,24 @@
 package io.rolique.cameralibrary.screens.imageViewer;
 
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ActivityOptionsCompat;
+import android.os.Parcelable;
+import android.support.v13.app.FragmentStatePagerAdapter;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.ImageView;
 
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
-
-import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.rolique.cameralibrary.R;
 import io.rolique.cameralibrary.data.model.MediaContent;
-import io.rolique.cameralibrary.widget.TouchImageView;
+import io.rolique.cameralibrary.widget.CustomViewPager;
 
 /**
  * Created by Volodymyr Oleshkevych on 5/18/2017.
@@ -27,41 +27,28 @@ import io.rolique.cameralibrary.widget.TouchImageView;
 
 public class ImageViewerActivity extends AppCompatActivity {
 
-    private static final String EXTRA_IMAGE = "IMAGE_PATH";
-    private static final String EXTRA_IMAGE_HEIGHT = "IMAGE_HEIGHT";
-    private static final String EXTRA_IMAGE_WIDTH = "IMAGE_WIDTH";
+    private static final String EXTRA_MEDIAS = "IMAGE_PATH";
+    private static final String EXTRA_SELECTED_POSITION = "SELECTED_POSITION";
 
-    public static void start(Activity activity, ImageView imageView, MediaContent mediaContent) {
+    public static Intent getStartIntent(Activity activity, List<MediaContent> mediaContents, int position) {
         Intent intent = new Intent(activity, ImageViewerActivity.class);
-        intent.putExtra(EXTRA_IMAGE, mediaContent.getImage());
-        intent.putExtra(EXTRA_IMAGE_HEIGHT, mediaContent.getHeight());
-        intent.putExtra(EXTRA_IMAGE_WIDTH, mediaContent.getWidth());
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                    activity, imageView, activity.getString(R.string.shared_transition_image));
-            activity.startActivity(intent, activityOptionsCompat.toBundle());
-        } else {
-            activity.startActivity(intent);
-        }
+        intent.putParcelableArrayListExtra(EXTRA_MEDIAS, new ArrayList<Parcelable>(mediaContents));
+        intent.putExtra(EXTRA_SELECTED_POSITION, position);
+        return intent;
     }
 
-    TouchImageView mImageView;
-
-    int height;
-    int width;
+    List<MediaContent> mMediaContents;
+    FragmentViewPagerAdapter mFragmentViewPagerAdapter;
+    CustomViewPager mViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_viewer);
-        mImageView = (TouchImageView) findViewById(R.id.touch_image_view);
-        ActivityCompat.postponeEnterTransition(ImageViewerActivity.this);
+        mMediaContents = getIntent().getParcelableArrayListExtra(EXTRA_MEDIAS);
+        int startPosition = getIntent().getIntExtra(EXTRA_SELECTED_POSITION, 0);
         setUpToolbar();
-        File file = (File) getIntent().getSerializableExtra(EXTRA_IMAGE);
-        height = getIntent().getIntExtra(EXTRA_IMAGE_HEIGHT, 0);
-        width = getIntent().getIntExtra(EXTRA_IMAGE_WIDTH, 0);
-        loadImage(file);
+        setUpViewPager(startPosition);
     }
 
     private void setUpToolbar() {
@@ -72,22 +59,109 @@ public class ImageViewerActivity extends AppCompatActivity {
                 onBackPressed();
             }
         });
+        toolbar.findViewById(R.id.image_button_delete).setOnClickListener(mOnDeleteClickListener);
     }
 
-    private void loadImage(File path) {
-        Picasso.with(mImageView.getContext())
-                .load(path)
-                .resize(width, height)
-                .into(mImageView, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        ActivityCompat.startPostponedEnterTransition(ImageViewerActivity.this);
-                    }
+    View.OnClickListener mOnDeleteClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            new AlertDialog
+                    .Builder(ImageViewerActivity.this)
+                    .setTitle(R.string.activity_image_viewer_alert_title)
+                    .setMessage(R.string.activity_image_viewer_alert_body)
+                    .setCancelable(true)
+                    .setNegativeButton(R.string.activity_image_viewer_negative_button, null)
+                    .setPositiveButton(R.string.activity_image_viewer_positive_button, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            int index = mViewPager.getCurrentItem();
+                            mMediaContents.get(index).getImage().delete();
+                            mMediaContents.remove(index);
+                            if (mFragmentViewPagerAdapter.getCount() == 1) onBackPressed();
+                            mFragmentViewPagerAdapter.removeFragment(index);
+                            mFragmentViewPagerAdapter.notifyDataSetChanged();
+                            setOffscreenPageLimit();
+                        }
+                    })
+                    .show();
+        }
+    };
 
+    private void setUpViewPager(int startPosition) {
+        mFragmentViewPagerAdapter = new FragmentViewPagerAdapter(getFragmentManager());
+        int imagesCount = -1;
+        for (MediaContent mediaContent : mMediaContents) {
+            if (mediaContent.isImage()) {
+                ImageFragment fragment = ImageFragment.newInstance(mediaContent);
+                fragment.setToggleSwipeListener(new ImageFragment.OnToggleSwipeListener() {
                     @Override
-                    public void onError() {
-                        ActivityCompat.startPostponedEnterTransition(ImageViewerActivity.this);
+                    public void onToggleSwipe(boolean isAllowed) {
+                        mViewPager.setScroll(isAllowed);
                     }
                 });
+                mFragmentViewPagerAdapter.addFragment(fragment);
+                imagesCount++;
+            }
+            if (mMediaContents.indexOf(mediaContent) == startPosition)
+                startPosition = imagesCount;
+        }
+        mViewPager = findViewById(R.id.view_pager);
+        mViewPager.setAdapter(mFragmentViewPagerAdapter);
+        mViewPager.setCurrentItem(startPosition);
+        mViewPager.setOnTouchListener(null);
+        setOffscreenPageLimit();
+    }
+
+    private void setOffscreenPageLimit() {
+        mViewPager.setOffscreenPageLimit(mFragmentViewPagerAdapter.getCount() > 4 ? 5 : mFragmentViewPagerAdapter.getCount());
+    }
+
+    private class FragmentViewPagerAdapter extends FragmentStatePagerAdapter {
+
+        public List<Fragment> getFragments() {
+            return mFragments;
+        }
+
+        private final List<Fragment> mFragments = new ArrayList<>();
+
+        FragmentViewPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        void addFragment(Fragment fragment) {
+            mFragments.add(fragment);
+        }
+
+        void removeFragment(int index) {
+            mFragments.remove(index);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return mFragments.get(position);
+        }
+
+        @Override
+        public int getItemPosition(Object object) {
+            int index = mFragments.indexOf(object);
+
+            if (index == -1)
+                return POSITION_NONE;
+            else
+                return index;
+        }
+
+        @Override
+        public int getCount() {
+            return mFragments.size();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent();
+        intent.putParcelableArrayListExtra(getString(R.string.extra_camera_images), new ArrayList<Parcelable>(mMediaContents));
+        setResult(RESULT_OK, intent);
+        super.onBackPressed();
     }
 }

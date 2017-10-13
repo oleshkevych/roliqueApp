@@ -32,6 +32,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -140,6 +141,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     ));
 
     static final int RC_CAMERA_PERMISSION = 101;
+    static final int RC_IMAGE_VIEWER = 102;
 
     private static final String EXTRA_STORAGE_CATEGORY = "STORAGE_CATEGORY";
     private static final String EXTRA_ROTATION_ENABLED = "ROTATION_ENABLED";
@@ -302,7 +304,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         setUpProperties();
         setUpImagesRecyclerView();
         setActionListeners();
-        updateImagesInPreview();
+        updateImagesInPreview(false);
     }
 
     private void setUpProperties() {
@@ -335,28 +337,46 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
     private ImagesAdapter.OnImagesClickListener mOnImagesClickListener = new ImagesAdapter.OnImagesClickListener() {
         @Override
-        public void onImageClick(ImageView imageView, MediaContent mediaContent) {
-            if (mediaContent.isImage())
-                ImageViewerActivity.start(CameraBaseActivity.this, imageView, mediaContent);
+        public void onImageClick(int position) {
+            if (mMediaContents.get(position).isImage())
+                startActivityForResult(
+                        ImageViewerActivity.getStartIntent(CameraBaseActivity.this,
+                                mMediaContents,
+                                position),
+                        RC_IMAGE_VIEWER);
             else {
                 List<MediaContent> mediaContents = new ArrayList<>();
-                for (MediaContent content: mMediaContents)
+                for (MediaContent content : mMediaContents)
                     if (content.isVideo())
                         mediaContents.add(content);
-                startActivity(VideoViewerActivity.getStartIntent(CameraBaseActivity.this, mediaContents, mediaContents.indexOf(mediaContent)));
+                startActivity(VideoViewerActivity.getStartIntent(CameraBaseActivity.this, mediaContents, position));
             }
         }
 
         @Override
-        public void onRemoveClick(MediaContent mediaContent) {
-            mMediaContents.remove(mediaContent);
+        public void onRemoveClick(int position) {
+            MediaContent mediaContent = mMediaContents.get(position);
             mPresenter.removeFile(mediaContent.getImage() == null ? mediaContent.getVideo() : mediaContent.getImage());
-            updateImagesInPreview();
+            mMediaContents.remove(position);
+            mImagesAdapter.removeItem(position);
+            updateImagesInPreview(false);
             if (mMediaContents.size() == 0) {
                 toggleImagesRecyclerView();
             }
         }
     };
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == RC_IMAGE_VIEWER) {
+            mMediaContents = data.getParcelableArrayListExtra(getString(R.string.extra_camera_images));
+            updateImagesInPreview(true);
+            if (mMediaContents.size() == 0) {
+                toggleImagesRecyclerView();
+            }
+        }
+    }
 
     void toggleHeightImagesRecyclerView() {
         RecyclerHeightAnimation animation = new RecyclerHeightAnimation(mImagesRecyclerView, false);
@@ -365,7 +385,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         mImagesRecyclerView.startAnimation(animation);
     }
 
-    private void updateImagesInPreview() {
+    private void updateImagesInPreview(boolean isUpdateAdapter) {
         toggleVisibility(mPreviewImageView, mMediaContents.size() == 0);
         toggleVisibility(mPlayVideoImageView,
                 (mMediaContents.size() == 0 || !mMediaContents.get(mMediaContents.size() - 1).isVideo()));
@@ -377,7 +397,8 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         LinearLayout toggleButtonLayout = getViewById(R.id.layout_size_toggle);
         toggleButtonLayout.setVisibility(mMediaContents.size() == 0 ? View.INVISIBLE : View.VISIBLE);
         mImagesCountTextView.setText(String.valueOf(mMediaContents.size()));
-        mImagesAdapter.setMediaContents(mMediaContents);
+        if (isUpdateAdapter)
+            mImagesAdapter.setMediaContents(mMediaContents);
         toggleProgressView(false);
     }
 
@@ -739,13 +760,14 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
                 widthWithRotation,
                 MediaContent.CATEGORY_IMAGE);
         mMediaContents.add(mediaContent);
-        showSavedInView(file);
+        showSavedInView(file, mediaContent);
     }
 
-    protected void showSavedInView(File file) {
+    protected void showSavedInView(File file, MediaContent mediaContent) {
         if (!isAppLocalStorage()) galleryAddPic(file);
         if (mIsSinglePhoto) onDoneClick();
-        updateImagesInPreview();
+        mImagesAdapter.addItem(mediaContent);
+        updateImagesInPreview(false);
     }
 
     @Override
@@ -758,7 +780,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
                 widthWithRotation,
                 MediaContent.CATEGORY_VIDEO);
         mMediaContents.add(mediaContent);
-        showSavedInView(video);
+        showSavedInView(video, mediaContent);
     }
 
     private void galleryAddPic(File f) {
@@ -965,7 +987,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
                                            @NonNull int[] grantResults) {
         if (requestCode == RC_CAMERA_PERMISSION) {
             if (lacksPermissions(PERMISSIONS)) {
-                //TODO: Show error message
+                Toast.makeText(CameraBaseActivity.this, R.string.activity_camera_permissions_error, Toast.LENGTH_LONG).show();
                 finish();
             }
         } else {

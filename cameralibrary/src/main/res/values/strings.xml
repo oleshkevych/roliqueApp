@@ -3,7 +3,15 @@
 
     <!-- activity camera start-->
     <string name="activity_camera_camera_error">Camera Error</string>
+    <string name="activity_camera_permissions_error">Error: Don\'t have enough permissions for proper work</string>
     <string name="activity_camera_storage_permission_error">Error: Could not store the photo, please check your storage permissions</string>
     <string name="activity_camera_saving_error">Error: Could not store the file</string>
     <!-- activity camera end-->
+
+    <!-- activity imageViewer start-->
+    <string name="activity_image_viewer_alert_title">Delete</string>
+    <string name="activity_image_viewer_alert_body">Remove photo?</string>
+    <string name="activity_image_viewer_positive_button">OK</string>
+    <string name="activity_image_viewer_negative_button">Cancel</string>
+    <!-- activity imageViewer end-->
 </resources>

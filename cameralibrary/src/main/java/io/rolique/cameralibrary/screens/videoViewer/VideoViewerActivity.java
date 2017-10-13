@@ -44,17 +44,13 @@ import timber.log.Timber;
  */
 public class VideoViewerActivity extends AppCompatActivity {
 
-    private static final String EXTRA_VIDEO = "VIDEO_PATH";
+    private static final String EXTRA_VIDEOS = "VIDEOS";
     private static final String EXTRA_SELECTED_VIDEO_POSITION = "SELECTED_VIDEO_POSITION";
-    private static final String EXTRA_IMAGE_HEIGHT = "IMAGE_HEIGHT";
-    private static final String EXTRA_IMAGE_WIDTH = "IMAGE_WIDTH";
 
     public static Intent getStartIntent(Activity activity, List<MediaContent> mediaContents, int position) {
         Intent intent = new Intent(activity, VideoViewerActivity.class);
-        intent.putParcelableArrayListExtra(EXTRA_VIDEO, new ArrayList<Parcelable>(mediaContents));
+        intent.putParcelableArrayListExtra(EXTRA_VIDEOS, new ArrayList<Parcelable>(mediaContents));
         intent.putExtra(EXTRA_SELECTED_VIDEO_POSITION, position);
-        intent.putExtra(EXTRA_IMAGE_HEIGHT, mediaContents.get(position).getHeight());
-        intent.putExtra(EXTRA_IMAGE_WIDTH, mediaContents.get(position).getWidth());
         return intent;
     }
 
@@ -73,11 +69,11 @@ public class VideoViewerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_viewer);
-        mPlayerView = (SimpleExoPlayerView) findViewById(R.id.player_view);
+        mPlayerView = findViewById(R.id.player_view);
         mDisplaySize = new Point();
         getWindowManager().getDefaultDisplay().getSize(mDisplaySize);
         ActivityCompat.postponeEnterTransition(VideoViewerActivity.this);
-        mMediaContents = getIntent().getParcelableArrayListExtra(EXTRA_VIDEO);
+        mMediaContents = getIntent().getParcelableArrayListExtra(EXTRA_VIDEOS);
         mPosition = getIntent().getIntExtra(EXTRA_SELECTED_VIDEO_POSITION, 0);
         mBandWithMeter = new DefaultBandwidthMeter();
         DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(VideoViewerActivity.this,

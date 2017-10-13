@@ -3,6 +3,7 @@ package io.rolique.cameralibrary.screens.camera;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
+import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
@@ -10,6 +11,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
+import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -23,6 +26,7 @@ import java.util.Locale;
 import io.rolique.cameralibrary.R;
 import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.cameralibrary.uiUtil.UiUtil;
+import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
 import timber.log.Timber;
 
 /**
@@ -37,9 +41,9 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
     private final int mMinHeight;
 
     interface OnImagesClickListener {
-        void onImageClick(ImageView imageView, MediaContent mediaContent);
+        void onImageClick(int position);
 
-        void onRemoveClick(MediaContent mediaContent);
+        void onRemoveClick(int position);
     }
 
     private OnImagesClickListener mOnImagesClickListener;
@@ -64,6 +68,16 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
     void updateAdapter(float parentHeight) {
         mParentHeight = parentHeight;
         notifyDataSetChanged();
+    }
+
+    void removeItem(int position) {
+        mMediaContents.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    void addItem(MediaContent mediaContent) {
+        mMediaContents.add(mediaContent);
+        notifyItemInserted(mMediaContents.size() - 1);
     }
 
     @Override
@@ -96,13 +110,33 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
             int height = mediaContent.getHeight();
             int width = mediaContent.getWidth();
             int maxDimensions = (int) Math.max(mMinHeight, mParentHeight);
-            mImageView.getLayoutParams().height = height >= width ? maxDimensions : maxDimensions * height / width;
-            mImageView.getLayoutParams().width = height >= width ? maxDimensions * width / height : maxDimensions;
+            int viewHeight = height >= width ? maxDimensions : maxDimensions * height / width;
+            int viewWidth = height >= width ? maxDimensions * width / height : maxDimensions;
+            ViewGroup.LayoutParams layoutParams = mImageView.getLayoutParams();
+            layoutParams.height = viewHeight;
+            layoutParams.width = viewWidth;
+            mImageView.setLayoutParams(layoutParams);
             setUpActionListeners();
-            UiUtil.setImageWithRoundCorners(mImageView, mediaContent.getImage());
+            setImageWithRoundCorners(mImageView, mediaContent.getImage(), viewHeight, viewWidth);
             itemView.findViewById(R.id.image_view_play_video)
                     .setVisibility(mMediaContent.getMediaType().equals(MediaContent.CATEGORY_VIDEO) ?
                             View.VISIBLE : View.GONE);
+        }
+
+        private void setImageWithRoundCorners(ImageView imageView, File image, int viewHeight, int viewWidth) {
+                int cornerRadius = imageView.getContext().getResources().getDimensionPixelSize(R.dimen.image_view_corner_radius);
+                Picasso picasso = new Picasso.Builder(imageView.getContext()).listener(new Picasso.Listener() {
+                    @Override
+                    public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
+                        exception.printStackTrace();
+                    }
+                }).build();
+                picasso
+                        .load(image)
+                        .resize(viewWidth, viewHeight)
+                        .transform(new RoundedCornersTransformation(cornerRadius, 0))
+                        .placeholder(R.color.grey_300)
+                        .into(imageView);
         }
 
         private void setUpActionListeners() {
@@ -114,14 +148,14 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
         View.OnClickListener mOnDeleteClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mOnImagesClickListener.onRemoveClick(mMediaContent);
+                mOnImagesClickListener.onRemoveClick(getAdapterPosition());
             }
         };
 
         View.OnClickListener mOnImageClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mOnImagesClickListener.onImageClick(mImageView, mMediaContent);
+                mOnImagesClickListener.onImageClick(getAdapterPosition());
             }
         };
     }

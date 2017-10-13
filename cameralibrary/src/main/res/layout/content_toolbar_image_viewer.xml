@@ -6,21 +6,20 @@
     android:id="@+id/toolbar"
     android:layout_width="match_parent"
     android:layout_height="?actionBarSize"
-    android:background="@color/black_alpha_50"
+    android:background="@color/black_alpha_80"
     android:elevation="4dp"
     app:contentInsetLeft="40dp"
     app:navigationIcon="@drawable/ic_arrow_back_white_24dp"
     app:titleTextColor="@color/white"
     tools:targetApi="lollipop">
 
-    <ProgressBar
-        android:id="@+id/progress_bar"
+    <ImageButton
+        android:id="@+id/image_button_delete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|center"
-        android:padding="8dp"
-        android:theme="@style/Widget.Rolique.ProgressBar.White"
-        android:visibility="gone"
-        tools:visibility="visible"/>
-
+        android:padding="16dp"
+        android:background="?selectableItemBackground"
+        app:srcCompat="@drawable/ic_delete_forever_white_36dp"
+        tools:ignore="ContentDescription"/>
 </android.support.v7.widget.Toolbar>

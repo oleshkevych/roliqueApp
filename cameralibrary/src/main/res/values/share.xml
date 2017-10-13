@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="shared_transition_image">io.rolique.TransitionImage</string>
     <string name="extra_camera_images">io.rolique.extra.Images</string>
 </resources>
