@@ -12,6 +12,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import io.rolique.roliqueapp.BaseFragment;
 import io.rolique.roliqueapp.R;
+import io.rolique.roliqueapp.screens.welcome.WelcomeActivity;
 import io.rolique.roliqueapp.screens.welcome.fragments.signIn.SignInFragment;
 import io.rolique.roliqueapp.screens.welcome.fragments.signUp.SignUpFragment;
 
@@ -60,7 +61,7 @@ public class WelcomeFragment extends BaseFragment {
     void onSignUpClick() {
         getFragmentManager().
                 beginTransaction().
-                replace(R.id.fragments_container, SignUpFragment.newInstance()).
+                replace(R.id.fragments_container, SignUpFragment.newInstance(), WelcomeActivity.SIGN_UP_FRAGMENT_TAG).
                 commit();
 
     }

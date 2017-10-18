@@ -13,8 +13,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
 import java.util.List;
 
@@ -26,6 +26,7 @@ import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
+import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.welcome.WelcomeActivity;
 import io.rolique.roliqueapp.util.ui.UiUtil;
@@ -51,15 +52,18 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     @Inject RoliqueApplicationPreferences mPreferences;
 
     private TextView mNameTextView;
-    private ImageView mNavigationImageView;
+    private ViewSwitcher mNavigationImageSwitcher;
+    private ViewSwitcher mNavigationViewSwitcher;
     private FragmentViewPagerAdapter mFragmentViewPagerAdapter;
+    MediaLib mMediaLib;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
-        mNavigationImageView = mNavigationView.getHeaderView(0).findViewById(R.id.image_view);
-        mNavigationImageView.setOnClickListener(mOnImageClickListener);
+        mNavigationImageSwitcher = mNavigationView.getHeaderView(0).findViewById(R.id.view_switcher);
+        mNavigationViewSwitcher = mNavigationView.getHeaderView(0).findViewById(R.id.view_progress_switcher);
+        mNavigationImageSwitcher.setOnClickListener(mOnImageClickListener);
         mNameTextView = mNavigationView.getHeaderView(0).findViewById(R.id.text_view_name);
         mNavigationView.getHeaderView(0).findViewById(R.id.drawable_text_view_logout)
                 .setOnClickListener(new View.OnClickListener() {
@@ -103,7 +107,6 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     }
 
     private void setUpToolbar() {
-        mNameTextView.setText(String.format("%s %s", mPreferences.getFirstName(), mPreferences.getLastName()));
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -156,30 +159,38 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
         mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.CHATS, false);
     }
 
-    MediaLib mMediaLib;
-
     View.OnClickListener mOnImageClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            mMediaLib = new MediaLib(NavigationActivity.this, new MediaLib.MediaLibListener() {
-                @Override
-                public void onSuccess(List<MediaContent> mediaContents) {
-                    UiUtil.setImage(mNavigationImageView, mediaContents.get(0).getImage());
-                }
+            if (mMediaLib == null) {
+                mMediaLib = new MediaLib(NavigationActivity.this, new MediaLib.MediaLibListener() {
+                    @Override
+                    public void onSuccess(List<MediaContent> mediaContents) {
+                        Media media = new Media.Builder()
+                                .setMediaType(Media.CATEGORY_IMAGE)
+                                .setHeight(mediaContents.get(0).getHeight())
+                                .setWidth(mediaContents.get(0).getWidth())
+                                .setImageUrl(mediaContents.get(0).getImage().getAbsolutePath())
+                                .create();
 
-                @Override
-                public void onEmpty() {
+                        mPresenter.updateUserPicture(media);
+                    }
 
-                }
+                    @Override
+                    public void onEmpty() {
 
-                @Override
-                public void onError(Exception e) {
+                    }
 
-                }
-            });
-            mMediaLib.setStorage(MediaLib.GLOBAL_MEDIA_DEFAULT_FOLDER);
-            mMediaLib.setEnableFrontCamera(true);
-            mMediaLib.setIsSelectableFlash(true);
+                    @Override
+                    public void onError(Exception e) {
+
+                    }
+                });
+                mMediaLib.setStorage(MediaLib.LOCAL_APP_FOLDER);
+                mMediaLib.setFrontCamera(true);
+                mMediaLib.setSelectableFlash(true);
+                mMediaLib.setSinglePhoto(true);
+            }
             mMediaLib.startCamera();
         }
     };
@@ -187,12 +198,23 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (mMediaLib == null) return;
         mMediaLib.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
-    public void setImage(String path) {
-        UiUtil.setImage(mNavigationImageView, path);
+    public void setImage(String path, String userName) {
+        UiUtil.setImageIfExists(mNavigationImageSwitcher, path, userName, 88);
+    }
+
+    @Override
+    public void setUserName(String userName) {
+        mNameTextView.setText(String.format("%s %s", mPreferences.getFirstName(), mPreferences.getLastName()));
+    }
+
+    @Override
+    public void setImageProgress(boolean isActive) {
+        mNavigationViewSwitcher.setDisplayedChild(isActive ? 1 : 0);
     }
 
     @Override
@@ -202,5 +224,17 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
         } else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mPresenter.start();
+    }
+
+    @Override
+    protected void onStop() {
+        mPresenter.stop();
+        super.onStop();
     }
 }

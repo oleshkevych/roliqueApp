@@ -1,6 +1,7 @@
 package io.rolique.roliqueapp.screens.editChat;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -54,65 +55,72 @@ class ChatEditorPresenter implements ChatEditorContract.Presenter, FirebaseValue
     }
 
     @Override
-    public void saveNewChat(final Chat chat, Bitmap image) {
+    public void saveNewChat(final Chat chat) {
         mView.setProgressIndicator(true);
         DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS)).push();
         String id = chatRef.getKey();
         chat.setId(id);
 
-        uploadImage(chat, null, image);
+        uploadImage(chat, null);
     }
 
 
     @Override
-    public void editChat(Chat newChat, Chat oldChat, Bitmap image) {
+    public void editChat(Chat newChat, Chat oldChat) {
         mView.setProgressIndicator(true);
-        uploadImage(newChat, oldChat, image);
+        uploadImage(newChat, oldChat);
     }
 
-    private void uploadImage(final Chat newChat, final Chat oldChat, Bitmap image) {
-        StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(String.format("%s.jpg", new Date().getTime()));
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        image.compress(Bitmap.CompressFormat.PNG, 80, baos);
-        byte[] data = baos.toByteArray();
+    private void uploadImage(final Chat newChat, final Chat oldChat) {
+        if (newChat.getImageUrl().isEmpty() || newChat.getImageUrl().startsWith("https")) {
+            if (oldChat == null) setChat(newChat);
+            else updateChat(newChat, oldChat);
+        } else {
+            StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(String.format("%s.jpg", new Date().getTime()));
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+            Bitmap bitmap = BitmapFactory.decodeFile(newChat.getImageUrl(), bmOptions);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 80, baos);
+            byte[] data = baos.toByteArray();
 
-        storageRef.putBytes(data)
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        exception.printStackTrace();
-                        mView.showErrorInView(exception.getMessage());
-                    }
-                })
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        @SuppressWarnings("VisibleForTests") String downloadUrl = taskSnapshot.getDownloadUrl().toString();
-                        newChat.setImageUrl(downloadUrl);
-                        if (oldChat == null) setChat(newChat);
-                        else updateChat(newChat, oldChat);
-                    }
-                });
+            storageRef.putBytes(data)
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            exception.printStackTrace();
+                            mView.showErrorInView(exception.getMessage());
+                        }
+                    })
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            @SuppressWarnings("VisibleForTests") String downloadUrl = taskSnapshot.getDownloadUrl().toString();
+                            newChat.setImageUrl(downloadUrl);
+                            if (oldChat == null) setChat(newChat);
+                            else updateChat(newChat, oldChat);
+                        }
+                    });
+        }
     }
 
     private void setChat(Chat chat) {
         DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS, chat.getId()));
         chatRef.setValue(chat);
-        setUpMembers(chat.getMemberIds(), chat.getId());
+        setUpMembers(chat.getMemberIds(), chat);
     }
 
-    private void setUpMembers(List<String> memberIds, String chatId) {
-        Message chatMessage = new Message(chatId, mPreferences.getId(), "Welcome!", DateUtil.getStringTime(), "user");
-        DatabaseReference messageInChatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chatId)).push();
+    private void setUpMembers(List<String> memberIds, Chat chat) {
+        Message chatMessage = new Message(chat.getId(), mPreferences.getId(), "Welcome!", DateUtil.getStringTime(), "user");
+        DatabaseReference messageInChatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId())).push();
         String id = messageInChatRef.getKey();
         chatMessage.setId(id);
 
-        DatabaseReference messageRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chatId, chatMessage.getId()));
+        DatabaseReference messageRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId(), chatMessage.getId()));
         messageRef.setValue(chatMessage);
         for (String memberId : memberIds)
-            connectChatToMember(chatId, memberId);
+            connectChatToMember(chat.getId(), memberId);
         mView.setProgressIndicator(false);
-        mView.showSavedInView();
+        mView.showSavedInView(chat);
     }
 
     private void connectChatToMember(String chatId, String memberId) {
@@ -144,7 +152,7 @@ class ChatEditorPresenter implements ChatEditorContract.Presenter, FirebaseValue
         setValue(chatRef, TITLE, newChat.getTitle());
         setValue(chatRef, IMAGE, newChat.getImageUrl());
         setValue(chatRef, MEMBERS, newChat.getMemberIds());
-        mView.showSavedInView();
+        mView.showSavedInView(newChat);
     }
 
     private void setValue(DatabaseReference chatRef, String child, Object value) {
@@ -159,6 +167,6 @@ class ChatEditorPresenter implements ChatEditorContract.Presenter, FirebaseValue
         messageRef.removeValue();
         DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS, chat.getId()));
         chatRef.removeValue();
-        mView.showSavedInView();
+        mView.showSavedInView(chat);
     }
 }

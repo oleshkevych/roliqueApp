@@ -21,11 +21,13 @@ public class RoliqueApplicationModule {
     private final FirebaseAuth mFirebaseAuth;
     private final Context mContext;
     private final FirebaseDatabase mFirebaseDatabase;
+    private final RoliqueApplicationPreferences mPreferences;
 
     public RoliqueApplicationModule(Context context, FirebaseAuth auth, FirebaseDatabase database) {
         mContext = context;
         mFirebaseAuth = auth;
         mFirebaseDatabase = database;
+        mPreferences = new RoliqueApplicationPreferences(mContext);
     }
 
     @Provides
@@ -42,13 +44,13 @@ public class RoliqueApplicationModule {
 
     @Provides
     @Singleton
-    public RoliqueApplicationPreferences providePreferences() {
-        return new RoliqueApplicationPreferences(mContext);
+    RoliqueApplicationPreferences providePreferences() {
+        return mPreferences;
     }
 
     @Provides
     @Singleton
-    public RoliqueAppUsers provideUsers() {
-        return new RoliqueAppUsers(mFirebaseAuth, mFirebaseDatabase);
+    RoliqueAppUsers provideUsers() {
+        return new RoliqueAppUsers(mFirebaseAuth, mFirebaseDatabase, mPreferences);
     }
 }

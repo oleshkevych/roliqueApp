@@ -20,6 +20,6 @@ interface SignUpContract {
     }
 
     interface Presenter extends BasePresenter {
-        void uploadImage(@NonNull Bitmap bitmap, String email, String password, String firstName, String lastName, Activity activity);
+        void uploadImage(String imagePath, String email, String password, String firstName, String lastName, Activity activity);
     }
 }

@@ -65,13 +65,6 @@ public class ContactsFragment extends BaseFragment {
         }
     };
 
-//    @Override
-//    public void setUserVisibleHint(boolean isVisibleToUser) {
-//        super.setUserVisibleHint(isVisibleToUser);
-//        if (!isVisibleToUser) return;
-//        updateUsersInView();
-//    }
-
     private void updateUsersInView() {
         if (mRoliqueAppUsers.getUsers().isEmpty()) {
             new Handler().postDelayed(new Runnable() {
@@ -89,5 +82,12 @@ public class ContactsFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
         updateUsersInView();
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser)
+            updateUsersInView();
     }
 }

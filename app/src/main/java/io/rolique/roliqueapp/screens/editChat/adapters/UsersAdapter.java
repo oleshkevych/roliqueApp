@@ -6,8 +6,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +74,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
     class UserViewHolder extends RecyclerView.ViewHolder {
 
-        @BindView(R.id.image_view) ImageView mImageView;
+        @BindView(R.id.view_switcher) ViewSwitcher mViewSwitcher;
         @BindView(R.id.text_view_user_name) TextView mNameTextView;
 
         User mUser;
@@ -103,7 +103,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         void bindChat(User user) {
             mUser = user;
             mNameTextView.setText(UiUtil.getUserNameForView(mUser));
-            UiUtil.setImage(mImageView, mUser.getImageUrl());
+            UiUtil.setImageIfExists(mViewSwitcher, mUser.getImageUrl(), UiUtil.getUserNameForView(mUser), 60);
             itemView.setBackgroundColor(ContextCompat
                     .getColor(itemView.getContext(), mSelectedUserIds.contains(mUser.getId()) ? R.color.black_alpha_80 : R.color.white));
         }

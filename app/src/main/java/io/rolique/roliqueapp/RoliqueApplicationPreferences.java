@@ -23,12 +23,21 @@ public class RoliqueApplicationPreferences {
     private static final String KEY_TYPE = "TYPE";
     private static final String KEY_LOGGED_IN = "LOGGED_IN";
 
+    public interface UserChangesListener {
+        void onInfoChanged();
+    }
+
+    private UserChangesListener mListener;
     private final SharedPreferences mSharedPreferences;
 
     RoliqueApplicationPreferences(Context context) {
         mSharedPreferences = context
                 .getApplicationContext()
                 .getSharedPreferences(ACCOUNT_PREF, Context.MODE_PRIVATE);
+    }
+
+    public void setListener(UserChangesListener listener) {
+        mListener = listener;
     }
 
     public void logIn(User user) {
@@ -38,6 +47,8 @@ public class RoliqueApplicationPreferences {
         setImageUrl(user.getImageUrl());
         setType(user.getType());
         setLoggedIn(true);
+        if (mListener != null)
+            mListener.onInfoChanged();
     }
 
     public String getId() {

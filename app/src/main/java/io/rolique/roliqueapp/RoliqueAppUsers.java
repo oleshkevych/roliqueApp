@@ -30,14 +30,21 @@ public class RoliqueAppUsers implements FirebaseValues {
     private List<User> mUsers;
     private final FirebaseDatabase mDatabase;
     private DatabaseReference mReference;
+    private RoliqueApplicationPreferences mPreferences;
 
-    public RoliqueAppUsers(FirebaseAuth auth, final FirebaseDatabase database) {
+    public RoliqueAppUsers(FirebaseAuth auth,
+                           FirebaseDatabase database,
+                           RoliqueApplicationPreferences preferences) {
         mDatabase = database;
         mUsers = new ArrayList<>();
+        mPreferences = preferences;
         auth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                if (firebaseAuth.getCurrentUser() == null) mUsers.clear();
+                if (firebaseAuth.getCurrentUser() == null) {
+                    mUsers.clear();
+                    mPreferences.logOut();
+                }
                 else setUsersListener();
             }
         });
@@ -82,6 +89,8 @@ public class RoliqueAppUsers implements FirebaseValues {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     User user = dataSnapshot.getValue(User.class);
+                    if (user.getId().equals(mPreferences.getId()))
+                        mPreferences.logIn(user);
                     for (int i = 0; i < mUsers.size(); i++)
                         if (mUsers.get(i).getId().equals(user.getId())) {
                             mUsers.set(i, user);

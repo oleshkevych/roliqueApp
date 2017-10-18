@@ -45,7 +45,9 @@
 
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            app:passwordToggleEnabled="true"
+            app:passwordToggleTint="@color/black_alpha_80">
 
             <EditText
                 android:id="@+id/edit_text_password_sign_in"

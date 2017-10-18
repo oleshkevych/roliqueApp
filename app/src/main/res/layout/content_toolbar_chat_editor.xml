@@ -17,7 +17,7 @@
     tools:targetApi="lollipop">
 
     <ViewSwitcher
-        android:id="@+id/view_switcher"
+        android:id="@+id/view_switcher_progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|center">

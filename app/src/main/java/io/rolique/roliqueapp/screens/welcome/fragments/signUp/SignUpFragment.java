@@ -1,7 +1,7 @@
 package io.rolique.roliqueapp.screens.welcome.fragments.signUp;
 
 import android.app.Fragment;
-import android.graphics.Bitmap;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.Toolbar;
@@ -15,15 +15,21 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.ViewSwitcher;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import io.rolique.cameralibrary.MediaLib;
+import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.roliqueapp.BaseFragment;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.screens.navigation.NavigationActivity;
+import io.rolique.roliqueapp.util.ui.UiUtil;
 
 public class SignUpFragment extends BaseFragment implements SignUpContract.View {
 
@@ -37,29 +43,54 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
 
     // UI references.
     @BindView(R.id.toolbar) Toolbar mToolbar;
-    @BindView(R.id.text_view_image) TextView mUserImageTextView;
+    @BindView(R.id.view_switcher) ViewSwitcher mViewSwitcher;
     @BindView(R.id.edit_text_email_sign_up) EditText mEmailSignUpEditText;
-    @BindView(R.id.edit_text_first_name_sign_up) EditText mFirstNameSignUpEditText;
-    @BindView(R.id.edit_text_last_name_sign_up) EditText mLastNameSignUpEditText;
+    @BindView(R.id.edit_text_first_name_sign_up) EditText mFirstNameEditText;
+    @BindView(R.id.edit_text_last_name_sign_up) EditText mLastNameEditText;
     @BindView(R.id.edit_text_password_sign_up) EditText mPasswordSignUpEditText;
     @BindView(R.id.edit_text_confirm_password_sign_up) EditText mConfirmPasswordSignUpEditText;
+
+    MediaLib mMediaLib;
+    String mImagePath = "";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        mMediaLib = new MediaLib(getActivity(), mMediaLibListener);
+        mMediaLib.setFrontCamera(true);
+        mMediaLib.setRotation(true);
+        mMediaLib.setSinglePhoto(true);
         return inflater.inflate(R.layout.fragment_sign_up, container, false);
     }
+
+    MediaLib.MediaLibListener mMediaLibListener = new MediaLib.MediaLibListener() {
+        @Override
+        public void onSuccess(List<MediaContent> mediaContents) {
+            mImagePath = mediaContents.get(0).getImage().getAbsolutePath();
+            UiUtil.setImageIfExists(mViewSwitcher, mImagePath, "", 88);
+        }
+
+        @Override
+        public void onEmpty() {
+
+        }
+
+        @Override
+        public void onError(Exception e) {
+
+        }
+    };
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setUpToolbar();
-
+        UiUtil.setImageIfExists(mViewSwitcher, mImagePath, "", 88);
         mConfirmPasswordSignUpEditText.setOnEditorActionListener(mOnEditorActionListener);
         mEmailSignUpEditText.setOnFocusChangeListener(mOnFocusChangeListener);
 
-        mLastNameSignUpEditText.addTextChangedListener(mOnNameEditorActionListener);
-        mFirstNameSignUpEditText.addTextChangedListener(mOnNameEditorActionListener);
+        mLastNameEditText.addTextChangedListener(mOnNameEditorActionListener);
+        mFirstNameEditText.addTextChangedListener(mOnNameEditorActionListener);
     }
 
     private void setUpToolbar() {
@@ -122,14 +153,10 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
 
         @Override
         public void afterTextChanged(Editable editable) {
-            String firstName = mFirstNameSignUpEditText.getText().toString();
-            String lastName = mLastNameSignUpEditText.getText().toString();
-            String text = "";
-            if (!firstName.isEmpty())
-                text += firstName.substring(0, 1).toUpperCase();
-            if (!lastName.isEmpty())
-                text += lastName.substring(0, 1).toUpperCase();
-            mUserImageTextView.setText(text);
+            if (mImagePath.isEmpty()) {
+                String text = String.format("%s %s", mFirstNameEditText.getText(), mLastNameEditText.getText());
+                UiUtil.setImageIfExists(mViewSwitcher, mImagePath, text, 88);
+            }
         }
     };
 
@@ -153,7 +180,7 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
         public void afterTextChanged(Editable editable) {
             String s = editable.toString();
             if (s.contains("@")) {
-                mFirstNameSignUpEditText.requestFocus();
+                mFirstNameEditText.requestFocus();
                 mEmailSignUpEditText.setText(transformString(s));
             }
         }
@@ -161,30 +188,23 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
 
     private void attemptLogin() {
         showProgress(true);
-        if (laksFieldValues()) {
+        if (lacksFieldValues()) {
             showProgress(false);
             return;
         }
-        mPresenter.uploadImage(getImageBitmap(),
+        mPresenter.uploadImage(mImagePath,
                 getInputText(mEmailSignUpEditText),
                 getInputText(mPasswordSignUpEditText),
-                getInputText(mFirstNameSignUpEditText),
-                getInputText(mLastNameSignUpEditText),
+                getInputText(mFirstNameEditText),
+                getInputText(mLastNameEditText),
                 getActivity());
 
     }
 
-    private Bitmap getImageBitmap() {
-        mUserImageTextView.setDrawingCacheEnabled(true);
-        mUserImageTextView.destroyDrawingCache();
-        mUserImageTextView.buildDrawingCache();
-        return mUserImageTextView.getDrawingCache();
-    }
-
-    private boolean laksFieldValues() {
+    private boolean lacksFieldValues() {
         return lackEmail(mEmailSignUpEditText) ||
-                lackName(mFirstNameSignUpEditText) ||
-                lackName(mLastNameSignUpEditText) ||
+                lackName(mFirstNameEditText) ||
+                lackName(mLastNameEditText) ||
                 lackPassword(mPasswordSignUpEditText) ||
                 lackPassword(mConfirmPasswordSignUpEditText) ||
                 lackConfirmPassword(mPasswordSignUpEditText, mConfirmPasswordSignUpEditText);
@@ -250,6 +270,11 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
         getView().findViewById(R.id.layout_progress).setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
+    @OnClick(R.id.view_switcher)
+    void onImageClick() {
+        mMediaLib.startCamera();
+    }
+
     @OnClick(R.id.button_sign_up)
     void onSignClick() {
         hideKeyboard();
@@ -267,6 +292,12 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
     public void showLoginError(String message) {
         showProgress(false);
         showSnackbar(getView(), message);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mMediaLib.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override

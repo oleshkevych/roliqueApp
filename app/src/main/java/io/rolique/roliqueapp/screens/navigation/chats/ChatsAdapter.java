@@ -5,8 +5,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,6 +74,12 @@ class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHolder> {
     }
 
     void addChat(Chat chat) {
+        for (int i = 0; i < mChats.size(); i++)
+            if (mChats.get(i).getId().equals(chat.getId())) {
+                mChats.set(i, chat);
+                notifyItemChanged(i);
+                return;
+            }
         mChats.add(chat);
         notifyItemInserted(mChats.size() - 1);
     }
@@ -98,7 +104,7 @@ class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHolder> {
 
     class ChatViewHolder extends RecyclerView.ViewHolder {
 
-        @BindView(R.id.image_view) ImageView mImageView;
+        @BindView(R.id.view_switcher) ViewSwitcher mViewSwitcher;
         @BindView(R.id.text_view_title) TextView mTitleTextView;
         @BindView(R.id.text_view_last_message) TextView mLastMessageTextView;
         @BindView(R.id.text_view_date) TextView mDateTextView;
@@ -123,7 +129,7 @@ class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHolder> {
             mTitleTextView.setText(mChat.getTitle());
             mLastMessageTextView.setText(String.format("%s - %s", UiUtil.getUserNameForView(mChat.getLastMessage().getSenderId(), mRoliqueAppUsers.getUsers()), mChat.getLastMessage().getText()));
             mDateTextView.setText(DateUtil.getStringMessageDate(mChat.getLastMessage().getTimeStamp()));
-            UiUtil.setImage(mImageView, mChat.getImageUrl());
+            UiUtil.setImageIfExists(mViewSwitcher, mChat.getImageUrl(), mChat.getTitle(), 80);
         }
     }
 }

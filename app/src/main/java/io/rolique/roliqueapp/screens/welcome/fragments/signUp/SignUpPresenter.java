@@ -2,6 +2,7 @@ package io.rolique.roliqueapp.screens.welcome.fragments.signUp;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -57,9 +58,15 @@ final class SignUpPresenter implements SignUpContract.Presenter, FirebaseValues 
     }
 
     @Override
-    public void uploadImage(@NonNull Bitmap bitmap, final String email, final String password, final String firstName, final String lastName, final Activity activity) {
+    public void uploadImage(String imagePath, final String email, final String password, final String firstName, final String lastName, final Activity activity) {
+        if (imagePath.isEmpty()) {
+            signUp(email, password, firstName, lastName, imagePath, activity);
+            return;
+        }
         StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(String.format("%s.jpg", new Date().getTime()));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        Bitmap bitmap = BitmapFactory.decodeFile(imagePath, bmOptions);
         bitmap.compress(Bitmap.CompressFormat.PNG, 80, baos);
         byte[] data = baos.toByteArray();
 
@@ -73,8 +80,8 @@ final class SignUpPresenter implements SignUpContract.Presenter, FirebaseValues 
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                @SuppressWarnings("VisibleForTests") String downloadUrl = taskSnapshot.getDownloadUrl().toString();
-                signUp(email, password, firstName, lastName, downloadUrl, activity);
+                @SuppressWarnings("VisibleForTests") String imageUrl = taskSnapshot.getDownloadUrl().toString();
+                signUp(email, password, firstName, lastName, imageUrl, activity);
             }
         });
     }

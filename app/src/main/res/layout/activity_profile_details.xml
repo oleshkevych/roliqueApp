@@ -41,13 +41,29 @@
                     android:orientation="vertical"
                     tools:background="@color/white">
 
-                    <ImageView
-                        android:id="@+id/image_view"
+                    <ViewSwitcher
+                        android:id="@+id/view_switcher"
                         android:layout_width="80dp"
                         android:layout_height="80dp"
-                        android:layout_marginTop="16dp"
-                        tools:ignore="ContentDescription"
-                        tools:src="@color/black"/>
+                        android:layout_marginTop="16dp">
+
+                        <TextView
+                            android:id="@+id/text_view_image"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center"
+                            android:background="@drawable/shape_text_view_to_image"
+                            android:gravity="center"
+                            android:textSize="30sp"
+                            tools:text="VV"/>
+
+                        <ImageView
+                            android:id="@+id/image_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            tools:ignore="ContentDescription"
+                            tools:src="@color/black"/>
+                    </ViewSwitcher>
 
                     <io.rolique.roliqueapp.widget.KeyboardEditText
                         android:id="@+id/text_view_user_name"
@@ -79,6 +95,23 @@
                             android:background="@color/colorPrimary"/>
                     </FrameLayout>
                 </LinearLayout>
+
+                <FrameLayout
+                    android:id="@+id/progress_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/black_alpha_50"
+                    android:clickable="false"
+                    android:visibility="gone">
+
+                    <ProgressBar
+                        android:id="@+id/progress_bar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:padding="8dp"
+                        android:theme="@style/Widget.Rolique.ProgressBar.White"/>
+                </FrameLayout>
             </FrameLayout>
         </android.support.design.widget.AppBarLayout>
 

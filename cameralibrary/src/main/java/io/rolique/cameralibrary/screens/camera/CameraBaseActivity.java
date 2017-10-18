@@ -732,7 +732,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     protected File getOutputMediaFile() {
         File sdCard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         if (isAppLocalStorage())
-            sdCard = new File(Environment.getExternalStorageDirectory(), "data");
+            sdCard = getExternalFilesDir("data");
         File mediaStorageDir = new File(sdCard, "Rolique");
         if (!mediaStorageDir.mkdir() && !mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {

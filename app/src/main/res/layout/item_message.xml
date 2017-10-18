@@ -41,14 +41,15 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <ImageView
-            android:id="@+id/image_view_user_image"
+        <FrameLayout
+            android:id="@+id/layout_sender_image"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="bottom"
-            android:layout_marginEnd="12dp"
-            tools:ignore="ContentDescription"
-            tools:src="@color/black"/>
+            android:layout_marginEnd="12dp">
+
+            <include layout="@layout/content_image"/>
+        </FrameLayout>
 
         <TextView
             android:id="@+id/text_view_message"

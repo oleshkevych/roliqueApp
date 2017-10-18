@@ -3,11 +3,15 @@ package io.rolique.roliqueapp.util.ui;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.graphics.Color;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
+import android.util.TypedValue;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -20,7 +24,6 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 
-import java.io.File;
 import java.util.List;
 
 import io.rolique.roliqueapp.R;
@@ -32,20 +35,6 @@ import io.rolique.roliqueapp.glide.GlideApp;
  * Copyright (c) 2017, Rolique. All rights reserved.
  */
 public class UiUtil {
-
-    public static void setImage(ImageView imageView, String path) {
-        GlideApp.with(imageView.getContext())
-                .load(path)
-                .apply(new RequestOptions().transforms(new CircleCrop()))
-                .into(imageView);
-    }
-
-    public static void setImage(ImageView imageView, File file) {
-        GlideApp.with(imageView.getContext())
-                .load(file)
-                .apply(new RequestOptions().transforms(new CircleCrop()))
-                .into(imageView);
-    }
 
     public static String getUserNameForView(String senderId, List<User> users) {
         for (User user : users)
@@ -121,6 +110,69 @@ public class UiUtil {
                 .apply(new RequestOptions().transforms(new FitCenter(), new RoundedCorners(cornerRadius)))
                 .placeholder(R.color.grey_300)
                 .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                .into(imageView);
+    }
+
+    public static void updateImageIfExists(ViewSwitcher viewSwitcher, String imagePath, String name) {
+        setImageIfExists(viewSwitcher, imagePath, name, 0);
+    }
+
+    public static void setImageIfExists(ViewSwitcher viewSwitcher, String imagePath, String name, int sizeInDp) {
+        if (sizeInDp != 0) {
+            int imageSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sizeInDp, viewSwitcher.getContext().getResources().getDisplayMetrics());
+            viewSwitcher.getLayoutParams().height = imageSize;
+            viewSwitcher.getLayoutParams().width = imageSize;
+        }
+        if (imagePath.isEmpty()) {
+            viewSwitcher.setDisplayedChild(0);
+            TextView textView = viewSwitcher.findViewById(R.id.text_view_image);
+            String text = "";
+            if (!name.isEmpty()) {
+                if (name.trim().contains(" ")) {
+                    String[] letters = name.split(" ");
+                    int i = 0;
+                    while (text.length() < 2 && letters.length > i) {
+                        if (!letters[i].trim().isEmpty())
+                            text += letters[i].trim().substring(0, 1)
+                                    .toUpperCase();
+                        i++;
+                    }
+                } else {
+                    text += name.substring(0, 1)
+                            .toUpperCase();
+                }
+            }
+            if (sizeInDp != 0)
+                textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, sizeInDp / 2.5f);
+            textView.setText(text);
+            textView.setTextColor(getRandomColor(name.trim()));
+        } else {
+            viewSwitcher.setDisplayedChild(1);
+            ImageView imageView = viewSwitcher.findViewById(R.id.image_view);
+            setImage(imageView, imagePath);
+        }
+    }
+
+    private static int getRandomColor(String name) {
+        int wight = 0;
+        for (Character character : name.toCharArray())
+            wight += character;
+
+        if (name.length() < 5)
+            return Color.argb(255, 255 - (wight % 255), wight % 255, wight % 255);
+        if (name.length() < 8)
+            return Color.argb(255, wight % 255, 255 - (wight % 255), wight % 255);
+        if (name.length() < 12)
+            return Color.argb(255, wight % 255, wight % 255, 255 - (wight % 255));
+        if (name.length() < 18)
+            return Color.argb(255, 255 - (wight % 255), wight % 255, 255 - (wight % 255));
+        return Color.argb(255, wight % 255, 255 - (wight % 255), 255 - (wight % 255));
+    }
+
+    private static void setImage(ImageView imageView, String path) {
+        GlideApp.with(imageView.getContext())
+                .load(path)
+                .apply(new RequestOptions().transforms(new CircleCrop()))
                 .into(imageView);
     }
 }

@@ -48,6 +48,7 @@
     <!-- Activity new chat start-->
     <string name="activity_new_chat_title">New chat</string>
     <string name="activity_new_chat_chat_name">Chat name</string>
+    <string name="activity_new_chat_error_empty_title">Please, text the title</string>
     <!-- Activity new chat end-->
 
     <!-- navigation menu start-->

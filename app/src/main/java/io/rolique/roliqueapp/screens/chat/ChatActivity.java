@@ -194,6 +194,8 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         if (resultCode == RESULT_OK && requestCode == RC_CHAT_EDIT) {
             boolean isDeleted = data.getBooleanExtra(getString(R.string.extra_chat_from_edit), false);
             if (isDeleted) onBackPressed();
+            mChat = data.getParcelableExtra(getString(R.string.extra_chat_from_editor));
+            setUpToolbar(mChat);
         }
     }
 

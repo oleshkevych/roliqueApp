@@ -13,14 +13,14 @@ import io.rolique.roliqueapp.screens.BaseView;
 interface ChatEditorContract {
 
     interface View extends BaseView<Presenter> {
-        void showSavedInView();
+        void showSavedInView(Chat chat);
         void setProgressIndicator(boolean active);
         void showErrorInView(String message);
     }
 
     interface Presenter extends BasePresenter {
-        void saveNewChat(Chat chat, Bitmap image);
-        void editChat(Chat newChat, Chat oldChat, Bitmap image);
+        void saveNewChat(Chat chat);
+        void editChat(Chat newChat, Chat oldChat);
         void deleteChat(Chat chat);
     }
 }

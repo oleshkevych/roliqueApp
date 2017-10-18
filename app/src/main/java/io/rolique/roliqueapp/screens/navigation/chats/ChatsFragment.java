@@ -98,6 +98,23 @@ public class ChatsFragment extends BaseFragment implements ChatsContract.View {
     }
 
     @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (mPresenter == null) return;
+        if (isVisibleToUser)
+            mPresenter.start();
+        else
+            mPresenter.stop();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mPresenter != null)
+            mPresenter.start();
+    }
+
+    @Override
     public void onDestroyView() {
         mPresenter.stop();
         super.onDestroyView();

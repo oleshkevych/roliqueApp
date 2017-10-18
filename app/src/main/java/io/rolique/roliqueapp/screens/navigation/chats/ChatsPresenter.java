@@ -38,10 +38,13 @@ class ChatsPresenter implements ChatsContract.Presenter, FirebaseValues {
 
     @Override
     public void start() {
+        if (mUserChatsRef == null) return;
+        mUserChatsRef.addChildEventListener(mUserChatsEventListener);
     }
 
     @Override
     public void stop() {
+        if (mUserChatsRef == null) return;
         mUserChatsRef.removeEventListener(mUserChatsEventListener);
     }
 
@@ -178,7 +181,8 @@ class ChatsPresenter implements ChatsContract.Presenter, FirebaseValues {
         public void onCancelled(DatabaseError databaseError) {
             Timber.e(databaseError.getMessage(), databaseError.getDetails());
             databaseError.toException().printStackTrace();
-            mView.showErrorInView(databaseError.getMessage());
+            if (!databaseError.getDetails().contains("permission"))
+                mView.showErrorInView(databaseError.getMessage());
         }
     };
 

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <include
         layout="@layout/content_toolbar_back"/>
@@ -15,19 +15,14 @@
         android:layout_width="wrap_content"
         android:layout_height="80dp"
         android:src="@drawable/logo"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription"
+        android:layout_below="@+id/toolbar"/>
 
     <ScrollView
         android:id="@+id/layout_form_sign_up"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/image_view">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/image_view">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -35,16 +30,14 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <TextView
-                android:id="@+id/text_view_image"
+            <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:background="@drawable/shape_text_view_to_image"
-                android:gravity="center"
-                android:textSize="40sp"
-                tools:text="VV"/>
+                android:layout_gravity="center">
 
+                <include layout="@layout/content_image"/>
+
+            </FrameLayout>
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
@@ -58,7 +51,6 @@
                     android:hint="@string/activity_login_email"
                     android:inputType="textEmailAddress"
                     android:maxLines="1"/>
-
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
@@ -71,9 +63,8 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:hint="@string/activity_login_first_name"
-                    android:inputType="textEmailAddress"
+                    android:inputType="textCapWords"
                     android:maxLines="1"/>
-
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
@@ -86,14 +77,15 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:hint="@string/activity_login_last_name"
-                    android:inputType="textEmailAddress"
+                    android:inputType="textCapWords"
                     android:maxLines="1"/>
-
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                app:passwordToggleEnabled="true"
+                app:passwordToggleTint="@color/black_alpha_80">
 
                 <EditText
                     android:id="@+id/edit_text_password_sign_up"
@@ -103,12 +95,13 @@
                     android:hint="@string/activity_login_password"
                     android:inputType="textPassword"
                     android:maxLines="1"/>
-
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                app:passwordToggleEnabled="true"
+                app:passwordToggleTint="@color/black_alpha_80">
 
                 <EditText
                     android:id="@+id/edit_text_confirm_password_sign_up"
@@ -121,7 +114,6 @@
                     android:imeOptions="actionUnspecified"
                     android:inputType="textPassword"
                     android:maxLines="1"/>
-
             </android.support.design.widget.TextInputLayout>
 
             <Button
@@ -132,7 +124,6 @@
                 android:text="@string/activity_sign_up_title"
                 android:textStyle="bold"
                 android:theme="@style/Widget.Rolique.Button.Blue"/>
-
         </LinearLayout>
     </ScrollView>
 
@@ -146,5 +137,4 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
-
-</android.support.constraint.ConstraintLayout>
+</RelativeLayout>

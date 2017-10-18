@@ -10,9 +10,11 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -210,7 +212,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         @BindView(R.id.text_view_date) TextView mDateTextView;
         @BindView(R.id.text_view_user_name) TextView mUserNameTextView;
         @BindView(R.id.layout_message_container) LinearLayout mMessageContainerLayout;
-        @BindView(R.id.image_view_user_image) ImageView mSenderImageView;
+        @BindView(R.id.layout_sender_image) FrameLayout mSenderImageLayout;
+        @BindView(R.id.view_switcher) ViewSwitcher mViewSwitcher;
         @BindView(R.id.text_view_message) TextView mMessageTextView;
         @BindView(R.id.container_images) LinearLayout mImageMessagesLayout;
 
@@ -248,20 +251,26 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         private void setUpImageView(int messagePosition, boolean isCurrentUser) {
             if (isCurrentUser) {
-                mSenderImageView.setVisibility(View.GONE);
+                mSenderImageLayout.setVisibility(View.GONE);
                 return;
             }
             if (messagePosition == BOTTOM_MESSAGE || messagePosition == SINGLE_MESSAGE) {
-                mSenderImageView.setVisibility(View.VISIBLE);
-                UiUtil.setImage(mSenderImageView, getImageUrl(mMessage.getSenderId(), mUsers));
+                mSenderImageLayout.setVisibility(View.VISIBLE);
+                UiUtil.setImageIfExists(mViewSwitcher, getUserImageUrl(mMessage.getSenderId(), mUsers), getUserName(mMessage.getSenderId(), mUsers), 40);
             } else {
-                mSenderImageView.setVisibility(View.INVISIBLE);
+                mSenderImageLayout.setVisibility(View.INVISIBLE);
             }
         }
 
-        private String getImageUrl(String senderId, List<User> users) {
+        private String getUserImageUrl(String senderId, List<User> users) {
             for (User user : users)
                 if (user.getId().equals(senderId)) return user.getImageUrl();
+            return "";
+        }
+
+        private String getUserName(String senderId, List<User> users) {
+            for (User user : users)
+                if (user.getId().equals(senderId)) return String.format("%s %s", user.getFirstName(), user.getLastName());
             return "";
         }
 

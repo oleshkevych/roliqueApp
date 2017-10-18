@@ -11,13 +11,15 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.EditText;
-import android.widget.ImageView;
+import android.widget.ViewSwitcher;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,10 +32,13 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.BindViews;
 import butterknife.OnClick;
+import io.rolique.cameralibrary.MediaLib;
+import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.model.Chat;
+import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.chat.ChatActivity;
@@ -65,7 +70,7 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
     @BindView(R.id.layout_root) ViewGroup mRootViewGroup;
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.content_profile_header) AppBarLayout mAppBarLayout;
-    @BindView(R.id.image_view) ImageView mImageView;
+    @BindView(R.id.view_switcher) ViewSwitcher mImageViewSwitcher;
     @BindView(R.id.text_view_user_name) KeyboardEditText mUserNameEditText;
     @BindView(R.id.floating_button_call) FloatingActionButton mCallButton;
     @BindView(R.id.floating_button_chat) FloatingActionButton mChatButton;
@@ -78,6 +83,8 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
     String[] mPhoneNumbers = new String[0];
     String[] mEmails = new String[0];
     boolean mIsEditMode;
+    MediaLib mMediaLib;
+
     float mImageOriginalHeight;
     float mImageOriginalMargin;
     float mImageOriginalWidth;
@@ -97,6 +104,11 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
 
         mUser = getIntent().getParcelableExtra(EXTRA_USER);
         mCategories = new ArrayList<>(Arrays.asList(mCategoriesArray));
+        mMediaLib = new MediaLib(ProfileActivity.this, mMediaLibListener);
+        mMediaLib.setFrontCamera(true);
+        mMediaLib.setRotation(true);
+        mMediaLib.setSinglePhoto(true);
+        setEditVisibility();
 
         setButtonsEnabled(mCallButton, false);
         setButtonsEnabled(mMailButton, false);
@@ -127,6 +139,34 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
                 .inject(ProfileActivity.this);
     }
 
+    MediaLib.MediaLibListener mMediaLibListener = new MediaLib.MediaLibListener() {
+        @Override
+        public void onSuccess(List<MediaContent> mediaContents) {
+            Media media = new Media.Builder()
+                    .setMediaType(Media.CATEGORY_IMAGE)
+                    .setHeight(mediaContents.get(0).getHeight())
+                    .setWidth(mediaContents.get(0).getWidth())
+                    .setImageUrl(mediaContents.get(0).getImage().getAbsolutePath())
+                    .create();
+
+            mPresenter.updatePhoto(media, mUser);
+        }
+
+        @Override
+        public void onEmpty() {
+
+        }
+
+        @Override
+        public void onError(Exception e) {
+
+        }
+    };
+
+    private void setEditVisibility() {
+        findViewById(R.id.button_edit).setVisibility(mUser.getId().equals(mPreferences.getId()) && !mIsEditMode ? View.VISIBLE : View.GONE);
+    }
+
     private void setButtonsEnabled(FloatingActionButton button, boolean isActive) {
         button.setImageAlpha(isActive ? 255 : 125);
         button.setClickable(isActive);
@@ -146,13 +186,13 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
         setUpHeader(mIsEditMode, user);
         for (ProfileCategoryCard card : mProfileCategoryCards)
             card.setIsEditable(mIsEditMode);
-        findViewById(R.id.button_edit).setVisibility(mIsEditMode ? View.GONE : View.VISIBLE);
+        setEditVisibility();
         mFloatingActionMenu.setVisibility(mIsEditMode ? View.VISIBLE : View.GONE);
     }
 
     private void setUpHeader(boolean isEditMode, final User user) {
-        UiUtil.setImage(mImageView, user.getImageUrl());
         setUpUserNameView(mUserNameEditText, user, isEditMode);
+        UiUtil.setImageIfExists(mImageViewSwitcher, user.getImageUrl(), UiUtil.getUserNameForView(user), 80);
     }
 
     private void setUpUserNameView(final KeyboardEditText editText, final User user, boolean isEditMode) {
@@ -165,8 +205,13 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
                 @Override
                 public void onFocusChange(View view, boolean b) {
                     String userNames = editText.getText().toString();
-                    String firstName = userNames.substring(0, userNames.indexOf(" ")).trim();
-                    String lastName = userNames.substring(userNames.indexOf(" "), userNames.length()).trim();
+                    String firstName = userNames.trim();
+                    if (firstName.isEmpty()) return;
+                    String lastName = "";
+                    if (userNames.contains(" ")) {
+                        firstName = userNames.substring(0, userNames.indexOf(" ")).trim();
+                        lastName = userNames.substring(userNames.indexOf(" "), userNames.length()).trim();
+                    }
                     if (mOnKeyboardListener != null && b) mOnKeyboardListener.isKeyboardShown(true);
                     if (!b && !(user.getFirstName().equals(firstName) && user.getLastName().equals(lastName))) {
                         user.setFirstName(firstName);
@@ -190,7 +235,10 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
                         mOnKeyboardListener.isKeyboardShown(isVisible);
                 }
             });
+            if (mUser.getImageUrl().isEmpty())
+                editText.addTextChangedListener(mTextWatcher);
         } else {
+            editText.removeTextChangedListener(mTextWatcher);
             editText.setTextColor(ContextCompat.getColor(editText.getContext(), R.color.indigo_accent_700));
             editText.setFocusable(false);
             editText.setOnLongClickListener(new View.OnLongClickListener() {
@@ -205,6 +253,23 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
         editText.setText(UiUtil.getUserNameForView(user));
         editText.setBackgroundColor(ContextCompat.getColor(ProfileActivity.this, R.color.transparent));
     }
+
+    TextWatcher mTextWatcher = new TextWatcher() {
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            UiUtil.updateImageIfExists(mImageViewSwitcher, mUser.getImageUrl(), s.toString());
+        }
+    };
 
     private void setUpAppBarLayout() {
         mUserNameEditText.getViewTreeObserver()
@@ -222,24 +287,24 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
                     mFloatingActionMenu.hideOptions();
                 float moving = verticalOffset / mMaxOffsetHeight;
                 if (mImageOriginalHeight != 0) {
-                    ViewGroup.LayoutParams layoutParams = mImageView.getLayoutParams();
+                    ViewGroup.LayoutParams layoutParams = mImageViewSwitcher.getLayoutParams();
                     layoutParams.height = Math.round((1 - moving) * (mImageOriginalHeight - mNameOriginalHeight) + mNameOriginalHeight);
                     layoutParams.width = Math.round((1 - moving) * (mImageOriginalWidth - mNameOriginalHeight) + mNameOriginalHeight);
-                    mImageView.setLayoutParams(layoutParams);
+                    mImageViewSwitcher.setLayoutParams(layoutParams);
                 }
-                mImageView.setTranslationY((mNameOriginalHeight) * moving);
-                mImageView.setTranslationX((mContainerOriginalWidth - mImageOriginalWidth) * (1 - moving) / 2 + moving * mImageOriginalMargin);
+                mImageViewSwitcher.setTranslationY((mNameOriginalHeight) * moving);
+                mImageViewSwitcher.setTranslationX((mContainerOriginalWidth - mImageOriginalWidth) * (1 - moving) / 2 + moving * mImageOriginalMargin);
 
-                mUserNameEditText.setTranslationX((mContainerOriginalWidth - mUserNameEditText.getWidth()) * (1 - moving) / 2 + moving * (mImageView.getWidth() + mImageOriginalMargin));
+                mUserNameEditText.setTranslationX((mContainerOriginalWidth - mUserNameEditText.getWidth()) * (1 - moving) / 2 + moving * (mImageViewSwitcher.getWidth() + mImageOriginalMargin));
             }
         });
     }
 
     private void setUpDimensions() {
-        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mImageView.getLayoutParams();
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mImageViewSwitcher.getLayoutParams();
         mImageOriginalMargin = params.topMargin;
-        mImageOriginalHeight = mImageView.getMeasuredHeight();
-        mImageOriginalWidth = mImageView.getMeasuredWidth();
+        mImageOriginalHeight = mImageViewSwitcher.getMeasuredHeight();
+        mImageOriginalWidth = mImageViewSwitcher.getMeasuredWidth();
         mNameOriginalHeight = mUserNameEditText.getMeasuredHeight();
         mNameOriginalWidth = mUserNameEditText.getMeasuredWidth();
         mContainerOriginalWidth = mAppBarLayout.getMeasuredWidth();
@@ -528,6 +593,18 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
         });
     }
 
+    @OnClick(R.id.view_switcher)
+    void onImageClick() {
+        if (mIsEditMode)
+            mMediaLib.startCamera();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mMediaLib.onActivityResult(requestCode, resultCode, data);
+    }
+
     @Override
     public void showValuesInView(String category, List<Pair<String, String>> pairs) {
         int index = mCategories.indexOf(category);
@@ -573,6 +650,17 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
     public void showChatInView(Chat chat) {
         startActivity(ChatActivity.startIntent(ProfileActivity.this, chat));
         finish();
+    }
+
+    @Override
+    public void showProgressInView(boolean isActive) {
+        findViewById(R.id.progress_layout).setVisibility(isActive ? View.VISIBLE : View.GONE);
+    }
+
+    @Override
+    public void showPhotoInView(String path) {
+        mUser.setImageUrl(path);
+        UiUtil.updateImageIfExists(mImageViewSwitcher, mUser.getImageUrl(), UiUtil.getUserNameForView(mUser));
     }
 
     @Override
