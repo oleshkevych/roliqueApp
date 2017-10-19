@@ -1,18 +1,24 @@
 package io.rolique.roliqueapp.screens.chat.adapters;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Pair;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
@@ -40,11 +46,18 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private static final int BOTTOM_MESSAGE = 3;
     private static final int SINGLE_MESSAGE = 4;
 
+    public interface OnMessageActionListener {
+        void onMessageEdit(Message message);
+
+        void onMessageRemove(Message message);
+    }
+
     private final LayoutInflater mInflater;
     private List<Message> mMessages;
     private List<User> mUsers;
     private Pair<List<Boolean>, List<Integer>> mIsItemMessage;
     private String mCurrentUserId;
+    private OnMessageActionListener mActionListener;
 
     public MessagesAdapter(Context context, String currentUserId, List<User> users) {
         mInflater = LayoutInflater.from(context);
@@ -136,6 +149,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         return mIsItemMessage.first.size();
     }
 
+    public void setActionListener(OnMessageActionListener actionListener) {
+        mActionListener = actionListener;
+    }
+
     public void setMessages(List<Message> messages) {
         if (messages.isEmpty()) return;
         mIsItemMessage = calculateItemsCount(messages);
@@ -207,47 +224,73 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         return mMessages.isEmpty() ? "" : mMessages.get(0).getId();
     }
 
+    public void updateMessage(Message message) {
+        for (int i = 0; i < mMessages.size(); i++)
+            if (mMessages.get(i).getId().equals(message.getId())) {
+                mMessages.set(i, message);
+                for (int j = 0; j <  mIsItemMessage.second.size(); j++)
+                    if (mIsItemMessage.second.get(j) == i) {
+                        notifyItemChanged(j);
+                        break;
+                    }
+                    break;
+            }
+    }
+
+    public void removeMessage(String messageId) {
+        for (int i = 0; i < mMessages.size(); i++)
+            if (mMessages.get(i).getId().equals(messageId)) {
+                mMessages.remove(i);
+                setMessages(new ArrayList<>(mMessages));
+            }
+    }
+
     class MessageViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.text_view_date) TextView mDateTextView;
         @BindView(R.id.text_view_user_name) TextView mUserNameTextView;
         @BindView(R.id.layout_message_container) LinearLayout mMessageContainerLayout;
+        @BindView(R.id.layout_message_info) LinearLayout mMessageInfoContainerLayout;
         @BindView(R.id.layout_sender_image) FrameLayout mSenderImageLayout;
         @BindView(R.id.view_switcher) ViewSwitcher mViewSwitcher;
         @BindView(R.id.text_view_message) TextView mMessageTextView;
         @BindView(R.id.container_images) LinearLayout mImageMessagesLayout;
+        @BindView(R.id.image_view_other_edited) ImageView mOtherEditedIndicatorImageView;
+        @BindView(R.id.image_view_own_edited) ImageView mOwnEditedIndicatorImageView;
 
         Message mMessage;
 
         MessageViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(MessageViewHolder.this, itemView);
-            itemView.setOnClickListener(mOnClickListener);
+        }
+
+        void bindMessage(Message message, int messagePosition) {
+            mMessage = message;
+            itemView.setAlpha(1.0f);
+            boolean isCurrentUser = mMessage.getSenderId().equals(mCurrentUserId);
+            setUpHeader(isCurrentUser);
+            setUpImageView(messagePosition, isCurrentUser);
+            setUpMessageInView(messagePosition, isCurrentUser);
+            setEditEvent(isCurrentUser);
+            setUpEdited(isCurrentUser);
+        }
+
+        private void setUpHeader(boolean isCurrentUser) {
+            mDateTextView.setText(DateUtil.getDetailedStringMessageDate(mMessage.getTimeStamp()));
+            mUserNameTextView.setText(UiUtil.getUserNameForView(mMessage.getSenderId(), mUsers));
+            mUserNameTextView.setVisibility(isCurrentUser ? View.GONE : View.VISIBLE);
+            mMessageContainerLayout.setGravity(isCurrentUser ? Gravity.END : Gravity.START);
+            mMessageInfoContainerLayout.setVisibility(View.GONE);
+            mMessageContainerLayout.setOnClickListener(mOnClickListener);
         }
 
         final View.OnClickListener mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDateTextView.setVisibility(mDateTextView.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
-                mUserNameTextView.setVisibility(mUserNameTextView.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+                mMessageInfoContainerLayout.setVisibility(mMessageInfoContainerLayout.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
             }
         };
-
-        void bindMessage(Message message, int messagePosition) {
-            mMessage = message;
-            boolean isCurrentUser = mMessage.getSenderId().equals(mCurrentUserId);
-            setUpHeader(isCurrentUser);
-            setUpImageView(messagePosition, isCurrentUser);
-            setUpMessageInView(messagePosition, isCurrentUser);
-        }
-
-        private void setUpHeader(boolean isCurrentUser) {
-            mDateTextView.setText(DateUtil.getDetailedStringMessageDate(mMessage.getTimeStamp()));
-            mDateTextView.setVisibility(View.GONE);
-            mUserNameTextView.setText(UiUtil.getUserNameForView(mMessage.getSenderId(), mUsers));
-            mUserNameTextView.setVisibility(View.GONE);
-            mUserNameTextView.setGravity(isCurrentUser ? Gravity.END : Gravity.START);
-        }
 
         private void setUpImageView(int messagePosition, boolean isCurrentUser) {
             if (isCurrentUser) {
@@ -270,7 +313,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         private String getUserName(String senderId, List<User> users) {
             for (User user : users)
-                if (user.getId().equals(senderId)) return String.format("%s %s", user.getFirstName(), user.getLastName());
+                if (user.getId().equals(senderId))
+                    return String.format("%s %s", user.getFirstName(), user.getLastName());
             return "";
         }
 
@@ -308,7 +352,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         @NonNull
         private LinearLayout.LayoutParams getMessageParameters(int messagePosition, boolean isCurrentUser) {
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) mMessageContainerLayout.getLayoutParams();
-            params.gravity = isCurrentUser ? Gravity.END : Gravity.START;
+            mMessageInfoContainerLayout.setGravity(isCurrentUser ? Gravity.END : Gravity.START);
+            mMessageContainerLayout.setGravity(isCurrentUser ? Gravity.END : Gravity.START);
             params.bottomMargin = 0;
             params.topMargin = messagePosition == TOP_MESSAGE || messagePosition == SINGLE_MESSAGE ? 20 : 0;
             params.bottomMargin = (messagePosition == BOTTOM_MESSAGE || messagePosition == SINGLE_MESSAGE) ? 20 : 4;
@@ -340,6 +385,66 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                         return R.drawable.shape_text_view_message_alien_single;
                 }
             return 0;
+        }
+
+        private void setEditEvent(boolean isCurrentUser) {
+            if (!isCurrentUser) {
+                itemView.setOnLongClickListener(null);
+                return;
+            }
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    itemView.setAlpha(0.6f);
+
+                    final View popupView = mInflater.inflate(R.layout.content_message_popup, null);
+                    final PopupWindow popupWindow = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    popupWindow.setBackgroundDrawable(ContextCompat.getDrawable(itemView.getContext(), R.drawable.shape_text_view_message_alien_single));
+                    popupWindow.setOutsideTouchable(true);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                        popupWindow.setAttachedInDecor(true);
+                    }
+                    popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    popupWindow.setAnimationStyle(R.style.popupAnimation);
+                    View editView = popupView.findViewById(R.id.image_view_edit);
+                    editView.setOnClickListener(new Button.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            popupWindow.dismiss();
+                            if (mActionListener == null) return;
+                            mActionListener.onMessageEdit(mMessage);
+                        }
+                    });
+                    View removeView = popupView.findViewById(R.id.image_view_remove);
+                    removeView.setOnClickListener(new Button.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            popupWindow.dismiss();
+                            if (mActionListener == null) return;
+                            mActionListener.onMessageRemove(mMessage);
+                        }
+                    });
+                    popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                        @Override
+                        public void onDismiss() {
+                            itemView.setAlpha(1.0f);
+                        }
+                    });
+                    int yOffset = (-1) * itemView.getMeasuredHeight() +
+                            (mUserNameTextView.getVisibility() == View.VISIBLE ?
+                                    mUserNameTextView.getHeight() : 0) +
+                            (mUserNameTextView.getVisibility() == View.VISIBLE ?
+                                    mDateTextView.getHeight() : 0) -
+                            (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, itemView.getContext().getResources().getDisplayMetrics());
+                    popupWindow.showAsDropDown(itemView, 0, yOffset, Gravity.END);
+                    return true;
+                }
+            });
+        }
+
+        private void setUpEdited(boolean isCurrentUser) {
+            mOtherEditedIndicatorImageView.setVisibility(!isCurrentUser && mMessage.isEdited() ? View.VISIBLE : View.GONE);
+            mOwnEditedIndicatorImageView.setVisibility(isCurrentUser && mMessage.isEdited() ? View.VISIBLE : View.GONE);
         }
     }
 

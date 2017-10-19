@@ -29,21 +29,21 @@
     <string name="activity_login_confirm_password">Confirm password</string>
     <!-- Activity login end-->
 
-    <!-- Activity chats start-->
+    <!-- Fragment chats start-->
     <string name="fragment_chats_title">Chats</string>
-    <!-- Activity chats end-->
+    <!-- Fragment chats end-->
 
-    <!-- Activity eat start-->
+    <!-- Fragment eat start-->
     <string name="fragment_eat_title">Food</string>
-    <!-- Activity eat end-->
+    <!-- Fragment eat end-->
 
-    <!-- Activity contacts start-->
+    <!-- Fragment contacts start-->
     <string name="fragment_contacts_title">Contacts</string>
-    <!-- Activity contacts end-->
+    <!-- Fragment contacts end-->
 
-    <!-- Activity eat start-->
+    <!-- Fragment check in start-->
     <string name="fragment_check_in_title">Check in</string>
-    <!-- Activity eat end-->
+    <!-- Fragment check in end-->
 
     <!-- Activity new chat start-->
     <string name="activity_new_chat_title">New chat</string>
@@ -69,7 +69,6 @@
     <string name="activity_profile_details_phone_numbers_error">Number is invalid</string>
     <string name="activity_profile_details_email_title">Select Email</string>
     <string name="activity_profile_details_email_error">Email is invalid</string>
-    <!-- Activity profile end-->
 
     <!--Select bottom dialog start-->
     <string name="bottom_dialog_select_call">Call</string>
@@ -85,12 +84,10 @@
     <string name="bottom_dialog_add_save">SAVE</string>
     <string name="bottom_dialog_add_cancel">CANCEL</string>
     <!--Select bottom dialog end-->
+    <!-- Activity profile end-->
 
-    <!-- activity camera start-->
-    <string name="activity_camera_camera_error">Camera Error</string>
-    <string name="activity_camera_storage_permission_error">Error: Could not store the photo, please check your storage permissions</string>
-    <string name="activity_camera_saving_error">Error: Could not store the file</string>
-    <!-- activity camera end-->
+    <!-- Activity Chat start-->
+    <!-- Activity Chat end-->
 
     <string name="title_activity_maps">Map</string>
 

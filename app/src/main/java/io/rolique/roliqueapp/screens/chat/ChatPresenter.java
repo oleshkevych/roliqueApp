@@ -109,12 +109,13 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
 
         @Override
         public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
+            Message message = dataSnapshot.getValue(Message.class);
+            mView.updateMessageView(message);
         }
 
         @Override
         public void onChildRemoved(DataSnapshot dataSnapshot) {
-
+            mView.removedMessageView(dataSnapshot.getKey());
         }
 
         @Override
@@ -188,6 +189,69 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
                 @SuppressWarnings("VisibleForTests") String downloadUrl = taskSnapshot.getDownloadUrl().toString();
                 message.getMedias().get(countUploading).setImageUrl(downloadUrl);
                 uploadRecycle(countUploading + 1, message, chat);
+            }
+        });
+    }
+
+    @Override
+    public void editMessage(final Message message, final Chat chat) {
+        //TODO add editing media messages
+        DatabaseReference messageRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId(), message.getId()));
+        messageRef.setValue(message);
+        DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, chat.getMemberIds().get(0), chat.getId()));
+        memberRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Message message1 = dataSnapshot.getValue(Message.class);
+                if (message1.getId().equals(message.getId()))
+                    for (String memberId : chat.getMemberIds()) {
+                        DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, memberId, chat.getId()));
+                        memberRef.setValue(message);
+                    }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    @Override
+    public void removeMessage(final Message message, final Chat chat) {
+        final DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, chat.getMemberIds().get(0), chat.getId()));
+        memberRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Message message1 = dataSnapshot.getValue(Message.class);
+                if (message1.getId().equals(message.getId())) {
+                    Query messageQuery = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId())).limitToLast(2);
+                    messageQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                                Message message1 = dataSnapshot1.getValue(Message.class);
+                                if (!message.getId().equals(message1.getId()))
+                                    for (String memberId : chat.getMemberIds()) {
+                                        DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, memberId, chat.getId()));
+                                        memberRef.setValue(message1);
+                                    }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+                DatabaseReference messageRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId(), message.getId()));
+                messageRef.removeValue();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
             }
         });
     }

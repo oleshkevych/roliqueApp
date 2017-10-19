@@ -20,17 +20,6 @@ import io.rolique.roliqueapp.util.DateUtil;
 @IgnoreExtraProperties
 public class Message implements Parcelable {
 
-    public static final Parcelable.Creator<Message> CREATOR = new Parcelable.Creator<Message>() {
-        @Override
-        public Message createFromParcel(Parcel in) {
-            return new Message(in);
-        }
-
-        @Override
-        public Message[] newArray(int size) {
-            return new Message[size];
-        }
-    };
     @PropertyName("id")
     public String mId;
     @PropertyName("chat_id")
@@ -45,6 +34,9 @@ public class Message implements Parcelable {
     public String mType;
     @PropertyName("images")
     public List<Media> mMedias = new ArrayList<>();
+    @PropertyName("is_edited")
+    public boolean mIsEdited;
+
     public Message() {
     }
 
@@ -60,13 +52,20 @@ public class Message implements Parcelable {
         mType = type;
     }
 
-    public Message(String chatId, String senderId, String text, String timeStamp, String type, List<Media> medias) {
+    public Message(String chatId,
+                   String senderId,
+                   String text,
+                   String timeStamp,
+                   String type,
+                   List<Media> medias,
+                   boolean isEdited) {
         mChatId = chatId;
         mSenderId = senderId;
         mText = text;
         mTimeStamp = timeStamp;
         mType = type;
         mMedias = medias;
+        mIsEdited = isEdited;
     }
 
     public Message(Parcel in) {
@@ -76,6 +75,7 @@ public class Message implements Parcelable {
         mText = in.readString();
         mTimeStamp = in.readString();
         mType = in.readString();
+        mIsEdited = in.readInt() == 1;
         in.readTypedList(mMedias, Media.CREATOR);
     }
 
@@ -85,7 +85,7 @@ public class Message implements Parcelable {
     }
 
     public static Message createMediaMessage(String chatId, String userId, List<Media> medias) {
-        return new Message(chatId, userId, "Welcome!", DateUtil.getStringTime(), "user", medias);
+        return new Message(chatId, userId, "Welcome!", DateUtil.getStringTime(), "user", medias, false);
     }
 
     @Exclude
@@ -163,6 +163,16 @@ public class Message implements Parcelable {
         return mMedias.size() > 0;
     }
 
+    @Exclude
+    public boolean isEdited() {
+        return mIsEdited;
+    }
+
+    @Exclude
+    public void setEdited(boolean edited) {
+        mIsEdited = edited;
+    }
+
     @Override
     public String toString() {
         return "Message{" +
@@ -172,8 +182,22 @@ public class Message implements Parcelable {
                 ", mText='" + mText + '\'' +
                 ", mTimeStamp='" + mTimeStamp + '\'' +
                 ", mType='" + mType + '\'' +
+                ", mMedias=" + mMedias +
+                ", mIsEdited=" + mIsEdited +
                 '}';
     }
+
+    public static final Parcelable.Creator<Message> CREATOR = new Parcelable.Creator<Message>() {
+        @Override
+        public Message createFromParcel(Parcel in) {
+            return new Message(in);
+        }
+
+        @Override
+        public Message[] newArray(int size) {
+            return new Message[size];
+        }
+    };
 
     @Override
     public int describeContents() {
@@ -188,6 +212,7 @@ public class Message implements Parcelable {
         dest.writeString(mText);
         dest.writeString(mTimeStamp);
         dest.writeString(mType);
+        dest.writeInt(mIsEdited ? 1 : 0);
         dest.writeTypedList(mMedias);
     }
 
@@ -199,6 +224,7 @@ public class Message implements Parcelable {
         private String mTimeStamp;
         private String mType;
         private List<Media> mMedias = new ArrayList<>();
+        private boolean mIsEdited;
 
         public Builder setChatId(String chatId) {
             mChatId = chatId;
@@ -230,13 +256,19 @@ public class Message implements Parcelable {
             return this;
         }
 
+        public Builder setEdited(boolean isEdited) {
+            mIsEdited = isEdited;
+            return this;
+        }
+
         public Message create() {
             return new Message(mChatId,
                     mSenderId,
                     mText,
                     mTimeStamp,
                     mType,
-                    mMedias);
+                    mMedias,
+                    mIsEdited);
         }
     }
 }

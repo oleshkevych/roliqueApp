@@ -60,6 +60,7 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
         mMediaLib.setFrontCamera(true);
         mMediaLib.setRotation(true);
         mMediaLib.setSinglePhoto(true);
+        mMediaLib.setSelectableFlash(true);
         return inflater.inflate(R.layout.fragment_sign_up, container, false);
     }
 

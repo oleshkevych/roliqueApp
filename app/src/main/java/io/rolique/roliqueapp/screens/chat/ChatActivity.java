@@ -52,9 +52,11 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     @Inject RoliqueAppUsers mRoliqueAppUsers;
     @Inject RoliqueApplicationPreferences mPreferences;
 
-    private MessagesAdapter mAdapter;
+    MessagesAdapter mAdapter;
     Chat mChat;
-    private MediaLib mediaLib;
+    MediaLib mediaLib;
+    boolean mIsEditing;
+    Message mMessageForEdit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,7 +145,22 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         messagesRecyclerView.setLayoutManager(linearLayoutManager);
         mAdapter = new MessagesAdapter(ChatActivity.this, mPreferences.getId(), mRoliqueAppUsers.getUsers());
         messagesRecyclerView.setAdapter(mAdapter);
+        mAdapter.setActionListener(mActionListener);
     }
+
+    MessagesAdapter.OnMessageActionListener mActionListener = new MessagesAdapter.OnMessageActionListener() {
+        @Override
+        public void onMessageEdit(Message message) {
+            mMessageForEdit = message;
+            mIsEditing = true;
+            mMessageEditText.setText(message.getText());
+        }
+
+        @Override
+        public void onMessageRemove(Message message) {
+            mPresenter.removeMessage(message, mChat);
+        }
+    };
 
     private void setUpRefreshLayout() {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -163,9 +180,20 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     void onSendClick() {
         String text = mMessageEditText.getText().toString();
         if (text.trim().isEmpty()) return;
-        Message message = getMessage(text);
-        mPresenter.addMessage(message, mChat);
-        mMessageEditText.getText().clear();
+        if (mIsEditing) {
+            if (text.equals(mMessageForEdit.getText())) {
+                mIsEditing = false;
+                mMessageForEdit = null;
+                return;
+            }
+            mMessageForEdit.setText(text);
+            mMessageForEdit.setEdited(true);
+            mPresenter.editMessage(mMessageForEdit, mChat);
+        } else {
+            Message message = getMessage(text);
+            mPresenter.addMessage(message, mChat);
+            mMessageEditText.getText().clear();
+        }
     }
 
     private Message getMessage(String messageText) {
@@ -214,6 +242,19 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         mAdapter.addNewMessage(message);
         RecyclerView messagesRecyclerView = getViewById(R.id.recycler_view_messages);
         messagesRecyclerView.smoothScrollToPosition(mAdapter.getItemCount() - 1);
+    }
+
+    @Override
+    public void updateMessageView(Message message) {
+        mMessageEditText.setText("");
+        mIsEditing = false;
+        mMessageForEdit = null;
+        mAdapter.updateMessage(message);
+    }
+
+    @Override
+    public void removedMessageView(String messageId) {
+        mAdapter.removeMessage(messageId);
     }
 
     @Override

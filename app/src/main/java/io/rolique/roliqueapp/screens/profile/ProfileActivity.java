@@ -108,6 +108,7 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
         mMediaLib.setFrontCamera(true);
         mMediaLib.setRotation(true);
         mMediaLib.setSinglePhoto(true);
+        mMediaLib.setSelectableFlash(true);
         setEditVisibility();
 
         setButtonsEnabled(mCallButton, false);

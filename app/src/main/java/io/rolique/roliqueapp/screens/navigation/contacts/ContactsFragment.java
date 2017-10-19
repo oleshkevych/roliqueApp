@@ -70,7 +70,7 @@ public class ContactsFragment extends BaseFragment {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    mUsersAdapter.setUsers(mRoliqueAppUsers.getUsers());
+                    updateUsersInView();
                 }
             }, 500);
         } else {
