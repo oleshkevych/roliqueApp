@@ -22,17 +22,16 @@ public class Media implements Parcelable {
     public static final String CATEGORY_VIDEO = "video";
     @Exclude
     public static final String CATEGORY_IMAGE = "photo";
-    public static final Creator<Media> CREATOR = new Creator<Media>() {
-        @Override
-        public Media createFromParcel(Parcel in) {
-            return new Media(in);
-        }
 
-        @Override
-        public Media[] newArray(int size) {
-            return new Media[size];
-        }
-    };
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef({
+            CATEGORY_IMAGE,
+            CATEGORY_VIDEO
+    })
+
+    public @interface Category {
+    }
+
     @PropertyName("image_url")
     public String mImageUrl;
     @PropertyName("video_url")
@@ -122,6 +121,11 @@ public class Media implements Parcelable {
         mMediaType = mediaType;
     }
 
+    @Exclude
+    public boolean isVideoType() {
+        return mMediaType.equals(CATEGORY_VIDEO);
+    }
+
     @Override
     public String toString() {
         return "Media{" +
@@ -132,6 +136,18 @@ public class Media implements Parcelable {
                 ", mMediaType='" + mMediaType + '\'' +
                 '}';
     }
+
+    public static final Creator<Media> CREATOR = new Creator<Media>() {
+        @Override
+        public Media createFromParcel(Parcel in) {
+            return new Media(in);
+        }
+
+        @Override
+        public Media[] newArray(int size) {
+            return new Media[size];
+        }
+    };
 
     @Override
     public int describeContents() {
@@ -145,15 +161,6 @@ public class Media implements Parcelable {
         dest.writeInt(mHeight);
         dest.writeInt(mWidth);
         dest.writeString(mMediaType);
-    }
-
-    @Retention(RetentionPolicy.SOURCE)
-    @StringDef({
-            CATEGORY_IMAGE,
-            CATEGORY_VIDEO
-    })
-
-    public @interface Category {
     }
 
     public static final class Builder {

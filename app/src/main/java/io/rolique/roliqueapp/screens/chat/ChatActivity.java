@@ -45,7 +45,6 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     }
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
-    @BindView(R.id.swipe_refresh_layout) SwipeRefreshLayout mSwipeRefreshLayout;
     @BindView(R.id.edit_text_message) EditText mMessageEditText;
 
     @Inject ChatPresenter mPresenter;
@@ -54,9 +53,10 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
 
     MessagesAdapter mAdapter;
     Chat mChat;
-    MediaLib mediaLib;
-    boolean mIsEditing;
+    MediaLib mMediaLib;
     Message mMessageForEdit;
+    boolean mIsEditing;
+    boolean mIsFetchMessageEnabled = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +67,6 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         setUpToolbar(mChat);
         setUpMediaLib();
         setUpRecyclerView();
-        setUpRefreshLayout();
 
         mPresenter.fetchLastMessages(mChat);
     }
@@ -96,10 +95,9 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     }
 
     private void setUpMediaLib() {
-        mediaLib = new MediaLib(ChatActivity.this, new MediaLib.MediaLibListener() {
+        mMediaLib = new MediaLib(ChatActivity.this, new MediaLib.MediaLibListener() {
             @Override
             public void onSuccess(List<MediaContent> mediaContents) {
-                Timber.e("SUCCESS!!!");
                 Timber.d(mediaContents.toString());
                 List<Media> messageMedias = new ArrayList<>();
                 for (MediaContent mediaContent : mediaContents)
@@ -108,10 +106,11 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                             .setHeight(mediaContent.getHeight())
                             .setWidth(mediaContent.getWidth())
                             .setImageUrl(mediaContent.getImage().getAbsolutePath())
-                            .setMediaType(Media.CATEGORY_IMAGE)
+                            .setVideoUrl(mediaContent.isVideo() ? mediaContent.getVideo().getAbsolutePath() : null)
+                            .setMediaType(mediaContent.isImage() ? Media.CATEGORY_IMAGE : Media.CATEGORY_VIDEO)
                             .create());
                 //TODO: add preview firstly
-                mPresenter.addMediaMessage(getMediaMessage(mMessageEditText.getText().toString(), messageMedias), mChat);
+                mPresenter.setMessage(getMediaMessage(mMessageEditText.getText().toString(), messageMedias), mChat);
             }
 
             @Override
@@ -124,7 +123,11 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
 
             }
         });
-        mediaLib.setStorage(MediaLib.GLOBAL_MEDIA_DEFAULT_FOLDER);
+        mMediaLib.setStorage(MediaLib.GLOBAL_MEDIA_DEFAULT_FOLDER);
+        mMediaLib.setSelectableFlash(true);
+        mMediaLib.setRotation(true);
+        mMediaLib.setFrontCamera(true);
+        mMediaLib.setRecordVideo(true);
     }
 
     private Message getMediaMessage(String messageText, List<Media> medias) {
@@ -140,12 +143,23 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
 
     private void setUpRecyclerView() {
         RecyclerView messagesRecyclerView = getViewById(R.id.recycler_view_messages);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(ChatActivity.this);
+        final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(ChatActivity.this);
         linearLayoutManager.setStackFromEnd(true);
         messagesRecyclerView.setLayoutManager(linearLayoutManager);
         mAdapter = new MessagesAdapter(ChatActivity.this, mPreferences.getId(), mRoliqueAppUsers.getUsers());
         messagesRecyclerView.setAdapter(mAdapter);
         mAdapter.setActionListener(mActionListener);
+        messagesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (linearLayoutManager.findFirstVisibleItemPosition() == 3 && mIsFetchMessageEnabled) {
+                    mIsFetchMessageEnabled = false;
+                    mPresenter.getTopMessages(mAdapter.getFirstMessageId(), mChat);
+                }
+            }
+        });
     }
 
     MessagesAdapter.OnMessageActionListener mActionListener = new MessagesAdapter.OnMessageActionListener() {
@@ -162,24 +176,16 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         }
     };
 
-    private void setUpRefreshLayout() {
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                mPresenter.getTopMessages(mAdapter.getFirstMessageId(), mChat);
-            }
-        });
-    }
-
     @OnClick(R.id.button_add_image)
     void onAddPhotoClick() {
-        mediaLib.startCamera();
+        mMediaLib.startCamera();
     }
 
     @OnClick(R.id.button_send)
     void onSendClick() {
         String text = mMessageEditText.getText().toString();
         if (text.trim().isEmpty()) return;
+        Message message;
         if (mIsEditing) {
             if (text.equals(mMessageForEdit.getText())) {
                 mIsEditing = false;
@@ -188,12 +194,12 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
             }
             mMessageForEdit.setText(text);
             mMessageForEdit.setEdited(true);
-            mPresenter.editMessage(mMessageForEdit, mChat);
+            message = mMessageForEdit;
         } else {
-            Message message = getMessage(text);
-            mPresenter.addMessage(message, mChat);
-            mMessageEditText.getText().clear();
+            message = getMessage(text);
         }
+        mMessageEditText.getText().clear();
+        mPresenter.setMessage(message, mChat);
     }
 
     private Message getMessage(String messageText) {
@@ -218,7 +224,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (mediaLib != null) mediaLib.onActivityResult(requestCode, resultCode, data);
+        if (mMediaLib != null) mMediaLib.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == RC_CHAT_EDIT) {
             boolean isDeleted = data.getBooleanExtra(getString(R.string.extra_chat_from_edit), false);
             if (isDeleted) onBackPressed();
@@ -228,12 +234,8 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     }
 
     @Override
-    public void showLastMessagesView(List<Message> messages) {
-        mAdapter.setMessages(messages);
-    }
-
-    @Override
-    public void showTopMessagesView(List<Message> messages) {
+    public void showTopMessagesView(List<Message> messages, boolean isFetchMessageEnabled) {
+        mIsFetchMessageEnabled = isFetchMessageEnabled;
         mAdapter.addTopMessages(messages);
     }
 
@@ -246,20 +248,12 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
 
     @Override
     public void updateMessageView(Message message) {
-        mMessageEditText.setText("");
-        mIsEditing = false;
-        mMessageForEdit = null;
         mAdapter.updateMessage(message);
     }
 
     @Override
     public void removedMessageView(String messageId) {
         mAdapter.removeMessage(messageId);
-    }
-
-    @Override
-    public void setProgressIndicator(boolean active) {
-        mSwipeRefreshLayout.setRefreshing(active);
     }
 
     @Override

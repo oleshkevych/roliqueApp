@@ -2,6 +2,7 @@ package io.rolique.roliqueapp.screens.chat;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -18,6 +19,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -65,7 +67,6 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
 
     @Override
     public void getTopMessages(String firstMessageId, Chat chat) {
-        mView.setProgressIndicator(true);
         DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES));
         Query chatQuery = chatRef.child(chat.getId()).orderByKey().endAt(firstMessageId).limitToFirst(20);
         chatQuery.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -75,8 +76,7 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren())
                     messages.add(postSnapshot.getValue(Message.class));
                 messages.remove(messages.size() - 1);
-                mView.showTopMessagesView(messages);
-                mView.setProgressIndicator(false);
+                mView.showTopMessagesView(messages, messages.size() == 19);
             }
 
             @Override
@@ -89,7 +89,6 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
 
     @Override
     public void fetchLastMessages(Chat chat) {
-        mView.setProgressIndicator(true);
         mIsProgressActive = true;
         DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES));
         mChatQuery = chatRef.child(chat.getId()).limitToLast(20);
@@ -101,7 +100,6 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             if (mIsProgressActive) {
                 mIsProgressActive = false;
-                mView.setProgressIndicator(false);
             }
             Message message = dataSnapshot.getValue(Message.class);
             mView.showNewMessageView(message);
@@ -127,26 +125,10 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
         public void onCancelled(DatabaseError databaseError) {
             if (mIsProgressActive) {
                 mIsProgressActive = false;
-                mView.setProgressIndicator(false);
             }
             mView.showErrorInView(databaseError.toException().getMessage());
         }
     };
-
-    @Override
-    public void addMessage(Message message, Chat chat) {
-        DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, message.getChatId())).push();
-        String id = chatRef.getKey();
-        message.setId(id);
-
-        DatabaseReference messageRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId(), message.getId()));
-        messageRef.setValue(message);
-
-        for (String memberId : chat.getMemberIds()) {
-            DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, memberId, chat.getId()));
-            memberRef.setValue(message);
-        }
-    }
 
     @Override
     public void leaveChat(Chat chat, String memberId) {
@@ -159,24 +141,72 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
     }
 
     @Override
-    public void addMediaMessage(Message message, Chat chat) {
-        //TODO: add progress
-        uploadRecycle(0, message, chat);
+    public void setMessage(final Message message, final Chat chat) {
+        if (message.getId() == null) {
+            DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId())).push();
+            String id = chatRef.getKey();
+            message.setId(id);
+            for (String memberId : chat.getMemberIds()) {
+                DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, memberId, chat.getId()));
+                memberRef.setValue(message);
+            }
+        } else {
+            DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, chat.getMemberIds().get(0), chat.getId()));
+            memberRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Message message1 = dataSnapshot.getValue(Message.class);
+                    if (message1.getId().equals(message.getId()))
+                        for (String memberId : chat.getMemberIds()) {
+                            DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, memberId, chat.getId()));
+                            memberRef.setValue(message);
+                        }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+
+        DatabaseReference messageRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId(), message.getId()));
+        messageRef.setValue(message);
+
+        if (message.getMedias().size() > 0)
+            uploadRecycle(message, messageRef);
     }
 
-    private void uploadRecycle(final int countUploading, final Message message, final Chat chat) {
-        if (message.getMedias().size() == countUploading) {
-            addMessage(message, chat);
-            return;
-        }
-        StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(String.format("%s.jpg", new Date().getTime()));
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        Bitmap bitmap = BitmapFactory.decodeFile(message.getMedias().get(countUploading).getImageUrl(), bmOptions);
-        bitmap.compress(Bitmap.CompressFormat.PNG, 80, baos);
-        byte[] data = baos.toByteArray();
+    private void uploadRecycle(final Message message, final DatabaseReference messageRef) {
+        messageRef.setValue(message);
+        int index = -1;
+        for (int i = 0; i < message.getMedias().size(); i++)
+            if (!message.getMedias().get(i).getImageUrl().startsWith("http")) {
+                index = i;
+                break;
+            } else if (message.getMedias().get(i).isVideoType() && !message.getMedias().get(i).getVideoUrl().startsWith("http")) {
+                index = i;
+                break;
+            }
 
-        UploadTask uploadTask = storageRef.putBytes(data);
+        if (index == -1) return;
+        final boolean isVideoDownloading = message.getMedias().get(index).isVideoType() &&
+                message.getMedias().get(index).getImageUrl().startsWith("http");
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(String.format("%s%s", new Date().getTime(), (isVideoDownloading ? ".mp4" : ".jpg")));
+        UploadTask uploadTask;
+        if (isVideoDownloading) {
+            Uri uri = Uri.fromFile(new File(message.getMedias().get(index).getVideoUrl()));
+            uploadTask = storageRef.putFile(uri);
+        } else {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+            Bitmap bitmap = BitmapFactory.decodeFile(message.getMedias().get(index).getImageUrl(), bmOptions);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 80, baos);
+            byte[] data = baos.toByteArray();
+
+            uploadTask = storageRef.putBytes(data);
+        }
+        final int finalIndex = index;
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
@@ -187,32 +217,11 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                 @SuppressWarnings("VisibleForTests") String downloadUrl = taskSnapshot.getDownloadUrl().toString();
-                message.getMedias().get(countUploading).setImageUrl(downloadUrl);
-                uploadRecycle(countUploading + 1, message, chat);
-            }
-        });
-    }
-
-    @Override
-    public void editMessage(final Message message, final Chat chat) {
-        //TODO add editing media messages
-        DatabaseReference messageRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId(), message.getId()));
-        messageRef.setValue(message);
-        DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, chat.getMemberIds().get(0), chat.getId()));
-        memberRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Message message1 = dataSnapshot.getValue(Message.class);
-                if (message1.getId().equals(message.getId()))
-                    for (String memberId : chat.getMemberIds()) {
-                        DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, memberId, chat.getId()));
-                        memberRef.setValue(message);
-                    }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
+                if (isVideoDownloading)
+                    message.getMedias().get(finalIndex).setVideoUrl(downloadUrl);
+                else
+                    message.getMedias().get(finalIndex).setImageUrl(downloadUrl);
+                uploadRecycle(message, messageRef);
             }
         });
     }

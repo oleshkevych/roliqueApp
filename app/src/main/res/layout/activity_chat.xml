@@ -9,19 +9,12 @@
 
     <include layout="@layout/content_toolbar_chat"/>
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/swipe_refresh_layout"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view_messages"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recycler_view_messages"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="vertical"/>
-
-    </android.support.v4.widget.SwipeRefreshLayout>
+        android:layout_weight="1"
+        android:scrollbars="vertical"/>
 
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
@@ -59,7 +52,9 @@
                 android:paddingEnd="0dp"
                 android:paddingStart="16dp"
                 android:paddingTop="8dp"
-                tools:text="reg;uerbgerbgueirbguierbguiebrguierbgerbguierbgrebguebgber"/>
+                android:inputType="textCapSentences"
+                tools:text="reg;uerbgerbgueirbguierbguiebrguierbgerbguierbgrebguebgber"
+                tools:ignore="LabelFor"/>
 
             <ImageButton
                 android:id="@+id/button_send"

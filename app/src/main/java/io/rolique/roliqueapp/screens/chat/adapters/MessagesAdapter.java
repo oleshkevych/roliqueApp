@@ -19,6 +19,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
@@ -228,12 +229,12 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         for (int i = 0; i < mMessages.size(); i++)
             if (mMessages.get(i).getId().equals(message.getId())) {
                 mMessages.set(i, message);
-                for (int j = 0; j <  mIsItemMessage.second.size(); j++)
+                for (int j = 0; j < mIsItemMessage.second.size(); j++)
                     if (mIsItemMessage.second.get(j) == i) {
                         notifyItemChanged(j);
                         break;
                     }
-                    break;
+                break;
             }
     }
 
@@ -320,13 +321,20 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         private void setUpMessageInView(int messagePosition, boolean isCurrentUser) {
             if (mMessage.isMedia()) {
-                mMessageTextView.setVisibility(View.GONE);
+                if (mMessage.getText().isEmpty()) {
+                    mMessageTextView.setVisibility(View.GONE);
+                } else {
+                    if (messagePosition == SINGLE_MESSAGE)
+                        messagePosition = TOP_MESSAGE;
+                    @DrawableRes int background = getBackgroundDrawable(messagePosition, isCurrentUser);
+                    mMessageTextView.setBackground(ContextCompat.getDrawable(mMessageTextView.getContext(), background));
+                    mMessageTextView.setText(mMessage.getText());
+                }
                 mImageMessagesLayout.setVisibility(View.VISIBLE);
                 mImageMessagesLayout.removeAllViews();
                 for (Media media : mMessage.getMedias()) {
-                    ImageView imageView = createImageView(media.getHeight(), media.getWidth(), isCurrentUser);
-                    UiUtil.setImageWithRoundCorners(imageView, media.getImageUrl());
-                    mImageMessagesLayout.addView(imageView);
+                    View layout = createImageLayout(media, isCurrentUser);
+                    mImageMessagesLayout.addView(layout);
                 }
             } else {
                 mMessageTextView.setVisibility(View.VISIBLE);
@@ -338,15 +346,34 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             mMessageContainerLayout.setLayoutParams(getMessageParameters(messagePosition, isCurrentUser));
         }
 
-        private ImageView createImageView(int height, int width, boolean isCurrentUser) {
+        private View createImageLayout(Media media, boolean isCurrentUser) {
+            int height = media.getHeight();
+            int width = media.getWidth();
             int baseDimen = itemView.getContext().getResources().getDimensionPixelSize(R.dimen.message_image_view_base_width);
             int imageViewHeight = height >= width ? baseDimen * height / width : baseDimen;
             int imageViewWidth = height >= width ? baseDimen : baseDimen * width / height;
-            ImageView imageView = new ImageView(itemView.getContext());
+
+            final View imageLayout = mInflater.inflate(R.layout.content_message_image, null);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(imageViewWidth, imageViewHeight);
             params.gravity = isCurrentUser ? Gravity.END : Gravity.START;
-            imageView.setLayoutParams(params);
-            return imageView;
+            imageLayout.setLayoutParams(params);
+
+            ImageView playIcon = imageLayout.findViewById(R.id.image_view_play_icon);
+            playIcon.setVisibility(media.isVideoType() &&
+                    media.getImageUrl().startsWith("http") &&
+                    media.getVideoUrl().startsWith("http") ? View.VISIBLE : View.GONE);
+
+            ProgressBar progressBar = imageLayout.findViewById(R.id.progress_bar_media);
+            progressBar.setVisibility((media.isVideoType() &&
+                    media.getImageUrl().startsWith("http") &&
+                    media.getVideoUrl().startsWith("http")) ||
+                    (!media.isVideoType() &&
+                    media.getImageUrl().startsWith("http"))
+                    ? View.GONE : View.VISIBLE);
+
+            ImageView imageView = imageLayout.findViewById(R.id.image_view_message_media);
+            UiUtil.setImageWithRoundCorners(imageView, media.getImageUrl());
+            return imageLayout;
         }
 
         @NonNull
@@ -389,13 +416,13 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         private void setEditEvent(boolean isCurrentUser) {
             if (!isCurrentUser) {
-                itemView.setOnLongClickListener(null);
+                mMessageContainerLayout.setOnLongClickListener(null);
                 return;
             }
-            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            mMessageContainerLayout.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    itemView.setAlpha(0.6f);
+                    mMessageContainerLayout.setAlpha(0.6f);
 
                     final View popupView = mInflater.inflate(R.layout.content_message_popup, null);
                     final PopupWindow popupWindow = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -427,7 +454,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
                         @Override
                         public void onDismiss() {
-                            itemView.setAlpha(1.0f);
+                            mMessageContainerLayout.setAlpha(1.0f);
                         }
                     });
                     int yOffset = (-1) * itemView.getMeasuredHeight() +
