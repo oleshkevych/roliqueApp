@@ -3,7 +3,6 @@ package io.rolique.roliqueapp.screens.chat;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -11,6 +10,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +20,8 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import io.rolique.cameralibrary.MediaLib;
 import io.rolique.cameralibrary.data.model.MediaContent;
+import io.rolique.cameralibrary.screens.imageViewer.ImageViewerActivity;
+import io.rolique.cameralibrary.screens.videoViewer.VideoViewerActivity;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.RoliqueApplication;
@@ -29,6 +31,7 @@ import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.data.model.Message;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.chat.adapters.MessagesAdapter;
+import io.rolique.roliqueapp.screens.chat.adapters.PreviewAdapter;
 import io.rolique.roliqueapp.screens.editChat.ChatEditorActivity;
 import io.rolique.roliqueapp.util.DateUtil;
 import timber.log.Timber;
@@ -45,6 +48,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     }
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
+    @BindView(R.id.recycler_view_image_preview) RecyclerView mPreviewRecyclerView;
     @BindView(R.id.edit_text_message) EditText mMessageEditText;
 
     @Inject ChatPresenter mPresenter;
@@ -52,9 +56,10 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     @Inject RoliqueApplicationPreferences mPreferences;
 
     MessagesAdapter mAdapter;
+    PreviewAdapter mPreviewAdapter;
     Chat mChat;
     MediaLib mMediaLib;
-    Message mMessageForEdit;
+    Message mChangeableMessage;
     boolean mIsEditing;
     boolean mIsFetchMessageEnabled = true;
 
@@ -109,8 +114,9 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                             .setVideoUrl(mediaContent.isVideo() ? mediaContent.getVideo().getAbsolutePath() : null)
                             .setMediaType(mediaContent.isImage() ? Media.CATEGORY_IMAGE : Media.CATEGORY_VIDEO)
                             .create());
-                //TODO: add preview firstly
-                mPresenter.setMessage(getMediaMessage(mMessageEditText.getText().toString(), messageMedias), mChat);
+                mChangeableMessage = getMediaMessage(mMessageEditText.getText().toString(), messageMedias);
+                mIsEditing = true;
+                showPreview(messageMedias);
             }
 
             @Override
@@ -141,6 +147,11 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                 .create();
     }
 
+    private void showPreview(List<Media> messageMedias) {
+        mPreviewRecyclerView.setVisibility(View.VISIBLE);
+        mPreviewAdapter.setMedias(messageMedias);
+    }
+
     private void setUpRecyclerView() {
         RecyclerView messagesRecyclerView = getViewById(R.id.recycler_view_messages);
         final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(ChatActivity.this);
@@ -160,13 +171,59 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                 }
             }
         });
+
+        final LinearLayoutManager previewLinearLayoutManager = new LinearLayoutManager(ChatActivity.this);
+        previewLinearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        mPreviewRecyclerView.setLayoutManager(previewLinearLayoutManager);
+        mPreviewAdapter = new PreviewAdapter(ChatActivity.this);
+        mPreviewRecyclerView.setAdapter(mPreviewAdapter);
+        mPreviewAdapter.setOnItemClickListener(new PreviewAdapter.OnItemClickListener() {
+            @Override
+            public void onImageClick(int position) {
+                if (mChangeableMessage.getMedias().get(position).isVideo()) {
+                    startActivity(VideoViewerActivity.getStartIntent(ChatActivity.this,
+                            mChangeableMessage.getMedias().get(position).getVideoUrl()));
+                } else {
+                    startActivity(ImageViewerActivity.getStartIntent(ChatActivity.this, createMediaContentList(mChangeableMessage.getMedias()), position));
+                }
+            }
+
+            @Override
+            public void onRemoveClick(int position) {
+                new File(mChangeableMessage.getMedias().get(position).getImageUrl()).delete();
+                if (mChangeableMessage.getMedias().get(position).isVideo())
+                    new File(mChangeableMessage.getMedias().get(position).getVideoUrl()).delete();
+                mChangeableMessage.getMedias().remove(position);
+                mPreviewAdapter.removeItem(position);
+                if (mChangeableMessage.getMedias().size() == 0) resetPreview();
+            }
+        });
+    }
+
+    private List<MediaContent> createMediaContentList(List<Media> medias) {
+        List<MediaContent> mediaContents = new ArrayList<>(medias.size());
+        for (Media media: medias)
+            if (!media.isVideo())
+                mediaContents.add(new MediaContent.Builder().
+                        setHeight(media.getHeight()).
+                        setWidth(media.getWidth()).
+                        setMediaType(MediaContent.CATEGORY_IMAGE).
+                        setImage(new File(media.getImageUrl())).
+                        create());
+        return mediaContents;
+    }
+
+    protected void resetPreview() {
+        mPreviewRecyclerView.setVisibility(View.GONE);
+        mPreviewAdapter.clearItems();
     }
 
     MessagesAdapter.OnMessageActionListener mActionListener = new MessagesAdapter.OnMessageActionListener() {
         @Override
         public void onMessageEdit(Message message) {
-            mMessageForEdit = message;
+            mChangeableMessage = message;
             mIsEditing = true;
+            mChangeableMessage.setEdited(true);
             mMessageEditText.setText(message.getText());
         }
 
@@ -187,18 +244,17 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         if (text.trim().isEmpty()) return;
         Message message;
         if (mIsEditing) {
-            if (text.equals(mMessageForEdit.getText())) {
+            if (text.equals(mChangeableMessage.getText())) {
                 mIsEditing = false;
-                mMessageForEdit = null;
                 return;
             }
-            mMessageForEdit.setText(text);
-            mMessageForEdit.setEdited(true);
-            message = mMessageForEdit;
+            mChangeableMessage.setText(text);
+            message = mChangeableMessage;
         } else {
             message = getMessage(text);
         }
         mMessageEditText.getText().clear();
+        resetPreview();
         mPresenter.setMessage(message, mChat);
     }
 

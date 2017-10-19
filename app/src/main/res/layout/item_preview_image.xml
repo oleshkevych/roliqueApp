@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="4dp">
+
+    <ImageView
+        android:id="@+id/image_view"
+        android:layout_gravity="center"
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:padding="8dp"
+        tools:ignore="ContentDescription"
+        tools:background="@color/black"/>
+
+    <FrameLayout
+        android:id="@+id/layout_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:padding="4dp">
+
+        <ImageButton
+            android:id="@+id/image_button_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shape_delete_item_camera_image"
+            android:padding="4dp"
+            app:srcCompat="@drawable/ic_clear_white_16dp"
+            tools:ignore="ContentDescription"/>
+    </FrameLayout>
+
+    <ImageView
+        android:id="@+id/image_view_play_video"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/ic_play_24dp"
+        android:visibility="gone"
+        tools:ignore="ContentDescription"/>
+</FrameLayout>

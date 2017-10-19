@@ -44,9 +44,9 @@ public class MediaContent implements Parcelable {
         mMediaType = mediaType;
     }
 
-    public MediaContent(File video, File videoPreview, int height, int width, String mediaType) {
+    public MediaContent(File image, File video, int height, int width, String mediaType) {
+        mImage = image;
         mVideo = video;
-        mImage = videoPreview;
         mHeight = height;
         mWidth = width;
         mMediaType = mediaType;

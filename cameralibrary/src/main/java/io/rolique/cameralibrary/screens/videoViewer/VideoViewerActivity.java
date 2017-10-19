@@ -1,6 +1,7 @@
 package io.rolique.cameralibrary.screens.videoViewer;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
 import android.net.Uri;
@@ -32,6 +33,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import io.rolique.cameralibrary.R;
@@ -47,9 +49,15 @@ public class VideoViewerActivity extends AppCompatActivity {
     private static final String EXTRA_VIDEOS = "VIDEOS";
     private static final String EXTRA_SELECTED_VIDEO_POSITION = "SELECTED_VIDEO_POSITION";
 
-    public static Intent getStartIntent(Activity activity, List<MediaContent> mediaContents, int position) {
-        Intent intent = new Intent(activity, VideoViewerActivity.class);
-        intent.putParcelableArrayListExtra(EXTRA_VIDEOS, new ArrayList<Parcelable>(mediaContents));
+    public static Intent getStartIntent(Context context, String videoPath) {
+        Intent intent = new Intent(context, VideoViewerActivity.class);
+        intent.putStringArrayListExtra(EXTRA_VIDEOS, new ArrayList<>(Arrays.asList(new String[]{videoPath})));
+        return intent;
+    }
+
+    public static Intent getStartIntent(Context context, List<String> videoPaths, int position) {
+        Intent intent = new Intent(context, VideoViewerActivity.class);
+        intent.putStringArrayListExtra(EXTRA_VIDEOS, new ArrayList<>(videoPaths));
         intent.putExtra(EXTRA_SELECTED_VIDEO_POSITION, position);
         return intent;
     }
@@ -60,7 +68,7 @@ public class VideoViewerActivity extends AppCompatActivity {
 
     int mPosition;
     boolean mIsTrackChanged;
-    List<MediaContent> mMediaContents = new ArrayList<>();
+    List<String> mPaths = new ArrayList<>();
     List<MediaSource> mPlaylist = new ArrayList<>();
     Point mDisplaySize;
     long mLastPosition;
@@ -73,13 +81,13 @@ public class VideoViewerActivity extends AppCompatActivity {
         mDisplaySize = new Point();
         getWindowManager().getDefaultDisplay().getSize(mDisplaySize);
         ActivityCompat.postponeEnterTransition(VideoViewerActivity.this);
-        mMediaContents = getIntent().getParcelableArrayListExtra(EXTRA_VIDEOS);
+        mPaths = getIntent().getStringArrayListExtra(EXTRA_VIDEOS);
         mPosition = getIntent().getIntExtra(EXTRA_SELECTED_VIDEO_POSITION, 0);
         mBandWithMeter = new DefaultBandwidthMeter();
         DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(VideoViewerActivity.this,
                 Util.getUserAgent(VideoViewerActivity.this, getString(R.string.app_name)));
-        for (MediaContent mediaContent : mMediaContents) {
-            Uri videoUri = Uri.parse(mediaContent.getVideo().getPath());
+        for (String path : mPaths) {
+            Uri videoUri = Uri.parse(path);
             MediaSource mediaSource = new ExtractorMediaSource(videoUri, dataSourceFactory, new DefaultExtractorsFactory(), null, null);
             mPlaylist.add(mediaSource);
         }

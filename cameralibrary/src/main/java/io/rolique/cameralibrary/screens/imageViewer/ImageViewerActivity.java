@@ -3,6 +3,7 @@ package io.rolique.cameralibrary.screens.imageViewer;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import java.util.List;
 
 import io.rolique.cameralibrary.R;
 import io.rolique.cameralibrary.data.model.MediaContent;
+import io.rolique.cameralibrary.screens.camera.CameraBaseActivity;
 import io.rolique.cameralibrary.widget.CustomViewPager;
 
 /**
@@ -29,11 +31,13 @@ public class ImageViewerActivity extends AppCompatActivity {
 
     private static final String EXTRA_MEDIAS = "IMAGE_PATH";
     private static final String EXTRA_SELECTED_POSITION = "SELECTED_POSITION";
+    private static final String EXTRA_IS_SHOW_DELETING = "IS_SHOW_DELETING";
 
     public static Intent getStartIntent(Activity activity, List<MediaContent> mediaContents, int position) {
         Intent intent = new Intent(activity, ImageViewerActivity.class);
         intent.putParcelableArrayListExtra(EXTRA_MEDIAS, new ArrayList<Parcelable>(mediaContents));
         intent.putExtra(EXTRA_SELECTED_POSITION, position);
+        intent.putExtra(EXTRA_IS_SHOW_DELETING, activity instanceof CameraBaseActivity);
         return intent;
     }
 
@@ -47,11 +51,12 @@ public class ImageViewerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_image_viewer);
         mMediaContents = getIntent().getParcelableArrayListExtra(EXTRA_MEDIAS);
         int startPosition = getIntent().getIntExtra(EXTRA_SELECTED_POSITION, 0);
-        setUpToolbar();
+        boolean isShowDeleting = getIntent().getBooleanExtra(EXTRA_IS_SHOW_DELETING, false);
+        setUpToolbar(isShowDeleting);
         setUpViewPager(startPosition);
     }
 
-    private void setUpToolbar() {
+    private void setUpToolbar(boolean isShowDeleting) {
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,7 +64,10 @@ public class ImageViewerActivity extends AppCompatActivity {
                 onBackPressed();
             }
         });
-        toolbar.findViewById(R.id.image_button_delete).setOnClickListener(mOnDeleteClickListener);
+        if (isShowDeleting)
+            toolbar.findViewById(R.id.image_button_delete).setOnClickListener(mOnDeleteClickListener);
+        else
+            toolbar.findViewById(R.id.image_button_delete).setVisibility(View.GONE);
     }
 
     View.OnClickListener mOnDeleteClickListener = new View.OnClickListener() {
@@ -80,7 +88,7 @@ public class ImageViewerActivity extends AppCompatActivity {
                             if (mFragmentViewPagerAdapter.getCount() == 1) onBackPressed();
                             mFragmentViewPagerAdapter.removeFragment(index);
                             mFragmentViewPagerAdapter.notifyDataSetChanged();
-                            setOffscreenPageLimit();
+//                            setOffscreenPageLimit();
                         }
                     })
                     .show();
@@ -106,15 +114,15 @@ public class ImageViewerActivity extends AppCompatActivity {
                 startPosition = imagesCount;
         }
         mViewPager = findViewById(R.id.view_pager);
+//        mViewPager.setOffscreenPageLimit(mFragmentViewPagerAdapter.getCount() > 4 ? 5 : mFragmentViewPagerAdapter.getCount());
         mViewPager.setAdapter(mFragmentViewPagerAdapter);
         mViewPager.setCurrentItem(startPosition);
         mViewPager.setOnTouchListener(null);
-        setOffscreenPageLimit();
     }
 
-    private void setOffscreenPageLimit() {
-        mViewPager.setOffscreenPageLimit(mFragmentViewPagerAdapter.getCount() > 4 ? 5 : mFragmentViewPagerAdapter.getCount());
-    }
+//    private void setOffscreenPageLimit() {
+//        mViewPager.setOffscreenPageLimit(mFragmentViewPagerAdapter.getCount() > 4 ? 5 : mFragmentViewPagerAdapter.getCount());
+//    }
 
     private class FragmentViewPagerAdapter extends FragmentStatePagerAdapter {
 

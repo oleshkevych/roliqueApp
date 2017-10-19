@@ -122,7 +122,7 @@ public class Media implements Parcelable {
     }
 
     @Exclude
-    public boolean isVideoType() {
+    public boolean isVideo() {
         return mMediaType.equals(CATEGORY_VIDEO);
     }
 

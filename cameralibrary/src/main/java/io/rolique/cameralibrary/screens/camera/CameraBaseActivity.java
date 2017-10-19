@@ -346,10 +346,13 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
                         RC_IMAGE_VIEWER);
             else {
                 List<MediaContent> mediaContents = new ArrayList<>();
-                for (MediaContent content : mMediaContents)
-                    if (content.isVideo())
-                        mediaContents.add(content);
-                startActivity(VideoViewerActivity.getStartIntent(CameraBaseActivity.this, mediaContents, position));
+                int selectedPosition = 0;
+                for (int i = 0; i < mMediaContents.size(); i++) {
+                    if (mMediaContents.get(i).isVideo())
+                        mediaContents.add(mMediaContents.get(i));
+                    if (i == position) selectedPosition = mediaContents.size() - 1;
+                }
+                startActivity(VideoViewerActivity.getStartIntent(CameraBaseActivity.this, getPaths(mediaContents), selectedPosition));
             }
         }
 
@@ -365,6 +368,13 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
             }
         }
     };
+
+    private static List<String> getPaths(List<MediaContent> mediaContents) {
+        List<String> paths = new ArrayList<>(mediaContents.size());
+        for (MediaContent mediaContent : mediaContents)
+            paths.add(mediaContent.getVideo().getPath());
+        return paths;
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -774,8 +784,9 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     public void showSavedVideoInView(File video, File preview, int height, int width) {
         int heightWithRotation = mScreenRotation == 90 || mScreenRotation == 270 ? height : width;
         int widthWithRotation = mScreenRotation == 90 || mScreenRotation == 270 ? width : height;
-        MediaContent mediaContent = new MediaContent(video,
+        MediaContent mediaContent = new MediaContent(
                 preview,
+                video,
                 heightWithRotation,
                 widthWithRotation,
                 MediaContent.CATEGORY_VIDEO);

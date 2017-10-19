@@ -184,13 +184,13 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
             if (!message.getMedias().get(i).getImageUrl().startsWith("http")) {
                 index = i;
                 break;
-            } else if (message.getMedias().get(i).isVideoType() && !message.getMedias().get(i).getVideoUrl().startsWith("http")) {
+            } else if (message.getMedias().get(i).isVideo() && !message.getMedias().get(i).getVideoUrl().startsWith("http")) {
                 index = i;
                 break;
             }
 
         if (index == -1) return;
-        final boolean isVideoDownloading = message.getMedias().get(index).isVideoType() &&
+        final boolean isVideoDownloading = message.getMedias().get(index).isVideo() &&
                 message.getMedias().get(index).getImageUrl().startsWith("http");
         StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(String.format("%s%s", new Date().getTime(), (isVideoDownloading ? ".mp4" : ".jpg")));
         UploadTask uploadTask;

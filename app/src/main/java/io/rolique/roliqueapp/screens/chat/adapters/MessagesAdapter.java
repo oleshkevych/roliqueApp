@@ -359,15 +359,15 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             imageLayout.setLayoutParams(params);
 
             ImageView playIcon = imageLayout.findViewById(R.id.image_view_play_icon);
-            playIcon.setVisibility(media.isVideoType() &&
+            playIcon.setVisibility(media.isVideo() &&
                     media.getImageUrl().startsWith("http") &&
                     media.getVideoUrl().startsWith("http") ? View.VISIBLE : View.GONE);
 
             ProgressBar progressBar = imageLayout.findViewById(R.id.progress_bar_media);
-            progressBar.setVisibility((media.isVideoType() &&
+            progressBar.setVisibility((media.isVideo() &&
                     media.getImageUrl().startsWith("http") &&
                     media.getVideoUrl().startsWith("http")) ||
-                    (!media.isVideoType() &&
+                    (!media.isVideo() &&
                     media.getImageUrl().startsWith("http"))
                     ? View.GONE : View.VISIBLE);
 
