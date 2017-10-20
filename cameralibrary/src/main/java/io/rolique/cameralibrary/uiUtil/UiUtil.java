@@ -16,7 +16,8 @@ import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
  */
 public class UiUtil {
 
-    public static void setImageWithRoundCorners(final ImageView imageView, File file) {
+    public static void setImageWithRoundCorners(final ImageView imageView, String path) {
+        File file = new File(path);
         int cornerRadius = imageView.getContext().getResources().getDimensionPixelSize(R.dimen.image_view_corner_radius);
         Picasso picasso = new Picasso.Builder(imageView.getContext()).listener(new Picasso.Listener() {
             @Override

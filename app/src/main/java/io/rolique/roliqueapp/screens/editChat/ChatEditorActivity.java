@@ -106,7 +106,7 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
     MediaLib.MediaLibListener mMediaLibListener = new MediaLib.MediaLibListener() {
         @Override
         public void onSuccess(List<MediaContent> mediaContents) {
-            mImagePath = mediaContents.get(0).getImage().getAbsolutePath();
+            mImagePath = mediaContents.get(0).getImage();
             UiUtil.updateImageIfExists(mImageViewSwitcher, mImagePath, "");
         }
 

@@ -20,7 +20,6 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import io.rolique.cameralibrary.MediaLib;
 import io.rolique.cameralibrary.data.model.MediaContent;
-import io.rolique.cameralibrary.screens.imageViewer.ImageViewerActivity;
 import io.rolique.cameralibrary.screens.videoViewer.VideoViewerActivity;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueAppUsers;
@@ -33,6 +32,7 @@ import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.chat.adapters.MessagesAdapter;
 import io.rolique.roliqueapp.screens.chat.adapters.PreviewAdapter;
 import io.rolique.roliqueapp.screens.editChat.ChatEditorActivity;
+import io.rolique.roliqueapp.screens.imageViewer.ImageViewerActivity;
 import io.rolique.roliqueapp.util.DateUtil;
 import timber.log.Timber;
 
@@ -110,8 +110,8 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                             .Builder()
                             .setHeight(mediaContent.getHeight())
                             .setWidth(mediaContent.getWidth())
-                            .setImageUrl(mediaContent.getImage().getAbsolutePath())
-                            .setVideoUrl(mediaContent.isVideo() ? mediaContent.getVideo().getAbsolutePath() : null)
+                            .setImageUrl(mediaContent.getImage())
+                            .setVideoUrl(mediaContent.isVideo() ? mediaContent.getVideo() : null)
                             .setMediaType(mediaContent.isImage() ? Media.CATEGORY_IMAGE : Media.CATEGORY_VIDEO)
                             .create());
                 mChangeableMessage = getMediaMessage(mMessageEditText.getText().toString(), messageMedias);
@@ -184,7 +184,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                     startActivity(VideoViewerActivity.getStartIntent(ChatActivity.this,
                             mChangeableMessage.getMedias().get(position).getVideoUrl()));
                 } else {
-                    startActivity(ImageViewerActivity.getStartIntent(ChatActivity.this, createMediaContentList(mChangeableMessage.getMedias()), position));
+                    startActivity(ImageViewerActivity.getStartIntent(ChatActivity.this, mChangeableMessage.getMedias(), position));
                 }
             }
 
@@ -200,24 +200,6 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         });
     }
 
-    private List<MediaContent> createMediaContentList(List<Media> medias) {
-        List<MediaContent> mediaContents = new ArrayList<>(medias.size());
-        for (Media media: medias)
-            if (!media.isVideo())
-                mediaContents.add(new MediaContent.Builder().
-                        setHeight(media.getHeight()).
-                        setWidth(media.getWidth()).
-                        setMediaType(MediaContent.CATEGORY_IMAGE).
-                        setImage(new File(media.getImageUrl())).
-                        create());
-        return mediaContents;
-    }
-
-    protected void resetPreview() {
-        mPreviewRecyclerView.setVisibility(View.GONE);
-        mPreviewAdapter.clearItems();
-    }
-
     MessagesAdapter.OnMessageActionListener mActionListener = new MessagesAdapter.OnMessageActionListener() {
         @Override
         public void onMessageEdit(Message message) {
@@ -225,13 +207,45 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
             mIsEditing = true;
             mChangeableMessage.setEdited(true);
             mMessageEditText.setText(message.getText());
+            if (mChangeableMessage.isMedia())
+                showPreview(mChangeableMessage.getMedias());
         }
 
         @Override
         public void onMessageRemove(Message message) {
             mPresenter.removeMessage(message, mChat);
         }
+
+        @Override
+        public void onMediaClick(Media media) {
+            if (media.isVideo()) {
+                startActivity(VideoViewerActivity.getStartIntent(ChatActivity.this, media.getVideoUrl()));
+            } else {
+                List<Media> mediaContents = new ArrayList<>();
+                int position = 0;
+                boolean isSelectedFound = false;
+                for (Message message1 : mAdapter.getMessages())
+                    if (message1.isMedia()) {
+                        for (Media media1 : message1.getMedias()) {
+                            if (!media1.isVideo()) {
+                                if (media1.getImageUrl().equals(media.getImageUrl())) {
+                                    isSelectedFound = true;
+                                } else if (!isSelectedFound) {
+                                    position++;
+                                }
+                                mediaContents.add(media1);
+                            }
+                        }
+                    }
+                startActivity(ImageViewerActivity.getStartIntent(ChatActivity.this, mediaContents, position));
+            }
+        }
     };
+
+    protected void resetPreview() {
+        mPreviewRecyclerView.setVisibility(View.GONE);
+        mPreviewAdapter.clearItems();
+    }
 
     @OnClick(R.id.button_add_image)
     void onAddPhotoClick() {
@@ -244,10 +258,6 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         if (text.trim().isEmpty()) return;
         Message message;
         if (mIsEditing) {
-            if (text.equals(mChangeableMessage.getText())) {
-                mIsEditing = false;
-                return;
-            }
             mChangeableMessage.setText(text);
             message = mChangeableMessage;
         } else {

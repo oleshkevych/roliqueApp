@@ -147,7 +147,7 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
                     .setMediaType(Media.CATEGORY_IMAGE)
                     .setHeight(mediaContents.get(0).getHeight())
                     .setWidth(mediaContents.get(0).getWidth())
-                    .setImageUrl(mediaContents.get(0).getImage().getAbsolutePath())
+                    .setImageUrl(mediaContents.get(0).getImage())
                     .create();
 
             mPresenter.updatePhoto(media, mUser);

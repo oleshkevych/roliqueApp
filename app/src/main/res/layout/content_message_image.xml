@@ -18,7 +18,7 @@
         android:layout_height="56dp"
         android:layout_gravity="center"
         android:indeterminate="true"
-        android:indeterminateDrawable="@drawable/message_image_progress_bar"
+        android:indeterminateDrawable="@drawable/rotate_message_image_progress_bar"
         android:padding="8dp"/>
 
     <ImageView

@@ -12,6 +12,7 @@ import android.util.Pair;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -34,6 +35,7 @@ import io.rolique.roliqueapp.data.model.Message;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.ui.UiUtil;
+import timber.log.Timber;
 
 /**
  * Created by Volodymyr Oleshkevych on 9/1/2017.
@@ -51,6 +53,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         void onMessageEdit(Message message);
 
         void onMessageRemove(Message message);
+
+        void onMediaClick(Media media);
     }
 
     private final LayoutInflater mInflater;
@@ -225,6 +229,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         return mMessages.isEmpty() ? "" : mMessages.get(0).getId();
     }
 
+    public List<Message> getMessages() {
+        return mMessages;
+    }
+
     public void updateMessage(Message message) {
         for (int i = 0; i < mMessages.size(); i++)
             if (mMessages.get(i).getId().equals(message.getId())) {
@@ -260,6 +268,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         @BindView(R.id.image_view_own_edited) ImageView mOwnEditedIndicatorImageView;
 
         Message mMessage;
+        float mLongClickPositionX;
+        float mLongClickPositionY;
 
         MessageViewHolder(View itemView) {
             super(itemView);
@@ -324,16 +334,18 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 if (mMessage.getText().isEmpty()) {
                     mMessageTextView.setVisibility(View.GONE);
                 } else {
-                    if (messagePosition == SINGLE_MESSAGE)
+                    if (messagePosition != CENTER_MESSAGE)
                         messagePosition = TOP_MESSAGE;
                     @DrawableRes int background = getBackgroundDrawable(messagePosition, isCurrentUser);
                     mMessageTextView.setBackground(ContextCompat.getDrawable(mMessageTextView.getContext(), background));
                     mMessageTextView.setText(mMessage.getText());
+                    ((LinearLayout.LayoutParams)mMessageTextView.getLayoutParams()).gravity = isCurrentUser ? Gravity.END : Gravity.START;
                 }
                 mImageMessagesLayout.setVisibility(View.VISIBLE);
                 mImageMessagesLayout.removeAllViews();
                 for (Media media : mMessage.getMedias()) {
                     View layout = createImageLayout(media, isCurrentUser);
+                    layout.setOnLongClickListener(isCurrentUser ? mLongClickListener : null);
                     mImageMessagesLayout.addView(layout);
                 }
             } else {
@@ -346,7 +358,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             mMessageContainerLayout.setLayoutParams(getMessageParameters(messagePosition, isCurrentUser));
         }
 
-        private View createImageLayout(Media media, boolean isCurrentUser) {
+        private View createImageLayout(final Media media, boolean isCurrentUser) {
             int height = media.getHeight();
             int width = media.getWidth();
             int baseDimen = itemView.getContext().getResources().getDimensionPixelSize(R.dimen.message_image_view_base_width);
@@ -373,6 +385,12 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
             ImageView imageView = imageLayout.findViewById(R.id.image_view_message_media);
             UiUtil.setImageWithRoundCorners(imageView, media.getImageUrl());
+            imageLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mActionListener.onMediaClick(media);
+                }
+            });
             return imageLayout;
         }
 
@@ -416,58 +434,75 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         private void setEditEvent(boolean isCurrentUser) {
             if (!isCurrentUser) {
-                mMessageContainerLayout.setOnLongClickListener(null);
+                mMessageTextView.setOnLongClickListener(null);
+                mMessageContainerLayout.setOnTouchListener(null);
                 return;
             }
-            mMessageContainerLayout.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    mMessageContainerLayout.setAlpha(0.6f);
+            mMessageTextView.setOnLongClickListener(mLongClickListener);
 
-                    final View popupView = mInflater.inflate(R.layout.content_message_popup, null);
-                    final PopupWindow popupWindow = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    popupWindow.setBackgroundDrawable(ContextCompat.getDrawable(itemView.getContext(), R.drawable.shape_text_view_message_alien_single));
-                    popupWindow.setOutsideTouchable(true);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                        popupWindow.setAttachedInDecor(true);
+            mMessageContainerLayout.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN){
+                        mLongClickPositionX = event.getX();
+                        mLongClickPositionY = event.getY();
                     }
-                    popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                    popupWindow.setAnimationStyle(R.style.popupAnimation);
-                    View editView = popupView.findViewById(R.id.image_view_edit);
-                    editView.setOnClickListener(new Button.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            popupWindow.dismiss();
-                            if (mActionListener == null) return;
-                            mActionListener.onMessageEdit(mMessage);
-                        }
-                    });
-                    View removeView = popupView.findViewById(R.id.image_view_remove);
-                    removeView.setOnClickListener(new Button.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            popupWindow.dismiss();
-                            if (mActionListener == null) return;
-                            mActionListener.onMessageRemove(mMessage);
-                        }
-                    });
-                    popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
-                        @Override
-                        public void onDismiss() {
-                            mMessageContainerLayout.setAlpha(1.0f);
-                        }
-                    });
-                    int yOffset = (-1) * itemView.getMeasuredHeight() +
-                            (mUserNameTextView.getVisibility() == View.VISIBLE ?
-                                    mUserNameTextView.getHeight() : 0) +
-                            (mUserNameTextView.getVisibility() == View.VISIBLE ?
-                                    mDateTextView.getHeight() : 0) -
-                            (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, itemView.getContext().getResources().getDisplayMetrics());
-                    popupWindow.showAsDropDown(itemView, 0, yOffset, Gravity.END);
-                    return true;
+                    return false;
                 }
             });
         }
+
+        View.OnLongClickListener mLongClickListener = new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                mMessageContainerLayout.setAlpha(0.6f);
+
+                final View popupView = mInflater.inflate(R.layout.content_message_popup, null);
+                final PopupWindow popupWindow = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                popupWindow.setBackgroundDrawable(ContextCompat.getDrawable(itemView.getContext(), R.drawable.shape_text_view_message_alien_single));
+                popupWindow.setOutsideTouchable(true);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    popupWindow.setAttachedInDecor(true);
+                }
+                popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                popupWindow.setAnimationStyle(R.style.popupAnimation);
+                View editView = popupView.findViewById(R.id.image_view_edit);
+                editView.setOnClickListener(new Button.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        popupWindow.dismiss();
+                        if (mActionListener == null) return;
+                        mActionListener.onMessageEdit(mMessage);
+                    }
+                });
+                View removeView = popupView.findViewById(R.id.image_view_remove);
+                removeView.setOnClickListener(new Button.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        popupWindow.dismiss();
+                        if (mActionListener == null) return;
+                        mActionListener.onMessageRemove(mMessage);
+                    }
+                });
+                popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        mMessageContainerLayout.setAlpha(1.0f);
+                    }
+                });
+                int yOffset = (-1) * v.getMeasuredHeight() +
+                        (mUserNameTextView.getVisibility() == View.VISIBLE ?
+                                mUserNameTextView.getHeight() : 0) +
+                        (mUserNameTextView.getVisibility() == View.VISIBLE ?
+                                mDateTextView.getHeight() : 0) -
+                        (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, itemView.getContext().getResources().getDisplayMetrics());
+                Timber.e("measured Offset " + yOffset);
+                Timber.e("Touch coordinates : " +
+                        String.valueOf(mLongClickPositionX) + "x" + String.valueOf(mLongClickPositionY));
+                popupWindow.showAsDropDown(v, 0, yOffset, Gravity.END);
+                return true;
+            }
+        };
 
         private void setUpEdited(boolean isCurrentUser) {
             mOtherEditedIndicatorImageView.setVisibility(!isCurrentUser && mMessage.isEdited() ? View.VISIBLE : View.GONE);

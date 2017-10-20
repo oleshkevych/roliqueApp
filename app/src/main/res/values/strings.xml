@@ -86,8 +86,14 @@
     <!--Select bottom dialog end-->
     <!-- Activity profile end-->
 
-    <!-- Activity Chat start-->
-    <!-- Activity Chat end-->
+    <!-- activity imageViewer start-->
+    <string name="activity_image_viewer_alert_title">Delete</string>
+    <string name="activity_image_viewer_alert_body">Remove photo?</string>
+    <string name="activity_image_viewer_positive_button">OK</string>
+    <string name="activity_image_viewer_negative_button">Cancel</string>
+    <string name="activity_image_viewer_network_error">No connection</string>
+    <string name="activity_image_viewer_network_retry">Retry</string>
+    <!-- activity imageViewer end-->
 
     <string name="title_activity_maps">Map</string>
 

@@ -19,7 +19,7 @@ interface CameraContract {
     interface Presenter {
         void createVideoPreview(File video, File preview, int screenWidth, int screenHeight);
         void savePictureToFile(byte[] data, File pictureFile, int screenWidth, int screenHeight, boolean isFrontOrientation, int orientation);
-        void removeFile(File file);
+        void removeFile(String file);
         void start();
         void stop();
     }

@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class ImageViewerActivity extends AppCompatActivity {
 
     public static Intent getStartIntent(Activity activity, List<MediaContent> mediaContents, int position) {
         Intent intent = new Intent(activity, ImageViewerActivity.class);
-        intent.putParcelableArrayListExtra(EXTRA_MEDIAS, new ArrayList<Parcelable>(mediaContents));
+        intent.putParcelableArrayListExtra(EXTRA_MEDIAS, new ArrayList<MediaContent>(mediaContents));
         intent.putExtra(EXTRA_SELECTED_POSITION, position);
         intent.putExtra(EXTRA_IS_SHOW_DELETING, activity instanceof CameraBaseActivity);
         return intent;
@@ -83,7 +84,7 @@ public class ImageViewerActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             int index = mViewPager.getCurrentItem();
-                            mMediaContents.get(index).getImage().delete();
+                            new File(mMediaContents.get(index).getImage()).delete();
                             mMediaContents.remove(index);
                             if (mFragmentViewPagerAdapter.getCount() == 1) onBackPressed();
                             mFragmentViewPagerAdapter.removeFragment(index);

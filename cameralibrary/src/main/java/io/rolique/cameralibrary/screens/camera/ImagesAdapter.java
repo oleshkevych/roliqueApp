@@ -123,7 +123,8 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
                             View.VISIBLE : View.GONE);
         }
 
-        private void setImageWithRoundCorners(ImageView imageView, File image, int viewHeight, int viewWidth) {
+        private void setImageWithRoundCorners(ImageView imageView, String path, int viewHeight, int viewWidth) {
+            File image = new File(path);
                 int cornerRadius = imageView.getContext().getResources().getDimensionPixelSize(R.dimen.image_view_corner_radius);
                 Picasso picasso = new Picasso.Builder(imageView.getContext()).listener(new Picasso.Listener() {
                     @Override

@@ -8,19 +8,24 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.widget.ImageView;
 
 /**
  * Created by Volodymyr Oleshkevych on 5/18/2017.
  * Copyright (c) 2017, Rolique. All rights reserved.
  */
-public class TouchImageView extends ImageView {
+public class TouchImageView extends android.support.v7.widget.AppCompatImageView {
 
     private static class Mode {
         static final int NONE = 0;
         static final int DRAG = 1;
         static final int ZOOM = 2;
     }
+
+    public interface OnDragFinishedListener {
+        void onDragFinished(boolean isFinished);
+    }
+
+    OnDragFinishedListener mOnDragFinishedListener;
 
     private Matrix mMatrix;
 
@@ -55,6 +60,10 @@ public class TouchImageView extends ImageView {
     public TouchImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
         sharedConstructing(context);
+    }
+
+    public void setOnDragFinishedListener(OnDragFinishedListener onDragFinishedListener) {
+        mOnDragFinishedListener = onDragFinishedListener;
     }
 
     private void sharedConstructing(Context context) {
@@ -96,7 +105,6 @@ public class TouchImageView extends ImageView {
 
                             mMatrix.postTranslate(fixTransX, fixTransY);
                             fixTrans();
-
                             mLastPoint.set(curr.x, curr.y);
                         }
                         break;
@@ -117,7 +125,7 @@ public class TouchImageView extends ImageView {
                 setImageMatrix(mMatrix);
                 invalidate();
 
-                return true; // indicate event was handled
+                return true;
             }
         });
     }
@@ -170,6 +178,13 @@ public class TouchImageView extends ImageView {
         if (fixTransX != 0 || fixTransY != 0) {
             mMatrix.postTranslate(fixTransX, fixTransY);
         }
+
+        toggleDragState(transX, fixTransX);
+    }
+
+    private void toggleDragState(float transX, float fixTransX) {
+        if (mOnDragFinishedListener != null)
+            mOnDragFinishedListener.onDragFinished((transX == 0 && fixTransX == 0) || fixTransX != 0);
     }
 
     float getFixTrans(float trans, float viewSize, float contentSize) {
@@ -221,6 +236,16 @@ public class TouchImageView extends ImageView {
         oldMeasuredHeight = mViewHeight;
         oldMeasuredWidth = mViewWidth;
 
+        rescaleToOriginal();
+    }
+
+    public void removeZoom() {
+        if (mSaveScale == mMinScale) return;
+        mSaveScale = mMinScale;
+        rescaleToOriginal();
+    }
+
+    private void rescaleToOriginal() {
         if (mSaveScale == 1f) {
             float scale;
             Drawable drawable = getDrawable();

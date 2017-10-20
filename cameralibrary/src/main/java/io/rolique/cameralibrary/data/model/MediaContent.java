@@ -26,8 +26,8 @@ public class MediaContent implements Parcelable {
     public @interface Category {
     }
 
-    private File mImage;
-    private File mVideo;
+    private String mImage;
+    private String mVideo;
     private int mHeight;
     private int mWidth;
 
@@ -36,7 +36,7 @@ public class MediaContent implements Parcelable {
     public MediaContent() {
     }
 
-    public MediaContent(File file, int height, int width, String mediaType) {
+    public MediaContent(String file, int height, int width, String mediaType) {
         if (mediaType.equals(CATEGORY_IMAGE)) mImage = file;
         else mVideo = file;
         mHeight = height;
@@ -44,7 +44,7 @@ public class MediaContent implements Parcelable {
         mMediaType = mediaType;
     }
 
-    public MediaContent(File image, File video, int height, int width, String mediaType) {
+    public MediaContent(String image, String video, int height, int width, String mediaType) {
         mImage = image;
         mVideo = video;
         mHeight = height;
@@ -53,26 +53,26 @@ public class MediaContent implements Parcelable {
     }
 
     public MediaContent(Parcel in) {
-        mImage = (File) in.readSerializable();
-        mVideo = (File) in.readSerializable();
+        mImage = in.readString();
+        mVideo = in.readString();
         mHeight = in.readInt();
         mWidth = in.readInt();
         mMediaType = in.readString();
     }
 
-    public File getImage() {
+    public String getImage() {
         return mImage;
     }
 
-    public void setImage(File image) {
+    public void setImage(String image) {
         mImage = image;
     }
 
-    public File getVideo() {
+    public String getVideo() {
         return mVideo;
     }
 
-    public void setVideo(File video) {
+    public void setVideo(String video) {
         mVideo = video;
     }
 
@@ -123,18 +123,18 @@ public class MediaContent implements Parcelable {
 
     public static final class Builder {
 
-        private File mImage;
-        private File mVideo;
+        private String mImage;
+        private String mVideo;
         private int mHeight;
         private int mWidth;
         private @Category String mMediaType;
 
-        public Builder setImage(File image) {
+        public Builder setImage(String image) {
             mImage = image;
             return this;
         }
 
-        public Builder setVideo(File video) {
+        public Builder setVideo(String video) {
             mVideo = video;
             return this;
         }
@@ -182,8 +182,8 @@ public class MediaContent implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeSerializable(mImage);
-        dest.writeSerializable(mVideo);
+        dest.writeString(mImage);
+        dest.writeString(mVideo);
         dest.writeInt(mHeight);
         dest.writeInt(mWidth);
         dest.writeString(mMediaType);

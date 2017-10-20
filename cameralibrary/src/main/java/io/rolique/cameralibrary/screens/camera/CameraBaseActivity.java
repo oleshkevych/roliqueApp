@@ -372,7 +372,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     private static List<String> getPaths(List<MediaContent> mediaContents) {
         List<String> paths = new ArrayList<>(mediaContents.size());
         for (MediaContent mediaContent : mediaContents)
-            paths.add(mediaContent.getVideo().getPath());
+            paths.add(mediaContent.getVideo());
         return paths;
     }
 
@@ -765,7 +765,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         Timber.d("showSavedPictureInView: " + file + " - exists " + file.exists());
         int heightWithRotation = mScreenRotation == 90 || mScreenRotation == 270 ? height : width;
         int widthWithRotation = mScreenRotation == 90 || mScreenRotation == 270 ? width : height;
-        MediaContent mediaContent = new MediaContent(file,
+        MediaContent mediaContent = new MediaContent(file.getAbsolutePath(),
                 heightWithRotation,
                 widthWithRotation,
                 MediaContent.CATEGORY_IMAGE);
@@ -785,8 +785,8 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         int heightWithRotation = mScreenRotation == 90 || mScreenRotation == 270 ? height : width;
         int widthWithRotation = mScreenRotation == 90 || mScreenRotation == 270 ? width : height;
         MediaContent mediaContent = new MediaContent(
-                preview,
-                video,
+                preview.getAbsolutePath(),
+                video.getAbsolutePath(),
                 heightWithRotation,
                 widthWithRotation,
                 MediaContent.CATEGORY_VIDEO);

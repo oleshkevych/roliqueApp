@@ -170,7 +170,7 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
                                 .setMediaType(Media.CATEGORY_IMAGE)
                                 .setHeight(mediaContents.get(0).getHeight())
                                 .setWidth(mediaContents.get(0).getWidth())
-                                .setImageUrl(mediaContents.get(0).getImage().getAbsolutePath())
+                                .setImageUrl(mediaContents.get(0).getImage())
                                 .create();
 
                         mPresenter.updateUserPicture(media);

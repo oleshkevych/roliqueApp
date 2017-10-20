@@ -67,7 +67,7 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
     MediaLib.MediaLibListener mMediaLibListener = new MediaLib.MediaLibListener() {
         @Override
         public void onSuccess(List<MediaContent> mediaContents) {
-            mImagePath = mediaContents.get(0).getImage().getAbsolutePath();
+            mImagePath = mediaContents.get(0).getImage();
             UiUtil.setImageIfExists(mViewSwitcher, mImagePath, "", 88);
         }
 

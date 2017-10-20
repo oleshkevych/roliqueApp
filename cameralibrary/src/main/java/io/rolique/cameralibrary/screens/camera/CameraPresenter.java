@@ -124,8 +124,8 @@ class CameraPresenter implements CameraContract.Presenter {
     }
 
     @Override
-    public void removeFile(File file) {
-        file.delete();
+    public void removeFile(String path) {
+        new File(path).delete();
     }
 
 //    @Override
