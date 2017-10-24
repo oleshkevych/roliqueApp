@@ -293,7 +293,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             mUserNameTextView.setVisibility(isCurrentUser ? View.GONE : View.VISIBLE);
             mMessageContainerLayout.setGravity(isCurrentUser ? Gravity.END : Gravity.START);
             mMessageInfoContainerLayout.setVisibility(View.GONE);
-            mMessageContainerLayout.setOnClickListener(mOnClickListener);
+            mMessageTextView.setOnClickListener(mOnClickListener);
         }
 
         final View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -339,7 +339,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     @DrawableRes int background = getBackgroundDrawable(messagePosition, isCurrentUser);
                     mMessageTextView.setBackground(ContextCompat.getDrawable(mMessageTextView.getContext(), background));
                     mMessageTextView.setText(mMessage.getText());
-                    ((LinearLayout.LayoutParams)mMessageTextView.getLayoutParams()).gravity = isCurrentUser ? Gravity.END : Gravity.START;
+                    ((LinearLayout.LayoutParams) mMessageTextView.getLayoutParams()).gravity = isCurrentUser ? Gravity.END : Gravity.START;
                 }
                 mImageMessagesLayout.setVisibility(View.VISIBLE);
                 mImageMessagesLayout.removeAllViews();
@@ -380,7 +380,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     media.getImageUrl().startsWith("http") &&
                     media.getVideoUrl().startsWith("http")) ||
                     (!media.isVideo() &&
-                    media.getImageUrl().startsWith("http"))
+                            media.getImageUrl().startsWith("http"))
                     ? View.GONE : View.VISIBLE);
 
             ImageView imageView = imageLayout.findViewById(R.id.image_view_message_media);
@@ -443,10 +443,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             mMessageContainerLayout.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
-                    if (event.getAction() == MotionEvent.ACTION_DOWN){
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         mLongClickPositionX = event.getX();
                         mLongClickPositionY = event.getY();
                     }
+
                     return false;
                 }
             });

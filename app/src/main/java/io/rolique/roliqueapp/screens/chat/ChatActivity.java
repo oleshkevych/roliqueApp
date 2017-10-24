@@ -6,7 +6,11 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.TranslateAnimation;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
@@ -31,6 +35,7 @@ import io.rolique.roliqueapp.data.model.Message;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.chat.adapters.MessagesAdapter;
 import io.rolique.roliqueapp.screens.chat.adapters.PreviewAdapter;
+import io.rolique.roliqueapp.screens.chat.decorators.CustomInterpolator;
 import io.rolique.roliqueapp.screens.editChat.ChatEditorActivity;
 import io.rolique.roliqueapp.screens.imageViewer.ImageViewerActivity;
 import io.rolique.roliqueapp.util.DateUtil;
@@ -62,6 +67,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     Message mChangeableMessage;
     boolean mIsEditing;
     boolean mIsFetchMessageEnabled = true;
+    boolean mIsKeyboardShown;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,26 +158,9 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         mPreviewAdapter.setMedias(messageMedias);
     }
 
+    float mStartY;
+
     private void setUpRecyclerView() {
-        RecyclerView messagesRecyclerView = getViewById(R.id.recycler_view_messages);
-        final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(ChatActivity.this);
-        linearLayoutManager.setStackFromEnd(true);
-        messagesRecyclerView.setLayoutManager(linearLayoutManager);
-        mAdapter = new MessagesAdapter(ChatActivity.this, mPreferences.getId(), mRoliqueAppUsers.getUsers());
-        messagesRecyclerView.setAdapter(mAdapter);
-        mAdapter.setActionListener(mActionListener);
-        messagesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                if (linearLayoutManager.findFirstVisibleItemPosition() == 3 && mIsFetchMessageEnabled) {
-                    mIsFetchMessageEnabled = false;
-                    mPresenter.getTopMessages(mAdapter.getFirstMessageId(), mChat);
-                }
-            }
-        });
-
         final LinearLayoutManager previewLinearLayoutManager = new LinearLayoutManager(ChatActivity.this);
         previewLinearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         mPreviewRecyclerView.setLayoutManager(previewLinearLayoutManager);
@@ -198,7 +187,197 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                 if (mChangeableMessage.getMedias().size() == 0) resetPreview();
             }
         });
+
+        final RecyclerView messagesRecyclerView = getViewById(R.id.recycler_view_messages);
+        final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(ChatActivity.this);
+        linearLayoutManager.setStackFromEnd(true);
+        messagesRecyclerView.setLayoutManager(linearLayoutManager);
+        mAdapter = new MessagesAdapter(ChatActivity.this, mPreferences.getId(), mRoliqueAppUsers.getUsers());
+        messagesRecyclerView.setAdapter(mAdapter);
+        mAdapter.setActionListener(mActionListener);
+//        final ItemDecorator itemDecorator = new ItemDecorator();
+//        messagesRecyclerView.addItemDecoration(itemDecorator);
+        setUpScrollListener(messagesRecyclerView, linearLayoutManager);
     }
+
+    private void setUpScrollListener(RecyclerView messagesRecyclerView, final LinearLayoutManager linearLayoutManager) {
+        messagesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
+            @Override
+            public void onScrolled(final RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (mIsKeyboardShown) {
+                    mIsKeyboardShown = false;
+                    hideKeyboard();
+                }
+                if (linearLayoutManager.findFirstVisibleItemPosition() == 4 && mIsFetchMessageEnabled) {
+                    mIsFetchMessageEnabled = false;
+                    mPresenter.getTopMessages(mAdapter.getFirstMessageId(), mChat);
+                }
+                Timber.e("dy " + dy + " mAverageSpeed " + mAverageSpeed + " mIsBoundsWorking " + mIsBoundsWorking);
+                if ((!recyclerView.canScrollVertically(-1) || !recyclerView.canScrollVertically(1)) && !mIsBoundsWorking) {
+                    mIsBoundsWorking = true;
+                    long animationDuration = Math.abs(mAverageSpeed) > 100 ? 1500 : 500;
+                    mAverageSpeed = (Math.abs(mAverageSpeed) > 200 ? 200 :
+                            Math.abs(mAverageSpeed) > 20 ? Math.abs(mAverageSpeed) : 20);
+                    animationDuration = Math.abs(animationDuration);
+                    AnimationSet as = new AnimationSet(true);
+                    TranslateAnimation animationUp = new TranslateAnimation(0, 0, 0, (recyclerView.canScrollVertically(-1) ? (-2) : 2) * mAverageSpeed);
+                    animationUp.setRepeatCount(0);
+                    animationUp.setInterpolator(new CustomInterpolator());
+                    animationUp.setDuration(animationDuration / 3);
+                    animationUp.setFillAfter(true);
+                    as.addAnimation(animationUp);
+
+                    TranslateAnimation animationDown = new TranslateAnimation(0, 0, 0, (recyclerView.canScrollVertically(-1) ? 2 : (-2)) * mAverageSpeed);
+                    animationDown.setRepeatCount(0);
+                    animationDown.setDuration(animationDuration);
+                    animationUp.setInterpolator(new CustomInterpolator());
+                    animationDown.setStartOffset(animationDuration / 3);
+
+                    animationDown.setFillAfter(true);
+                    as.addAnimation(animationDown);
+                    animationDown.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            mIsBoundsWorking = false;
+                            mAverageSpeed = 0;
+                            mSpeedsCounted = 0;
+                            mDy = 0;
+                            setUpDrag(!recyclerView.canScrollVertically(-1),
+                                    !recyclerView.canScrollVertically(1),
+                                    recyclerView);
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+
+                        }
+                    });
+                    recyclerView.startAnimation(as);
+                }
+
+                if (!mIsBoundsWorking)
+                    setUpDrag(!recyclerView.canScrollVertically(-1),
+                            !recyclerView.canScrollVertically(1),
+                            recyclerView);
+//                itemDecorator.setSpeed(dy);
+                calculateScrollingSpeed(dy);
+            }
+        });
+    }
+
+// start scrolls/drug animations
+
+    boolean mIsBoundsWorking;
+    int mSpeedsCounted;
+    int mAverageSpeed;
+    boolean mIsSetDrug;
+    float mDy;
+    boolean mIsDrugging;
+
+    private void calculateScrollingSpeed(int ySpeed) {
+        if ((mAverageSpeed >= 0 && ySpeed <= 0) || (mAverageSpeed <= 0 && ySpeed >= 0)) {
+            mSpeedsCounted = 0;
+            mAverageSpeed = 0;
+        }
+        if (Math.abs(ySpeed) < 4 || mIsBoundsWorking) return;
+        mSpeedsCounted++;
+        mAverageSpeed = (ySpeed + mAverageSpeed) / mSpeedsCounted;
+    }
+
+    private void setUpDrag(final boolean isTopEndVisible, final boolean isBottomEndVisible, final View recyclerView) {
+        if ((isTopEndVisible || isBottomEndVisible) && !mIsSetDrug) {
+            mIsSetDrug = true;
+            recyclerView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(final View v, MotionEvent event) {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        mStartY = event.getRawY();
+                        mIsDrugging = true;
+                        mDy = 0;
+                        return false;
+                    }
+                    if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                        float dy = event.getRawY() - mStartY;
+                        if (isBottomEndVisible && dy < 0 && mStartY != 0) {
+                            if ((Math.abs(Math.abs(dy) - Math.abs(mDy * 2))) > 10) {
+                                mDy = dy / 2;
+                                v.setTranslationY(mDy);
+                                mIsDrugging = mDy < 0;
+                                return mIsDrugging;
+                            }
+                        } else if (isTopEndVisible && dy > 0 && mStartY != 0) {
+                            if ((Math.abs(Math.abs(dy) - Math.abs(mDy * 2))) > 10) {
+                                mDy = dy / 2;
+                                v.setTranslationY(mDy);
+                                mIsDrugging = mDy > 0;
+                                return mIsDrugging;
+                            }
+                        } else if ((isBottomEndVisible && dy > 0) || (isTopEndVisible && dy < 0)) {
+                            recyclerView.setTranslationY(0);
+                            mDy = 0;
+                            mStartY = 0;
+                            mIsDrugging = false;
+                            return false;
+                        }
+                    }
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        animateViewBack(mDy, recyclerView, isBottomEndVisible, isTopEndVisible);
+                        mStartY = 0;
+                        mDy = 0;
+                        mIsDrugging = false;
+                        return true;
+                    }
+                    return mIsDrugging;
+                }
+            });
+        } else if (!(isTopEndVisible || isBottomEndVisible) && mIsSetDrug && !mIsDrugging) {
+            recyclerView.setOnTouchListener(null);
+            mIsSetDrug = false;
+            recyclerView.setTranslationY(0);
+            mDy = 0;
+        }
+    }
+
+    private void animateViewBack(float dy, final View view, final boolean isBottomVisible, final boolean isTopVisible) {
+        if (view.getTranslationY() == 0) return;
+        long animationDuration = Math.round(Math.abs(dy) * 2);
+        TranslateAnimation animation = new TranslateAnimation(0, 0, 0, isBottomVisible ? Math.abs(dy) : Math.abs(dy) * (-1));
+        animation.setRepeatCount(0);
+        animation.setInterpolator(new CustomInterpolator());
+        animation.setDuration(animationDuration);
+        animation.setFillAfter(true);
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                view.setOnTouchListener(null);
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                view.setOnTouchListener(null);
+                mIsSetDrug = false;
+                mStartY = 0;
+                view.setTranslationY(0);
+                mDy = 0;
+                view.clearAnimation();
+                setUpDrag(isTopVisible, isBottomVisible, view);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        view.startAnimation(animation);
+    }
+// end scrolls/drug animations
 
     MessagesAdapter.OnMessageActionListener mActionListener = new MessagesAdapter.OnMessageActionListener() {
         @Override
@@ -207,6 +386,9 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
             mIsEditing = true;
             mChangeableMessage.setEdited(true);
             mMessageEditText.setText(message.getText());
+            mMessageEditText.setSelection(mMessageEditText.getText().length());
+            mMessageEditText.requestFocus();
+            mIsKeyboardShown = true;
             if (mChangeableMessage.isMedia())
                 showPreview(mChangeableMessage.getMedias());
         }
@@ -245,6 +427,11 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     protected void resetPreview() {
         mPreviewRecyclerView.setVisibility(View.GONE);
         mPreviewAdapter.clearItems();
+    }
+
+    @OnClick(R.id.edit_text_message)
+    void onMessageFieldClick() {
+        mIsKeyboardShown = true;
     }
 
     @OnClick(R.id.button_add_image)
@@ -335,6 +522,8 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     @Override
     public void onBackPressed() {
         mPresenter.stop();
+        if (mIsKeyboardShown)
+            mIsKeyboardShown = false;
         super.onBackPressed();
     }
 }
