@@ -55,6 +55,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.recycler_view_image_preview) RecyclerView mPreviewRecyclerView;
     @BindView(R.id.edit_text_message) EditText mMessageEditText;
+    @BindView(R.id.button_cancel_edit) ImageButton mCancelEditButton;
 
     @Inject ChatPresenter mPresenter;
     @Inject RoliqueAppUsers mRoliqueAppUsers;
@@ -206,15 +207,14 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
             @Override
             public void onScrolled(final RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                if (mIsKeyboardShown) {
-                    mIsKeyboardShown = false;
-                    hideKeyboard();
-                }
+//                if (mIsKeyboardShown) {
+//                    mIsKeyboardShown = false;
+//                    hideKeyboard();
+//                }
                 if (linearLayoutManager.findFirstVisibleItemPosition() == 4 && mIsFetchMessageEnabled) {
                     mIsFetchMessageEnabled = false;
                     mPresenter.getTopMessages(mAdapter.getFirstMessageId(), mChat);
                 }
-                Timber.e("dy " + dy + " mAverageSpeed " + mAverageSpeed + " mIsBoundsWorking " + mIsBoundsWorking);
                 if ((!recyclerView.canScrollVertically(-1) || !recyclerView.canScrollVertically(1)) && !mIsBoundsWorking) {
                     mIsBoundsWorking = true;
                     long animationDuration = Math.abs(mAverageSpeed) > 100 ? 1500 : 500;
@@ -305,6 +305,10 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                     }
                     if (event.getAction() == MotionEvent.ACTION_MOVE) {
                         float dy = event.getRawY() - mStartY;
+                        if (mIsKeyboardShown && Math.abs(dy) > 200) {
+                            mIsKeyboardShown = false;
+                            hideKeyboard();
+                        }
                         if (isBottomEndVisible && dy < 0 && mStartY != 0) {
                             if ((Math.abs(Math.abs(dy) - Math.abs(mDy * 2))) > 10) {
                                 mDy = dy / 2;
@@ -384,6 +388,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         public void onMessageEdit(Message message) {
             mChangeableMessage = message;
             mIsEditing = true;
+            mCancelEditButton.setVisibility(View.VISIBLE);
             mChangeableMessage.setEdited(true);
             mMessageEditText.setText(message.getText());
             mMessageEditText.setSelection(mMessageEditText.getText().length());
@@ -434,6 +439,16 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         mIsKeyboardShown = true;
     }
 
+    @OnClick(R.id.button_cancel_edit)
+    void onCancelEditClick() {
+        resetPreview();
+        mMessageEditText.getText().clear();
+        mChangeableMessage.setEdited(false);
+        mChangeableMessage = null;
+        mIsEditing = false;
+        mCancelEditButton.setVisibility(View.GONE);
+    }
+
     @OnClick(R.id.button_add_image)
     void onAddPhotoClick() {
         mMediaLib.startCamera();
@@ -447,6 +462,8 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         if (mIsEditing) {
             mChangeableMessage.setText(text);
             message = mChangeableMessage;
+            mIsEditing = false;
+            mCancelEditButton.setVisibility(View.GONE);
         } else {
             message = getMessage(text);
         }
@@ -522,6 +539,10 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     @Override
     public void onBackPressed() {
         mPresenter.stop();
+        if (mCancelEditButton.getVisibility() == View.VISIBLE) {
+            onCancelEditClick();
+            return;
+        }
         if (mIsKeyboardShown)
             mIsKeyboardShown = false;
         super.onBackPressed();

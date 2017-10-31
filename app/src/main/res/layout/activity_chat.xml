@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_chat"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -75,7 +76,20 @@
                     android:scrollHorizontally="false"
                     android:scrollbars="vertical"
                     tools:ignore="LabelFor"
-                    tools:text="reg;uerbgerbgueirbguierbg uiebrguwe;mgfpermgregoiremgoiermgoiermgoiermgoiemrgimerogiergijer erjg oierjgje rgj ergjerjgoijerogij erigjrjegoie rjgoiejrgoij ierbgerbguierbgrebguebgbewekfn  ewofjew fewfj iwjfiowe fjwejfoijwer"/>
+                    tools:text="o iwufebfewwufeu wiefr"/>
+
+                <ImageButton
+                    android:id="@+id/button_cancel_edit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?selectableItemBackground"
+                    android:paddingBottom="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="8dp"
+                    android:visibility="gone"
+                    android:src="@drawable/ic_clear_grey_24dp"
+                    tools:ignore="ContentDescription"/>
 
                 <ImageButton
                     android:id="@+id/button_send"
