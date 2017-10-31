@@ -1,11 +1,14 @@
 package io.rolique.roliqueapp.screens.chat;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
@@ -56,6 +59,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     @BindView(R.id.recycler_view_image_preview) RecyclerView mPreviewRecyclerView;
     @BindView(R.id.edit_text_message) EditText mMessageEditText;
     @BindView(R.id.button_cancel_edit) ImageButton mCancelEditButton;
+    @BindView(R.id.button_send) ImageButton mSendButton;
 
     @Inject ChatPresenter mPresenter;
     @Inject RoliqueAppUsers mRoliqueAppUsers;
@@ -77,6 +81,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
 
         mChat = getIntent().getParcelableExtra(EXTRA_CHAT);
         setUpToolbar(mChat);
+        setUpMessageEditText();
         setUpMediaLib();
         setUpRecyclerView();
 
@@ -106,6 +111,31 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         });
     }
 
+    private void setUpMessageEditText() {
+        mMessageEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.length() == 0 &&
+                        mPreviewRecyclerView.getVisibility() != View.VISIBLE) {
+                    setEnableSend(false);
+                } else {
+                    setEnableSend(true);
+                }
+            }
+        });
+        setEnableSend(false);
+    }
+
     private void setUpMediaLib() {
         mMediaLib = new MediaLib(ChatActivity.this, new MediaLib.MediaLibListener() {
             @Override
@@ -123,6 +153,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                             .create());
                 mChangeableMessage = getMediaMessage(mMessageEditText.getText().toString(), messageMedias);
                 mIsEditing = true;
+                setEnableSend(true);
                 showPreview(messageMedias);
             }
 
@@ -295,6 +326,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         if ((isTopEndVisible || isBottomEndVisible) && !mIsSetDrug) {
             mIsSetDrug = true;
             recyclerView.setOnTouchListener(new View.OnTouchListener() {
+                @SuppressLint("ClickableViewAccessibility")
                 @Override
                 public boolean onTouch(final View v, MotionEvent event) {
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -342,7 +374,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                 }
             });
         } else if (!(isTopEndVisible || isBottomEndVisible) && mIsSetDrug && !mIsDrugging) {
-            recyclerView.setOnTouchListener(null);
+            recyclerView.setOnTouchListener(mOnTouchListener);
             mIsSetDrug = false;
             recyclerView.setTranslationY(0);
             mDy = 0;
@@ -360,12 +392,12 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         animation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-                view.setOnTouchListener(null);
+                view.setOnTouchListener(mOnTouchListener);
             }
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                view.setOnTouchListener(null);
+                view.setOnTouchListener(mOnTouchListener);
                 mIsSetDrug = false;
                 mStartY = 0;
                 view.setTranslationY(0);
@@ -381,6 +413,25 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         });
         view.startAnimation(animation);
     }
+
+    View.OnTouchListener mOnTouchListener = new View.OnTouchListener() {
+        @SuppressLint("ClickableViewAccessibility")
+        @Override
+        public boolean onTouch(final View v, MotionEvent event) {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                mStartY = event.getRawY();
+                return false;
+            }
+            if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                float dy = event.getRawY() - mStartY;
+                if (mIsKeyboardShown && Math.abs(dy) > 200) {
+                    mIsKeyboardShown = false;
+                    hideKeyboard();
+                }
+            }
+            return false;
+        }
+    };
 // end scrolls/drug animations
 
     MessagesAdapter.OnMessageActionListener mActionListener = new MessagesAdapter.OnMessageActionListener() {
@@ -394,6 +445,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
             mMessageEditText.setSelection(mMessageEditText.getText().length());
             mMessageEditText.requestFocus();
             mIsKeyboardShown = true;
+            setEnableSend(true);
             if (mChangeableMessage.isMedia())
                 showPreview(mChangeableMessage.getMedias());
         }
@@ -429,9 +481,15 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         }
     };
 
-    protected void resetPreview() {
+    private void resetPreview() {
         mPreviewRecyclerView.setVisibility(View.GONE);
         mPreviewAdapter.clearItems();
+    }
+
+    private void setEnableSend(boolean isEnable) {
+        if (isEnable && mSendButton.getAlpha() == 1) return;
+        mSendButton.setAlpha(isEnable ? 1.0f : 0.5f);
+        mSendButton.setClickable(isEnable);
     }
 
     @OnClick(R.id.edit_text_message)
@@ -469,6 +527,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         }
         mMessageEditText.getText().clear();
         resetPreview();
+        setEnableSend(false);
         mPresenter.setMessage(message, mChat);
     }
 
