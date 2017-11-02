@@ -25,8 +25,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 
+import butterknife.OnClick;
 import io.rolique.roliqueapp.BaseFragment;
 import io.rolique.roliqueapp.R;
+import io.rolique.roliqueapp.screens.timesheetViewer.TimesheetViewerActivity;
 import timber.log.Timber;
 
 
@@ -198,6 +200,11 @@ public class CheckInFragment extends BaseFragment {
     @Override
     protected void inject() {
 
+    }
+
+    @OnClick(R.id.button_timesheet)
+    void onTimeSheetClick() {
+        startActivity(TimesheetViewerActivity.startIntent(getActivity()));
     }
 
     @Override

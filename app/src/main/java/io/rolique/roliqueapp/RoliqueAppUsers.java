@@ -59,7 +59,7 @@ public class RoliqueAppUsers implements FirebaseValues {
         mReference.addChildEventListener(mChildEventListener);
     }
 
-    ChildEventListener mChildEventListener = new ChildEventListener() {
+    private ChildEventListener mChildEventListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             DatabaseReference userRef = mDatabase.getReference(LinksBuilder.buildUrl(AUTH_USER, dataSnapshot.getKey()));

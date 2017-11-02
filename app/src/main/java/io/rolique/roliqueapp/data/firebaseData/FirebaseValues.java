@@ -17,4 +17,7 @@ public interface FirebaseValues {
     String IMAGE = "image_url";
     String MEMBERS = "members";
     String USER_DATA = "user_data";
+    String MAP = "map";
+    String CHECK_IN = "checkin";
+
 }

@@ -127,4 +127,12 @@ public final class DateUtil {
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy", Locale.getDefault());
         return sdf.format(messageDate);
     }
+
+    public static int getDayOfYear(Date date) {
+        if (date == null)
+            throw new IllegalArgumentException("The dates must not be null");
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return calendar.get(Calendar.DAY_OF_YEAR);
+    }
 }

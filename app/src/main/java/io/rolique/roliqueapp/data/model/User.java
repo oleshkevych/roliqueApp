@@ -2,10 +2,16 @@ package io.rolique.roliqueapp.data.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.firebase.database.PropertyName;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import io.rolique.roliqueapp.util.DateUtil;
 
 /**
  * Created by Volodymyr Oleshkevych on 8/16/2017.
@@ -15,17 +21,6 @@ import com.google.firebase.database.PropertyName;
 @IgnoreExtraProperties
 public class User implements Parcelable {
 
-    public static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>() {
-        @Override
-        public User createFromParcel(Parcel in) {
-            return new User(in);
-        }
-
-        @Override
-        public User[] newArray(int size) {
-            return new User[size];
-        }
-    };
     @PropertyName("id")
     public String mId;
     @PropertyName("first_name")
@@ -38,6 +33,8 @@ public class User implements Parcelable {
     public String mType;
     @PropertyName("email")
     public String mEmail;
+    @Exclude
+    private List<CheckIn> mCheckIns = new ArrayList<>();
 
     public User() {
     }
@@ -62,6 +59,7 @@ public class User implements Parcelable {
         mImageUrl = in.readString();
         mType = in.readString();
         mEmail = in.readString();
+        in.readTypedList(mCheckIns, CheckIn.CREATOR);
     }
 
     @Exclude
@@ -105,6 +103,16 @@ public class User implements Parcelable {
     }
 
     @Exclude
+    public String getEmail() {
+        return mEmail;
+    }
+
+    @Exclude
+    public void setEmail(String email) {
+        mEmail = email;
+    }
+
+    @Exclude
     public String getType() {
         return mType;
     }
@@ -113,6 +121,44 @@ public class User implements Parcelable {
     public void setType(String type) {
         mType = type;
     }
+
+    @Exclude
+    public List<CheckIn> getCheckIns() {
+        return mCheckIns;
+    }
+
+    @Exclude
+    public void setCheckIns(List<CheckIn> checkIns) {
+        mCheckIns = checkIns == null ? new ArrayList<CheckIn>() : checkIns;
+    }
+
+    @Exclude
+    public void addCheckIn(CheckIn checkIn) {
+        if (mCheckIns.contains(checkIn)) return;
+        mCheckIns.add(checkIn);
+    }
+
+    @Exclude
+    @Nullable
+    public CheckIn getCheckInByDayOfYear(int dayOfYear) {
+        for (CheckIn checkIn : mCheckIns)
+            if (DateUtil.getDayOfYear(DateUtil.transformDate(checkIn.getTime())) == dayOfYear)
+                return checkIn;
+        return null;
+    }
+
+
+    public static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>() {
+        @Override
+        public User createFromParcel(Parcel in) {
+            return new User(in);
+        }
+
+        @Override
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
 
     @Override
     public int describeContents() {
@@ -127,6 +173,7 @@ public class User implements Parcelable {
         dest.writeString(mImageUrl);
         dest.writeString(mType);
         dest.writeString(mEmail);
+        dest.writeTypedList(mCheckIns);
     }
 
     @Override

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include layout="@layout/content_toolbar_back"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="16dp"
+        android:text="@string/activity_timesheet_viewer_table_title"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+        android:textStyle="bold"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="16dp"
+        android:paddingTop="8dp">
+
+        <ImageView
+            android:id="@+id/image_view_back"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:src="@drawable/ic_keyboard_arrow_left_grey_24dp"
+            tools:ignore="ContentDescription"/>
+
+        <TextView
+            android:id="@+id/text_view_table_date"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:gravity="center"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+            tools:text="01.09 - 08.09 2017"/>
+
+        <ImageView
+            android:id="@+id/image_view_forward"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:src="@drawable/ic_keyboard_arrow_right_grey_24dp"
+            tools:ignore="ContentDescription"/>
+    </LinearLayout>
+
+    <io.rolique.roliqueapp.widget.fixedHeaderTable.TableFixHeaders
+        android:id="@+id/table"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</LinearLayout>
