@@ -5,11 +5,16 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v13.app.FragmentCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.QuickContactBadge;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -24,15 +29,20 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Date;
 
+import javax.inject.Inject;
+
+import butterknife.BindView;
 import butterknife.OnClick;
 import io.rolique.roliqueapp.BaseFragment;
 import io.rolique.roliqueapp.R;
+import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.screens.timesheetViewer.TimesheetViewerActivity;
 import timber.log.Timber;
 
 
-public class CheckInFragment extends BaseFragment {
+public class CheckInFragment extends BaseFragment implements CheckInContract.View {
 
     private static final int RC_LOCATION_PERMISSION = 101;
 
@@ -43,21 +53,43 @@ public class CheckInFragment extends BaseFragment {
         return new CheckInFragment();
     }
 
-    MapView mMapView;
+    @Inject CheckInPresenter mPresenter;
+
     GoogleMap mGoogleMap;
     GPSTracker mGPSTracker;
     LatLng mLatStart;
     Circle mCircle;
     boolean mIsVisibleToUser;
 
+    @BindView(R.id.button_check_in) FloatingActionButton mCheckInButton;
+    @BindView(R.id.text_view_check_in) TextView mCheckInTextView;
+    @BindView(R.id.text_view_business) TextView mBusinessTextView;
+    @BindView(R.id.text_view_remotely) TextView mRemotelyTextView;
+    @BindView(R.id.text_view_day_off) TextView mDayOffInTextView;
+    @BindView(R.id.layout_check_in_types) LinearLayout mCheckInTypesContainer;
+    @BindView(R.id.map_view) MapView mMapView;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_check_in, container, false);
-
-        mMapView = rootView.findViewById(R.id.mapView);
-        mMapView.onCreate(savedInstanceState);
-
         return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mMapView.onCreate(savedInstanceState);
+        updateCheckInInView(true);
+        mPresenter.isUserAlreadyCheckedIn(new Date());
+    }
+
+    @Override
+    protected void inject() {
+        DaggerCheckInComponent.builder()
+                .roliqueApplicationComponent(((RoliqueApplication) getActivity().getApplication()).getRepositoryComponent())
+                .checkInPresenterModule(new CheckInPresenterModule(CheckInFragment.this))
+                .build()
+                .inject(CheckInFragment.this);
     }
 
     @Override
@@ -133,7 +165,7 @@ public class CheckInFragment extends BaseFragment {
 
             calculationByDistance(mLatStart, mCircle.getCenter());
 
-            if ( distance[0] <= mCircle.getRadius()) {
+            if (distance[0] <= mCircle.getRadius()) {
                 showSnackbar(getView(), "In range " + Arrays.toString(distance));
             } else {
                 showSnackbar(getView(), "Outside range " + Arrays.toString(distance));
@@ -197,14 +229,35 @@ public class CheckInFragment extends BaseFragment {
         mMapView.onResume();
     }
 
-    @Override
-    protected void inject() {
-
-    }
-
     @OnClick(R.id.button_timesheet)
     void onTimeSheetClick() {
+        mCheckInTypesContainer.setVisibility(View.GONE);
+        mMapView.setOnClickListener(null);
         startActivity(TimesheetViewerActivity.startIntent(getActivity()));
+    }
+
+    @OnClick(R.id.button_check_in)
+    void onCheckInClick() {
+        if (mCheckInTypesContainer.getVisibility() == View.VISIBLE) {
+            mCheckInTypesContainer.setVisibility(View.GONE);
+            mMapView.setOnClickListener(null);
+            return;
+        }
+        mCheckInTypesContainer.setVisibility(View.VISIBLE);
+        mMapView.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                mCheckInTypesContainer.setVisibility(View.GONE);
+                mMapView.setOnClickListener(null);
+            }
+        });
+    }
+
+    @Override
+    public void updateCheckInInView(boolean isCheckedIn) {
+        mCheckInButton.setEnabled(!isCheckedIn);
+        mCheckInButton.setAlpha(isCheckedIn ? 0.6f : 1.0f);
     }
 
     @Override

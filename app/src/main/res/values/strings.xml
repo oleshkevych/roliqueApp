@@ -43,6 +43,10 @@
 
     <!-- Fragment check in start-->
     <string name="fragment_check_in_title">Check in</string>
+    <string name="fragment_check_in_check_in">Check in</string>
+    <string name="fragment_check_in_remotely">Remotely</string>
+    <string name="fragment_check_in_business">Business trip</string>
+    <string name="fragment_check_in_day_off">Day off</string>
     <!-- Fragment check in end-->
 
     <!-- Activity new chat start-->
