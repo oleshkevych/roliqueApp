@@ -98,7 +98,7 @@ class CameraPresenter implements CameraContract.Presenter {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 4;
         Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0, options);
-        Bitmap scaled = Bitmap.createScaledBitmap(bitmap, screenWidth, screenHeight, true);
+        Bitmap scaled = Bitmap.createScaledBitmap(bitmap, screenWidth / 4, screenHeight / 4, true);
         int w = scaled.getWidth();
         int h = scaled.getHeight();
         Matrix mtx = new Matrix();

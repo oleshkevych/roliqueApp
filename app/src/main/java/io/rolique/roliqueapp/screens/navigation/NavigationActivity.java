@@ -2,6 +2,7 @@ package io.rolique.roliqueapp.screens.navigation;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,6 +24,7 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import io.rolique.cameralibrary.MediaLib;
 import io.rolique.cameralibrary.data.model.MediaContent;
+import io.rolique.roliqueapp.BuildConfig;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
@@ -135,13 +137,18 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
                     mToolbar.setTitle(R.string.fragment_contacts_title);
                     mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.CONTACTS, false);
                     break;
-                case R.id.menu_eat:
-                    mToolbar.setTitle(R.string.fragment_eat_title);
-                    mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.EAT, false);
-                    break;
+//                case R.id.menu_eat:
+//                    mToolbar.setTitle(R.string.fragment_eat_title);
+//                    mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.EAT, false);
+//                    break;
                 case R.id.menu_check_in:
                     mToolbar.setTitle(R.string.fragment_check_in_title);
                     mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.CHECK_IN, false);
+                    break;
+                case R.id.menu_suggestions:
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(BuildConfig.SUGGESTIONS_URL));
+                    startActivity(intent);
                     break;
             }
             mDrawerLayout.closeDrawer(GravityCompat.START);

@@ -35,4 +35,9 @@
         <item name="android:windowEnterAnimation">@anim/popup_show</item>
         <item name="android:windowExitAnimation">@anim/popup_hide</item>
     </style>
+
+    <style name="popupCheckInAnimation">
+        <item name="android:windowEnterAnimation">@anim/popup_check_in_show</item>
+        <item name="android:windowExitAnimation">@anim/popup_check_in_hide</item>
+    </style>
 </resources>

@@ -123,8 +123,12 @@ class TimesheetPresenter implements TimesheetContract.Presenter, FirebaseValues 
     List<CheckIn> parseCheckIns(DataSnapshot dataSnapshot) {
         List<CheckIn> checkIns = new ArrayList<>();
         for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren())
-            for (DataSnapshot snapshot : dataSnapshot1.getChildren())
-            checkIns.add(snapshot.getValue(CheckIn.class));
+            for (DataSnapshot snapshot : dataSnapshot1.getChildren()) {
+                CheckIn checkIn = snapshot.getValue(CheckIn.class);
+                assert checkIn != null;
+                checkIn.setUserId(snapshot.getKey());
+                checkIns.add(checkIn);
+            }
         return checkIns;
     }
 

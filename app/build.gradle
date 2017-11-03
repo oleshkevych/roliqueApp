@@ -1,15 +1,38 @@
+buildscript {
+    repositories {
+        maven { url 'https://maven.fabric.io/public' }
+    }
+
+    dependencies {
+        classpath 'io.fabric.tools:gradle:1.+'
+    }
+}
 apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
+
+repositories {
+    maven { url 'https://maven.fabric.io/public' }
+}
 
 android {
     compileSdkVersion 26
     buildToolsVersion "26.0.2"
+
+    def versionMajor = 0
+    def versionMinor = 0
+    def versionPatch = 2
+
     defaultConfig {
         applicationId "io.rolique.roliqueapp"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
+
+        versionCode versionMajor * 10000 + versionMinor * 100 + versionPatch
+        versionName "${versionMajor}.${versionMinor}.${versionPatch}"
+        archivesBaseName = "rolique-$versionName"
+
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "SUGGESTIONS_URL", '"https://docs.google.com/forms/d/e/1FAIpQLSfPuZkaRf8KjeHIpPTfsfnbCHK3FRh5EzsyEznuKPdP6NcFXw/viewform"')
     }
     dexOptions {
         preDexLibraries = false
@@ -67,6 +90,15 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
     compile project(path: ':cameralibrary')
+    compile('com.crashlytics.sdk.android:crashlytics:2.7.1@aar') {
+        transitive = true;
+    }
+}
+
+crashlytics {
+    enableNdk true
+    androidNdkOut 'src/main/obj'
+    androidNdkLibsOut 'src/main/libs'
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_check_in_types"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:background="@color/transparent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/text_view_check_in"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/shape_text_view_message_user_single"
+        android:padding="8dp"
+        android:text="@string/navigation_menu_check_in"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+        android:textColor="@color/white"
+        tools:visibility="visible"/>
+
+    <TextView
+        android:id="@+id/text_view_business"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/shape_text_view_message_user_single"
+        android:foreground="?attr/selectableItemBackground"
+        android:padding="8dp"
+        android:text="@string/fragment_check_in_business"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+        android:textColor="@color/white"
+        tools:visibility="visible"/>
+
+    <TextView
+        android:id="@+id/text_view_remotely"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/shape_text_view_message_user_single"
+        android:foreground="?attr/selectableItemBackground"
+        android:padding="8dp"
+        android:text="@string/fragment_check_in_remotely"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+        android:textColor="@color/white"
+        tools:visibility="visible"/>
+
+    <TextView
+        android:id="@+id/text_view_day_off"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/shape_text_view_message_user_single"
+        android:foreground="?attr/selectableItemBackground"
+        android:padding="8dp"
+        android:text="@string/fragment_check_in_day_off"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+        android:textColor="@color/white"
+        tools:visibility="visible"/>
+</LinearLayout>

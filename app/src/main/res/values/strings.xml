@@ -57,6 +57,7 @@
 
     <!-- navigation menu start-->
     <string name="navigation_menu_check_in">Check in</string>
+    <string name="navigation_menu_suggestions">Your Suggestions</string>
     <string name="navigation_menu_log_out">Log out</string>
     <!-- navigation menu end-->
 

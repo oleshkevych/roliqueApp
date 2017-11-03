@@ -41,7 +41,7 @@ public class CheckIn implements Parcelable {
     public @interface Type {
     }
 
-    @PropertyName("user_id")
+    @Exclude
     public String mUserId;
     @PropertyName("time")
     public String mTime;
@@ -49,6 +49,12 @@ public class CheckIn implements Parcelable {
     public String mType;
 
     public CheckIn() {
+    }
+
+    public CheckIn(String time,
+                   @Type String type) {
+        mTime = time;
+        mType = type;
     }
 
     public CheckIn(Parcel in) {
@@ -87,6 +93,7 @@ public class CheckIn implements Parcelable {
         mType = type;
     }
 
+    @Exclude
     public int getDayOfYear() {
         Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
         String[] datesNumbers = mTime.split("_");

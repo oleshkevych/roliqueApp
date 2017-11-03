@@ -2,9 +2,11 @@ package io.rolique.roliqueapp;
 
 import android.app.Application;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 
+import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
 /**
@@ -18,6 +20,7 @@ public class RoliqueApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        Fabric.with(this, new Crashlytics());
         plantTimber();
         mRepositoryComponent = buildRepositoryComponent();
     }

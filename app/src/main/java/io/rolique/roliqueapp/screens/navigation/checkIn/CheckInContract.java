@@ -20,5 +20,6 @@ interface CheckInContract {
 
     interface Presenter extends BasePresenter {
         void isUserAlreadyCheckedIn(Date date);
+        void setNewCheckIn(CheckIn checkIn, Date date);
     }
 }

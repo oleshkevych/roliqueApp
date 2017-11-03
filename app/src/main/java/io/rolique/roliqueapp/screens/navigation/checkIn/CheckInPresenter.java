@@ -17,6 +17,7 @@ import javax.inject.Inject;
 import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.firebaseData.FirebaseValues;
+import io.rolique.roliqueapp.data.model.CheckIn;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.util.LinksBuilder;
 
@@ -77,5 +78,13 @@ class CheckInPresenter implements CheckInContract.Presenter, FirebaseValues {
                 mView.updateCheckInInView(false);
             }
         });
+    }
+
+    @Override
+    public void setNewCheckIn(CheckIn checkIn, Date date) {
+        SimpleDateFormat mDateFormat = new SimpleDateFormat("dd_MM_yyyy", Locale.getDefault());
+        DatabaseReference reference = mDatabase.getReference(LinksBuilder.buildUrl(MAP, CHECK_IN, mDateFormat.format(date), mPreferences.getId()));
+        reference.setValue(checkIn);
+        mView.updateCheckInInView(true);
     }
 }
