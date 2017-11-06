@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/transparent"
+    android:id="@+id/layout_container"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/image_view"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:padding="8dp"
+        android:layout_height="wrap_content"
+        tools:ignore="ContentDescription"/>
+
+    <ImageView
+        android:id="@+id/image_view_play_video"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/ic_play_24dp"
+        android:visibility="gone"
+        tools:ignore="ContentDescription"/>
+
+    <View
+        android:id="@+id/view_hider"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/grey_400_alpha_80"
+        android:visibility="gone"/>
+</FrameLayout>

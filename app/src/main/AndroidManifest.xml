@@ -53,7 +53,9 @@
             android:name=".screens.profile.ProfileActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize"/>
-        <activity android:name=".screens.timesheetViewer.TimesheetViewerActivity"/>
+        <activity
+            android:name=".screens.timesheetViewer.TimesheetViewerActivity"
+            android:configChanges="orientation|screenSize"/>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

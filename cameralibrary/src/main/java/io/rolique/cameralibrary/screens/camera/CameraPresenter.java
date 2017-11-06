@@ -123,10 +123,10 @@ class CameraPresenter implements CameraContract.Presenter {
         return file;
     }
 
-    @Override
-    public void removeFile(String path) {
-        new File(path).delete();
-    }
+//    @Override
+//    public void removeFile(String path) {
+//        new File(path).delete();
+//    }
 
 //    @Override
 //    public void savePictureToFile(final byte[] data, final File pictureFile, final int screenWidth, final int screenHeight, final int orientation) {

@@ -30,26 +30,38 @@ public class MediaContent implements Parcelable {
     private String mVideo;
     private int mHeight;
     private int mWidth;
+    private long mDate;
 
     private @Category String mMediaType;
 
     public MediaContent() {
     }
 
-    public MediaContent(String file, int height, int width, String mediaType) {
+    public MediaContent(String file,
+                        int height,
+                        int width,
+                        String mediaType,
+                        long date) {
         if (mediaType.equals(CATEGORY_IMAGE)) mImage = file;
         else mVideo = file;
         mHeight = height;
         mWidth = width;
         mMediaType = mediaType;
+        mDate = date;
     }
 
-    public MediaContent(String image, String video, int height, int width, String mediaType) {
+    public MediaContent(String image,
+                        String video,
+                        int height,
+                        int width,
+                        String mediaType,
+                        long date) {
         mImage = image;
         mVideo = video;
         mHeight = height;
         mWidth = width;
         mMediaType = mediaType;
+        mDate = date;
     }
 
     public MediaContent(Parcel in) {
@@ -58,6 +70,7 @@ public class MediaContent implements Parcelable {
         mHeight = in.readInt();
         mWidth = in.readInt();
         mMediaType = in.readString();
+        mDate = in.readLong();
     }
 
     public String getImage() {
@@ -92,6 +105,14 @@ public class MediaContent implements Parcelable {
         mWidth = width;
     }
 
+    public long getDate() {
+        return mDate;
+    }
+
+    public void setDate(long date) {
+        mDate = date;
+    }
+
     public boolean isVideo() {
         return mMediaType.equals(CATEGORY_VIDEO);
     }
@@ -112,55 +133,14 @@ public class MediaContent implements Parcelable {
 
     @Override
     public String toString() {
-        return "Media{" +
+        return "MediaContent{" +
                 "mImage='" + mImage + '\'' +
                 ", mVideo='" + mVideo + '\'' +
-                ", mHeight='" + mHeight + '\'' +
-                ", mWidth='" + mWidth + '\'' +
+                ", mHeight=" + mHeight +
+                ", mWidth=" + mWidth +
+                ", mDate=" + mDate +
                 ", mMediaType='" + mMediaType + '\'' +
                 '}';
-    }
-
-    public static final class Builder {
-
-        private String mImage;
-        private String mVideo;
-        private int mHeight;
-        private int mWidth;
-        private @Category String mMediaType;
-
-        public Builder setImage(String image) {
-            mImage = image;
-            return this;
-        }
-
-        public Builder setVideo(String video) {
-            mVideo = video;
-            return this;
-        }
-
-        public Builder setHeight(int height) {
-            mHeight = height;
-            return this;
-        }
-
-        public Builder setWidth(int width) {
-            mWidth = width;
-            return this;
-        }
-
-        public Builder setMediaType(String mediaType) {
-            mMediaType = mediaType;
-            return this;
-        }
-
-        public MediaContent create() {
-            return new MediaContent(mImage,
-                    mVideo,
-                    mHeight,
-                    mWidth,
-                    mMediaType);
-        }
     }
 
     public static final Creator<MediaContent> CREATOR = new Creator<MediaContent>() {
@@ -187,5 +167,55 @@ public class MediaContent implements Parcelable {
         dest.writeInt(mHeight);
         dest.writeInt(mWidth);
         dest.writeString(mMediaType);
+        dest.writeLong(mDate);
+    }
+
+    public static final class Builder {
+
+        private String mImage;
+        private String mVideo;
+        private int mHeight;
+        private int mWidth;
+        private long mDate;
+        private @Category String mMediaType;
+
+        public Builder setImage(String image) {
+            mImage = image;
+            return this;
+        }
+
+        public Builder setVideo(String video) {
+            mVideo = video;
+            return this;
+        }
+
+        public Builder setHeight(int height) {
+            mHeight = height;
+            return this;
+        }
+
+        public Builder setWidth(int width) {
+            mWidth = width;
+            return this;
+        }
+
+        public Builder setDate(long date) {
+            mDate = date;
+            return this;
+        }
+
+        public Builder setMediaType(@Category String mediaType) {
+            mMediaType = mediaType;
+            return this;
+        }
+
+        public MediaContent create() {
+            return new MediaContent(mImage,
+                    mVideo,
+                    mHeight,
+                    mWidth,
+                    mMediaType,
+                    mDate);
+        }
     }
 }

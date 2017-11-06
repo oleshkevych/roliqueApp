@@ -53,8 +53,37 @@
                     android:paddingEnd="16dp"
                     android:paddingStart="16dp"
                     android:paddingTop="16dp"
-                    android:src="@drawable/ic_add_a_photo_blue_24dp"
+                    android:src="@drawable/ic_add_a_photo_blue_35dp"
                     tools:ignore="ContentDescription"/>
+
+                <LinearLayout
+                    android:id="@+id/container_media_buttons"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:visibility="gone"
+                    android:padding="8dp">
+
+                    <ImageButton
+                        android:id="@+id/button_start_gallery"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="?selectableItemBackground"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_collections_blue_24dp"
+                        tools:ignore="ContentDescription"/>
+
+                    <ImageButton
+                        android:id="@+id/button_start_camera"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="?selectableItemBackground"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_photo_camera_blue_24dp"
+                        tools:ignore="ContentDescription"/>
+                </LinearLayout>
 
                 <EditText
                     android:id="@+id/edit_text_message"

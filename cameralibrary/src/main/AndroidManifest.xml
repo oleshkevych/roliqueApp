@@ -15,19 +15,23 @@
         android:theme="@style/AppTheme"
         tools:replace="android:theme">
         <activity
-            android:name=".screens.camera.Camera1Activity"
+            android:name="io.rolique.cameralibrary.screens.camera.Camera1Activity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Fullscreen"/>
         <activity
-            android:name=".screens.camera.Camera2Activity"
+            android:name="io.rolique.cameralibrary.screens.camera.Camera2Activity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Fullscreen"/>
         <activity
-            android:name=".screens.imageViewer.ImageViewerActivity"
+            android:name="io.rolique.cameralibrary.screens.imageViewer.ImageViewerActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Fullscreen"/>
         <activity
-            android:name=".screens.videoViewer.VideoViewerActivity"
+            android:name="io.rolique.cameralibrary.screens.videoViewer.VideoViewerActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.Fullscreen"/>
+        <activity
+            android:name="io.rolique.cameralibrary.screens.gallery.GalleryActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Fullscreen"/>
     </application>

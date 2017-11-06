@@ -1,27 +1,38 @@
 package io.rolique.cameralibrary;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Parcelable;
+import android.provider.MediaStore;
+import android.support.annotation.Nullable;
+import android.webkit.MimeTypeMap;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.cameralibrary.screens.camera.CameraBaseActivity;
+import io.rolique.cameralibrary.screens.gallery.GalleryActivity;
+import timber.log.Timber;
 
 /**
  * Created by Volodymyr Oleshkevych on 9/22/2017.
  * Copyright (c) 2017, Rolique. All rights reserved.
- *
-// * To use Butter Knife in a library, add the plugin to your buildscript:
-// * <p>
-// * buildscript {
-// * repositories {
-// * mavenCentral()
-// * }
-// * dependencies {
-// * classpath 'com.jakewharton:butterknife-gradle-plugin:8.8.1'
-// * }
-// * }
+ * <p>
+ * // * To use Butter Knife in a library, add the plugin to your buildscript:
+ * // * <p>
+ * // * buildscript {
+ * // * repositories {
+ * // * mavenCentral()
+ * // * }
+ * // * dependencies {
+ * // * classpath 'com.jakewharton:butterknife-gradle-plugin:8.8.1'
+ * // * }
+ * // * }
  * <p>
  * android {
  * dexOptions {
@@ -46,6 +57,7 @@ import io.rolique.cameralibrary.screens.camera.CameraBaseActivity;
 public class MediaLib {
 
     private final static int RC_CAMERA = 65526;
+    private final static int RC_GALLERY = 65126;
 
     public final static int LOCAL_APP_FOLDER = 0;
     public final static int GLOBAL_MEDIA_DEFAULT_FOLDER = 1;
@@ -80,56 +92,56 @@ public class MediaLib {
 
     /**
      * Set where saved files will be stored. Local cash is default
-     * **/
+     **/
     public void setStorage(int category) {
         mStorageCategory = category;
     }
 
     /**
      * Set is landscape mode enabled
-     * **/
+     **/
     public void setRotation(boolean isEnabled) {
         mIsRotationEnable = isEnabled;
     }
 
     /**
      * Set is front camera enabled
-     * **/
+     **/
     public void setFrontCamera(boolean isEnabled) {
         mIsFrontCamera = isEnabled;
     }
 
     /**
      * Set is flash mods selectable
-     * **/
+     **/
     public void setSelectableFlash(boolean isSelectable) {
         mIsFlashModsSelectable = isSelectable;
     }
 
     /**
      * Set flash mod
-     * **/
+     **/
     public void setFlashMode(int flashMode) {
         mFlashMode = flashMode;
     }
 
     /**
      * Set flash mod
-     * **/
+     **/
     public void setRecordVideo(boolean isVideoEnabled) {
         mIsVideoEnabled = isVideoEnabled;
     }
 
     /**
      * Set single photo mod
-     * **/
+     **/
     public void setSinglePhoto(boolean isSinglePhoto) {
         mIsSinglePhoto = isSinglePhoto;
     }
 
     /**
      * Set single photo mod
-     * **/
+     **/
     public void setSingleFrontCamera(boolean isSingleFrontCamera) {
         mIsSingleFrontCamera = isSingleFrontCamera;
     }
@@ -147,8 +159,12 @@ public class MediaLib {
         mActivity.startActivityForResult(intent, RC_CAMERA);
     }
 
+    public void startGallery() {
+        mActivity.startActivityForResult(GalleryActivity.getStartIntent(mActivity), RC_CAMERA);
+    }
+
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK)
+        if (resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
                 case RC_CAMERA:
                     List<MediaContent> mediaContents = data.getParcelableArrayListExtra(mActivity.getString(R.string.extra_camera_images));
@@ -157,5 +173,6 @@ public class MediaLib {
                         else mMediaLibListener.onSuccess(mediaContents);
                     }
             }
+        }
     }
 }

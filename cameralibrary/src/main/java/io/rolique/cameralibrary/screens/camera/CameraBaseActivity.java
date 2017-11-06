@@ -48,6 +48,7 @@ import io.rolique.cameralibrary.BuildConfig;
 import io.rolique.cameralibrary.MediaLib;
 import io.rolique.cameralibrary.R;
 import io.rolique.cameralibrary.data.model.MediaContent;
+import io.rolique.cameralibrary.screens.gallery.GalleryActivity;
 import io.rolique.cameralibrary.screens.imageViewer.ImageViewerActivity;
 import io.rolique.cameralibrary.screens.videoViewer.VideoViewerActivity;
 import io.rolique.cameralibrary.uiUtil.UiUtil;
@@ -142,6 +143,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
     static final int RC_CAMERA_PERMISSION = 101;
     static final int RC_IMAGE_VIEWER = 102;
+    static final int RC_GALLERY = 103;
 
     private static final String EXTRA_STORAGE_CATEGORY = "STORAGE_CATEGORY";
     private static final String EXTRA_ROTATION_ENABLED = "ROTATION_ENABLED";
@@ -198,6 +200,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     View mCameraPreviewLayout;
     ImageButton mFlashButton;
     ImageButton mCameraSwitcherButton;
+    ImageButton mGalleryButton;
     RecyclerView mImagesRecyclerView;
     ImageView mPreviewImageView;
     ImageView mPlayVideoImageView;
@@ -287,6 +290,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         super.setContentView(layoutResID);
         mFlashButton = getViewById(R.id.button_flash);
         mCameraSwitcherButton = getViewById(R.id.button_camera_switcher);
+        mGalleryButton = getViewById(R.id.button_open_gallery);
         mImagesRecyclerView = getViewById(R.id.recycler_view_images);
         mPreviewImageView = getViewById(R.id.image_view_preview);
         mPlayVideoImageView = getViewById(R.id.image_view_play_video);
@@ -358,8 +362,8 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
         @Override
         public void onRemoveClick(int position) {
-            MediaContent mediaContent = mMediaContents.get(position);
-            mPresenter.removeFile(mediaContent.getImage() == null ? mediaContent.getVideo() : mediaContent.getImage());
+//            MediaContent mediaContent = mMediaContents.get(position);
+//            mPresenter.removeFile(mediaContent.getImage() == null ? mediaContent.getVideo() : mediaContent.getImage());
             mMediaContents.remove(position);
             mImagesAdapter.removeItem(position);
             updateImagesInPreview(false);
@@ -379,11 +383,21 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == RC_IMAGE_VIEWER) {
-            mMediaContents = data.getParcelableArrayListExtra(getString(R.string.extra_camera_images));
-            updateImagesInPreview(true);
-            if (mMediaContents.size() == 0) {
-                toggleImagesRecyclerView();
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case RC_IMAGE_VIEWER:
+                    mMediaContents = data.getParcelableArrayListExtra(getString(R.string.extra_camera_images));
+                    updateImagesInPreview(true);
+                    if (mMediaContents.size() == 0) {
+                        toggleImagesRecyclerView();
+                    }
+                    break;
+                case RC_GALLERY:
+                    List<MediaContent> mediaContents = data.getParcelableArrayListExtra(CameraBaseActivity.this.getString(R.string.extra_camera_images));
+                    mMediaContents.addAll(mediaContents);
+                    updateImagesInPreview(true);
+                    if (mIsSinglePhoto) onDoneClick();
+                    break;
             }
         }
     }
@@ -472,6 +486,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
     private void setActionListeners() {
         mCameraSwitcherButton.setOnClickListener(mOnCameraSwitcherClickListener);
+        mGalleryButton.setOnClickListener(mOnGalleryClickListener);
         getViewById(R.id.content_controls).setOnClickListener(null);
         mCameraPreviewLayout.setOnClickListener(mOnPreviewClickListener);
         mPreviewImageView.setOnClickListener(mOnToggleRecyclerClickListener);
@@ -487,6 +502,13 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         mImagesRecyclerView.setOnTouchListener(mOnPreviewTouchListener);
         mCameraPreviewLayout.setOnTouchListener(mOnPreviewTouchListener);
     }
+
+    View.OnClickListener mOnGalleryClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            startActivityForResult(GalleryActivity.getStartIntent(CameraBaseActivity.this), RC_GALLERY);
+        }
+    };
 
     View.OnClickListener mOnCameraSwitcherClickListener = new View.OnClickListener() {
         @Override
@@ -580,6 +602,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         mVideoButton.setImageResource(mIsCameraBusy ? R.drawable.ic_videocam_white_48dp : R.drawable.ic_stop_white_48dp);
         if (mIsFlashModsSelectable) toggleVisibility(mFlashButton, !mIsCameraBusy);
         if (mIsFrontCameraEnable) toggleVisibility(mCameraSwitcherButton, !mIsCameraBusy);
+        toggleVisibility(mGalleryButton, !mIsCameraBusy);
         toggleVisibility(mRecordingCountTextView, mIsCameraBusy);
         if (mIsCameraBusy) {
             stopRecord();
@@ -768,7 +791,8 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
         MediaContent mediaContent = new MediaContent(file.getAbsolutePath(),
                 heightWithRotation,
                 widthWithRotation,
-                MediaContent.CATEGORY_IMAGE);
+                MediaContent.CATEGORY_IMAGE,
+                new Date().getTime());
         mMediaContents.add(mediaContent);
         showSavedInView(file, mediaContent);
     }
@@ -789,7 +813,8 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
                 video.getAbsolutePath(),
                 heightWithRotation,
                 widthWithRotation,
-                MediaContent.CATEGORY_VIDEO);
+                MediaContent.CATEGORY_VIDEO,
+                new Date().getTime());
         mMediaContents.add(mediaContent);
         showSavedInView(video, mediaContent);
     }
@@ -839,6 +864,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     protected void toggleOrientation(int orientation) {
         animateRotation(mFlashButton, mScreenRotation, orientation);
         animateRotation(mCameraSwitcherButton, mScreenRotation, orientation);
+        animateRotation(mGalleryButton, mScreenRotation, orientation);
         animateRotation(mRecordingCountTextView, mScreenRotation, orientation);
         animateRotation(mPreviewImageView, mScreenRotation, orientation);
         animateRotation(mPlayVideoImageView, mScreenRotation, orientation);
@@ -875,12 +901,12 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
 
     @Override
     public void onBackPressed() {
-        for (MediaContent mediaContent : mMediaContents) {
-            if (mediaContent.getVideo() != null)
-                mPresenter.removeFile(mediaContent.getVideo());
-            if (mediaContent.getImage() != null)
-                mPresenter.removeFile(mediaContent.getImage());
-        }
+//        for (MediaContent mediaContent : mMediaContents) {
+//            if (mediaContent.getVideo() != null)
+//                mPresenter.removeFile(mediaContent.getVideo());
+//            if (mediaContent.getImage() != null)
+//                mPresenter.removeFile(mediaContent.getImage());
+//        }
         super.onBackPressed();
     }
 

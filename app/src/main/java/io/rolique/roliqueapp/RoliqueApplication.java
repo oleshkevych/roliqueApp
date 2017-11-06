@@ -20,7 +20,7 @@ public class RoliqueApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        Fabric.with(this, new Crashlytics());
+        Fabric.with(RoliqueApplication.this, new Crashlytics());
         plantTimber();
         mRepositoryComponent = buildRepositoryComponent();
     }

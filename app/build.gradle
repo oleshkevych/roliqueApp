@@ -7,12 +7,9 @@ buildscript {
         classpath 'io.fabric.tools:gradle:1.+'
     }
 }
+
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
-
-repositories {
-    maven { url 'https://maven.fabric.io/public' }
-}
 
 android {
     compileSdkVersion 26
@@ -20,7 +17,7 @@ android {
 
     def versionMajor = 0
     def versionMinor = 0
-    def versionPatch = 2
+    def versionPatch = 6
 
     defaultConfig {
         applicationId "io.rolique.roliqueapp"
@@ -34,13 +31,29 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "SUGGESTIONS_URL", '"https://docs.google.com/forms/d/e/1FAIpQLSfPuZkaRf8KjeHIpPTfsfnbCHK3FRh5EzsyEznuKPdP6NcFXw/viewform"')
     }
+
     dexOptions {
         preDexLibraries = false
     }
+
+    signingConfigs {
+        release {
+            storePassword 'bhb21n89NJ12Ngl'
+            keyAlias 'comgy-alias'
+            keyPassword '12d3ki3r3'
+            storeFile file('../buildKeystore/comgy-release-key.keystore')
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+            ext.betaDistributionEmails="volodymyr.oleshkevych@rolique.io," +
+                    "dev.maslov@gmail.com," +
+                    "vladyslav.bilyi@rolique.io," +
+                    "vitman8@gmail.com"
         }
     }
 }
@@ -89,10 +102,11 @@ dependencies {
     compile 'com.google.android.gms:play-services-maps:11.4.2'
 
     testCompile 'junit:junit:4.12'
-    compile project(path: ':cameralibrary')
+
     compile('com.crashlytics.sdk.android:crashlytics:2.7.1@aar') {
         transitive = true;
     }
+    compile project(path: ':cameralibrary')
 }
 
 crashlytics {

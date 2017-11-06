@@ -16,6 +16,7 @@ import android.view.animation.AnimationSet;
 import android.view.animation.TranslateAnimation;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -56,6 +57,8 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     }
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
+    @BindView(R.id.button_add_image) ImageButton mAddImageButton;
+    @BindView(R.id.container_media_buttons) LinearLayout mMediaButtonsLayout;
     @BindView(R.id.recycler_view_image_preview) RecyclerView mPreviewRecyclerView;
     @BindView(R.id.edit_text_message) EditText mMessageEditText;
     @BindView(R.id.button_cancel_edit) ImageButton mCancelEditButton;
@@ -73,6 +76,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     boolean mIsEditing;
     boolean mIsFetchMessageEnabled = true;
     boolean mIsKeyboardShown;
+    float mStartY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,6 +129,9 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
 
             @Override
             public void afterTextChanged(Editable s) {
+                mMediaButtonsLayout.setVisibility(View.GONE);
+                mAddImageButton.setVisibility(View.VISIBLE);
+                mIsKeyboardShown = true;
                 if (s.length() == 0 &&
                         mPreviewRecyclerView.getVisibility() != View.VISIBLE) {
                     setEnableSend(false);
@@ -141,6 +148,8 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
             @Override
             public void onSuccess(List<MediaContent> mediaContents) {
                 Timber.d(mediaContents.toString());
+                mMediaButtonsLayout.setVisibility(View.GONE);
+                mAddImageButton.setVisibility(View.VISIBLE);
                 List<Media> messageMedias = new ArrayList<>();
                 for (MediaContent mediaContent : mediaContents)
                     messageMedias.add(new Media
@@ -159,12 +168,14 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
 
             @Override
             public void onEmpty() {
-
+                mMediaButtonsLayout.setVisibility(View.GONE);
+                mAddImageButton.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onError(Exception e) {
-
+                mMediaButtonsLayout.setVisibility(View.GONE);
+                mAddImageButton.setVisibility(View.VISIBLE);
             }
         });
         mMediaLib.setStorage(MediaLib.GLOBAL_MEDIA_DEFAULT_FOLDER);
@@ -190,8 +201,6 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         mPreviewAdapter.setMedias(messageMedias);
     }
 
-    float mStartY;
-
     private void setUpRecyclerView() {
         final LinearLayoutManager previewLinearLayoutManager = new LinearLayoutManager(ChatActivity.this);
         previewLinearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
@@ -211,9 +220,9 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
 
             @Override
             public void onRemoveClick(int position) {
-                new File(mChangeableMessage.getMedias().get(position).getImageUrl()).delete();
-                if (mChangeableMessage.getMedias().get(position).isVideo())
-                    new File(mChangeableMessage.getMedias().get(position).getVideoUrl()).delete();
+//                new File(mChangeableMessage.getMedias().get(position).getImageUrl()).delete();
+//                if (mChangeableMessage.getMedias().get(position).isVideo())
+//                    new File(mChangeableMessage.getMedias().get(position).getVideoUrl()).delete();
                 mChangeableMessage.getMedias().remove(position);
                 mPreviewAdapter.removeItem(position);
                 if (mChangeableMessage.getMedias().size() == 0) resetPreview();
@@ -484,6 +493,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     private void resetPreview() {
         mPreviewRecyclerView.setVisibility(View.GONE);
         mPreviewAdapter.clearItems();
+        if (mMessageEditText.getText().toString().trim().isEmpty()) setEnableSend(false);
     }
 
     private void setEnableSend(boolean isEnable) {
@@ -494,6 +504,8 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
 
     @OnClick(R.id.edit_text_message)
     void onMessageFieldClick() {
+        mMediaButtonsLayout.setVisibility(View.GONE);
+        mAddImageButton.setVisibility(View.VISIBLE);
         mIsKeyboardShown = true;
     }
 
@@ -509,13 +521,27 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
 
     @OnClick(R.id.button_add_image)
     void onAddPhotoClick() {
+        mAddImageButton.setVisibility(View.GONE);
+        mMediaButtonsLayout.setVisibility(View.VISIBLE);
+    }
+
+    @OnClick(R.id.button_start_camera)
+    void onStartCameraClick() {
         mMediaLib.startCamera();
+    }
+
+    @OnClick(R.id.button_start_gallery)
+    void onStartGalleryClick() {
+        mMediaLib.startGallery();
     }
 
     @OnClick(R.id.button_send)
     void onSendClick() {
         String text = mMessageEditText.getText().toString();
-        if (text.trim().isEmpty()) return;
+        if (text.trim().isEmpty()
+                && (mChangeableMessage == null
+                        || mChangeableMessage.getMedias() == null
+                        || mChangeableMessage.getMedias().isEmpty())) return;
         Message message;
         if (mIsEditing) {
             mChangeableMessage.setText(text);

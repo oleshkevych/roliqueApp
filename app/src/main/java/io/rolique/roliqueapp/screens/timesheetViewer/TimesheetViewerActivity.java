@@ -2,9 +2,13 @@ package io.rolique.roliqueapp.screens.timesheetViewer;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -24,6 +28,7 @@ import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.timesheetViewer.adapters.SampleTableAdapter;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.widget.fixedHeaderTable.TableFixHeaders;
+import timber.log.Timber;
 
 /**
  * Created by Volodymyr Oleshkevych on 10/31/2017.
@@ -41,7 +46,9 @@ public class TimesheetViewerActivity extends BaseActivity implements TimesheetCo
     @Inject TimesheetPresenter mPresenter;
     @Inject RoliqueAppUsers mRoliqueAppUsers;
 
+    @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.progress_bar) ProgressBar mProgressBar;
+    @BindView(R.id.text_view_table_title) TextView mTitleTextView;
 
     SampleTableAdapter mAdapter;
     Date mTableDate;
@@ -58,6 +65,23 @@ public class TimesheetViewerActivity extends BaseActivity implements TimesheetCo
         updateTimeInView();
         setUpTableView();
         mPresenter.fetchTimesheetsByDate(new Date());
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            Timber.d("Landscape");
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            mTitleTextView.setVisibility(View.GONE);
+            mToolbar.setVisibility(View.GONE);
+
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            Timber.d("Portrait");
+            mTitleTextView.setVisibility(View.VISIBLE);
+            mToolbar.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -85,6 +109,8 @@ public class TimesheetViewerActivity extends BaseActivity implements TimesheetCo
     }
 
     private String getTableTime() {
+        if (DateUtil.isSameDay(mTableDate, new Date()))
+            return "This week";
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(mTableDate);
         int currentDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
