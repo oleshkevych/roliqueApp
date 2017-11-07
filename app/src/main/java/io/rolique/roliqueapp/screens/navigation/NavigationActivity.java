@@ -30,6 +30,7 @@ import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.screens.BaseActivity;
+import io.rolique.roliqueapp.screens.chat.ChatActivity;
 import io.rolique.roliqueapp.screens.welcome.WelcomeActivity;
 import io.rolique.roliqueapp.util.ui.UiUtil;
 
@@ -138,7 +139,7 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
                     mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.CONTACTS, false);
                     break;
 //                case R.id.menu_eat:
-//                    mToolbar.setTitle(R.string.fragment_eat_title);
+//                    mToolbar.setSingle(R.string.fragment_eat_title);
 //                    mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.EAT, false);
 //                    break;
                 case R.id.menu_check_in:
@@ -179,6 +180,7 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
                                 .setWidth(mediaContents.get(0).getWidth())
                                 .setImageUrl(mediaContents.get(0).getImage())
                                 .create();
+                        media.setImageUrl(UiUtil.resizeImage(NavigationActivity.this, media.getImageUrl(), media.getWidth(), media.getHeight()));
 
                         mPresenter.updateUserPicture(media);
                     }

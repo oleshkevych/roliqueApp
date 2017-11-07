@@ -103,6 +103,8 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
             }
             Message message = dataSnapshot.getValue(Message.class);
             mView.showNewMessageView(message);
+            setLastMessageStatus(mPreferences.getId(), message.getChatId(), false);
+
         }
 
         @Override
@@ -149,7 +151,9 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
             for (String memberId : chat.getMemberIds()) {
                 DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, memberId, chat.getId()));
                 memberRef.setValue(message);
+                setLastMessageStatus(memberId, chat.getId(), true);
             }
+            setLastMessageStatus(mPreferences.getId(), chat.getId(), false);
         } else {
             DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, chat.getMemberIds().get(0), chat.getId()));
             memberRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -232,6 +236,7 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
         memberRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                setLastMessageStatus(mPreferences.getId(), chat.getId(), false);
                 Message message1 = dataSnapshot.getValue(Message.class);
                 if (message1.getId().equals(message.getId())) {
                     Query messageQuery = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId())).limitToLast(2);
@@ -263,5 +268,10 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
 
             }
         });
+    }
+
+    private void setLastMessageStatus(String userId, String chatId, boolean isNotRead) {
+        DatabaseReference messageRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_NEW_MESSAGES, userId, chatId));
+        messageRef.setValue(isNotRead);
     }
 }

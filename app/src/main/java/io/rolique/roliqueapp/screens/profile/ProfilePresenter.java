@@ -198,7 +198,7 @@ class ProfilePresenter implements ProfileContract.Presenter, FirebaseValues {
 
     private void checkIfChatExists(List<Chat> chats, String userId, String profileId, String profileImageUrl, String profileName) {
         for (Chat chat : chats)
-            if (chat.getMemberIds().size() == 2
+            if (chat.isSingle()
                     && chat.getMemberIds().contains(userId)
                     && chat.getMemberIds().contains(profileId)) {
                 mView.showChatInView(chat);
@@ -213,6 +213,7 @@ class ProfilePresenter implements ProfileContract.Presenter, FirebaseValues {
                 .setMemberIds(new ArrayList<String>(Arrays.asList(profileId, userId)))
                 .setOwnerId(userId)
                 .setTitle(profileName)
+                .setSingle(true)
                 .create();
         DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS)).push();
         String chatId = chatRef.getKey();

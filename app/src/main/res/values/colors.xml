@@ -22,6 +22,8 @@
     <color name="red_700">#d32f2f</color>
     <color name="red_700_alpha_50">#7bd32f2f</color>
 
+    <color name="amber_500">#ffc107</color>
+
     <color name="black">#000000</color>
     <color name="black_alpha_50">#7f000000</color>
     <color name="black_alpha_80">#33000000</color>

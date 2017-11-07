@@ -17,7 +17,7 @@ android {
 
     def versionMajor = 0
     def versionMinor = 0
-    def versionPatch = 6
+    def versionPatch = 8
 
     defaultConfig {
         applicationId "io.rolique.roliqueapp"
@@ -53,7 +53,8 @@ android {
             ext.betaDistributionEmails="volodymyr.oleshkevych@rolique.io," +
                     "dev.maslov@gmail.com," +
                     "vladyslav.bilyi@rolique.io," +
-                    "vitman8@gmail.com"
+                    "vitman8@gmail.com," +
+                    "viktor.kolomiytsev@rolique.io"
         }
     }
 }

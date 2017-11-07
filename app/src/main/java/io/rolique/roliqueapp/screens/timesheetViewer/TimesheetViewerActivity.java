@@ -3,14 +3,29 @@ package io.rolique.roliqueapp.screens.timesheetViewer;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.Point;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -47,11 +62,14 @@ public class TimesheetViewerActivity extends BaseActivity implements TimesheetCo
     @Inject RoliqueAppUsers mRoliqueAppUsers;
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
-    @BindView(R.id.progress_bar) ProgressBar mProgressBar;
+    @BindView(R.id.view_switcher) ViewSwitcher mViewSwitcher;
     @BindView(R.id.text_view_table_title) TextView mTitleTextView;
+    @BindView(R.id.image_button_help) ImageButton mHelpButton;
 
     SampleTableAdapter mAdapter;
     Date mTableDate;
+    private PopupWindow mPopupWindow;
+    boolean mIsPopUpShowing;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +83,7 @@ public class TimesheetViewerActivity extends BaseActivity implements TimesheetCo
         updateTimeInView();
         setUpTableView();
         mPresenter.fetchTimesheetsByDate(new Date());
+        setUpPopUpView();
     }
 
     @Override
@@ -131,6 +150,41 @@ public class TimesheetViewerActivity extends BaseActivity implements TimesheetCo
         tableFixHeaders.setAdapter(mAdapter);
     }
 
+    private void setUpPopUpView() {
+        final View popupView = LayoutInflater.from(TimesheetViewerActivity.this).inflate(R.layout.content_timesheed_help_popup, null);
+        mPopupWindow = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        mPopupWindow.setBackgroundDrawable(ContextCompat.getDrawable(TimesheetViewerActivity.this, R.drawable.shape_text_view_message_alien_single));
+        mPopupWindow.setOutsideTouchable(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            mPopupWindow.setAttachedInDecor(true);
+        }
+        mPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        mPopupWindow.setAnimationStyle(R.style.popupTimesheetAnimation);
+        mPopupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mIsPopUpShowing = false;
+                        mHelpButton.setEnabled(true);
+                    }
+                }, 500);
+            }
+        });
+    }
+
+    @OnClick(R.id.image_button_help)
+    void onHelpClick() {
+        if (mIsPopUpShowing) {
+            mIsPopUpShowing = false;
+            mPopupWindow.dismiss();
+        } else {
+            mHelpButton.setEnabled(false);
+            mPopupWindow.showAsDropDown(mHelpButton, 0, 0);
+        }
+    }
+
     @Override
     public void updateTable(List<User> users) {
         mAdapter.updateValues(mTableDate, users);
@@ -138,7 +192,7 @@ public class TimesheetViewerActivity extends BaseActivity implements TimesheetCo
 
     @Override
     public void showProgressInView(boolean isActive) {
-        mProgressBar.setVisibility(isActive ? View.VISIBLE : View.GONE);
+        mViewSwitcher.setDisplayedChild(isActive ? 1 : 0);
     }
 
     @Override

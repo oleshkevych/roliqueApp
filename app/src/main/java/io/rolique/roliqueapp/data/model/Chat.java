@@ -33,6 +33,8 @@ public class Chat implements Parcelable {
     public String mId;
     @PropertyName("image_url")
     public String mImageUrl;
+    @PropertyName("is_single")
+    public boolean mIsSingle;
     @PropertyName("members")
     public List<String> mMemberIds = new ArrayList<>();
     @PropertyName("owner")
@@ -41,6 +43,8 @@ public class Chat implements Parcelable {
     public String mTitle;
     @Exclude
     private Message mLastMessage;
+    @Exclude
+    private boolean mHasNewMessages;
 
     public Chat() {
     }
@@ -49,12 +53,14 @@ public class Chat implements Parcelable {
                 String imageUrl,
                 List<String> memberIds,
                 String ownerId,
-                String title) {
+                String title,
+                boolean isSingle) {
         mId = id;
         mImageUrl = imageUrl;
         mMemberIds = memberIds;
         mOwnerId = ownerId;
         mTitle = title;
+        mIsSingle = isSingle;
     }
 
     public Chat(Parcel in) {
@@ -63,6 +69,7 @@ public class Chat implements Parcelable {
         in.readStringList(mMemberIds);
         mOwnerId = in.readString();
         mTitle = in.readString();
+        mIsSingle = in.readInt() == 1;
         mLastMessage = in.readParcelable(Message.class.getClassLoader());
     }
 
@@ -117,6 +124,26 @@ public class Chat implements Parcelable {
     }
 
     @Exclude
+    public boolean isSingle() {
+        return mIsSingle;
+    }
+
+    @Exclude
+    public void setSingle(boolean single) {
+        mIsSingle = single;
+    }
+
+    @Exclude
+    public boolean isHasNewMessages() {
+        return mHasNewMessages;
+    }
+
+    @Exclude
+    public void setHasNewMessages(boolean hasNewMessages) {
+        mHasNewMessages = hasNewMessages;
+    }
+
+    @Exclude
     public Message getLastMessage() {
         return mLastMessage;
     }
@@ -138,6 +165,7 @@ public class Chat implements Parcelable {
         dest.writeStringList(mMemberIds);
         dest.writeString(mOwnerId);
         dest.writeString(mTitle);
+        dest.writeInt(mIsSingle ? 1 :0);
         dest.writeParcelable(mLastMessage, flags);
     }
 
@@ -146,6 +174,7 @@ public class Chat implements Parcelable {
         return "Chat{" +
                 "mId='" + mId + '\'' +
                 ", mImageUrl='" + mImageUrl + '\'' +
+                ", mIsSingle=" + mIsSingle +
                 ", mMemberIds=" + mMemberIds +
                 ", mOwnerId='" + mOwnerId + '\'' +
                 ", mTitle='" + mTitle + '\'' +
@@ -160,6 +189,7 @@ public class Chat implements Parcelable {
         public List<String> mMemberIds = new ArrayList<>();
         public String mOwnerId;
         public String mTitle;
+        public boolean mIsSingle;
 
         public Builder setId(String id) {
             mId = id;
@@ -186,12 +216,18 @@ public class Chat implements Parcelable {
             return this;
         }
 
+        public Builder setSingle(boolean isSingle) {
+            mIsSingle = isSingle;
+            return this;
+        }
+
         public Chat create() {
             return new Chat(mId,
                     mImageUrl,
                     mMemberIds,
                     mOwnerId,
-                    mTitle);
+                    mTitle,
+                    mIsSingle);
         }
     }
 }

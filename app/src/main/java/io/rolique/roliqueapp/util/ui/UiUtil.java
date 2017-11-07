@@ -3,12 +3,16 @@ package io.rolique.roliqueapp.util.ui;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.util.TypedValue;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
@@ -24,11 +28,18 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Random;
 
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.glide.GlideApp;
+import timber.log.Timber;
 
 /**
  * Created by Volodymyr Oleshkevych on 8/24/2017.
@@ -174,5 +185,72 @@ public class UiUtil {
                 .load(path)
                 .apply(new RequestOptions().transforms(new CircleCrop()))
                 .into(imageView);
+    }
+
+    public static String resizeImage(Context context, String path, int width, int height) {
+        int desired_width = width / 4;
+        int desired_height = height / 4;
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+
+        BitmapFactory.decodeFile(path, options);
+
+        options.inSampleSize = calculateInSampleSize(options, desired_width, desired_height);
+        options.inJustDecodeBounds = false;
+
+        Bitmap smallerBm = BitmapFactory.decodeFile(path, options);
+
+        FileOutputStream fOut;
+        File smallPicture = getPreviewFile(context);
+        try {
+            fOut = new FileOutputStream(smallPicture);
+            // 0 = small/low quality, 100 = large/high quality
+            smallerBm.compress(Bitmap.CompressFormat.JPEG, 50, fOut);
+            fOut.flush();
+            fOut.close();
+            smallerBm.recycle();
+        } catch (Exception e) {
+            Timber.e("Failed to save/resize image due to: " + e.toString());
+        }
+        return smallPicture.getAbsolutePath();
+    }
+
+    private static int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) > reqHeight
+                    && (halfWidth / inSampleSize) > reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+        return inSampleSize;
+    }
+
+    private static File getPreviewFile(Context context) {
+        File mediaStorageDir = new File(context.getCacheDir(), "data");
+        if (!mediaStorageDir.mkdir() && !mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Timber.d("failed to create directory");
+                return null;
+            }
+        }
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        Random random = new Random();
+        String randomString = String.valueOf(random.nextInt(Integer.MAX_VALUE));
+        String stringMediaType = ".jpg";
+        String path = mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + randomString + stringMediaType;
+        return new File(path);
     }
 }

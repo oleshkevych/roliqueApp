@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <include layout="@layout/content_toolbar_back"/>
+    <include layout="@layout/content_toolbar_timesheet"/>
 
     <TextView
         android:id="@+id/text_view_table_title"

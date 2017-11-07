@@ -104,6 +104,11 @@
     <string name="activity_timesheet_viewer_title">Timesheet</string>
     <string name="activity_timesheet_viewer_user_column">User Name</string>
     <string name="activity_timesheet_viewer_table_title">Timesheet table\'s range</string>
+    <string name="activity_timesheet_viewer_late">Check in Late</string>
+    <string name="activity_timesheet_viewer_day_off">Day off</string>
+    <string name="activity_timesheet_viewer_remotely">Remotely</string>
+    <string name="activity_timesheet_viewer_business_trip">Business Trip</string>
+    <string name="activity_timesheet_viewer_ok">Check in OK</string>
     <!-- activity timesheetViewer end-->
 
     <string name="title_activity_maps">Map</string>

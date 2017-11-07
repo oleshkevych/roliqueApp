@@ -1,8 +1,11 @@
 package io.rolique.cameralibrary.screens.gallery;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,13 +17,19 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import io.rolique.cameralibrary.R;
 import io.rolique.cameralibrary.data.model.MediaContent;
 import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
+import timber.log.Timber;
 
 /**
  * Created by Volodymyr Oleshkevych on 5/16/2017.
@@ -86,6 +95,36 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
         return mMediaContents.size();
     }
 
+    private String createImage(String videoPath) {
+        Bitmap thumb = ThumbnailUtils.createVideoThumbnail(videoPath,
+                MediaStore.Images.Thumbnails.MINI_KIND);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        thumb.compress(Bitmap.CompressFormat.JPEG, 70, stream);
+        File file = getPreviewFile();
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(stream.toByteArray());
+            fos.close();
+        } catch (Exception e) {
+            Timber.e(e);
+        }
+        return file.getAbsolutePath();
+    }
+
+    private File getPreviewFile() {
+        File mediaStorageDir = new File(mInflater.getContext().getCacheDir(), "data");
+        if (!mediaStorageDir.mkdir() && !mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Timber.d("failed to create directory");
+                return null;
+            }
+        }
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        String stringMediaType = ".jpg";
+        String path = mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + stringMediaType;
+        return new File(path);
+    }
+
     class ImageViewHolder extends RecyclerView.ViewHolder {
 
         FrameLayout mFrameLayout;
@@ -101,7 +140,7 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
 
         void bindImage(MediaContent mediaContent) {
             mMediaContent = mediaContent;
-            mFile = new File(mediaContent.getImage());
+            mFile = new File(mediaContent.getImage() == null ? createImage(mediaContent.getVideo()) : mediaContent.getImage());
             ViewGroup.LayoutParams layoutParams = mImageView.getLayoutParams();
             layoutParams.height = mDisplaySize.x / 3;
             layoutParams.width = mDisplaySize.x / 3;

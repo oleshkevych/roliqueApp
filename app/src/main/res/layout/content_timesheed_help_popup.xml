@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@color/transparent"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp">
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/item_check_in_ok"
+            android:gravity="center"
+            android:paddingBottom="10dp"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:paddingTop="10dp"
+            android:text="@string/activity_timesheet_viewer_ok"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/item_check_in_late"
+            android:gravity="center"
+            android:paddingBottom="10dp"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:paddingTop="10dp"
+            android:text="@string/activity_timesheet_viewer_late"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/item_check_in_day_off"
+            android:gravity="center"
+            android:paddingBottom="10dp"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:paddingTop="10dp"
+            android:text="@string/activity_timesheet_viewer_day_off"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/item_check_in_remotely"
+            android:gravity="center"
+            android:paddingBottom="10dp"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:paddingTop="10dp"
+            android:text="@string/activity_timesheet_viewer_remotely"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/item_check_in_business_trip"
+            android:gravity="center"
+            android:paddingBottom="10dp"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:paddingTop="10dp"
+            android:text="@string/activity_timesheet_viewer_business_trip"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"/>
+    </LinearLayout>
+</FrameLayout>

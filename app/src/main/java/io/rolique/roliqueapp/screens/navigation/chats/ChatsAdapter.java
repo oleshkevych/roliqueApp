@@ -1,6 +1,8 @@
 package io.rolique.roliqueapp.screens.navigation.chats;
 
 import android.content.Context;
+import android.graphics.Typeface;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -80,15 +82,30 @@ class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHolder> {
                 notifyItemChanged(i);
                 return;
             }
+        for (int i = 0; i < mChats.size(); i++) {
+            if (isEarlier(mChats.get(i), chat)) {
+                mChats.add(i, chat);
+                notifyItemInserted(i);
+                return;
+            }
+        }
         mChats.add(chat);
         notifyItemInserted(mChats.size() - 1);
+    }
+
+    private boolean isEarlier(Chat o1, Chat o2) {
+        return DateUtil.transformDate(o1.getLastMessage().getTimeStamp()).getTime() <
+                DateUtil.transformDate(o2.getLastMessage().getTimeStamp()).getTime();
     }
 
     void changeChat(Chat chat) {
         for (int i = 0; i < mChats.size(); i++)
             if (chat.getId().equals(mChats.get(i).getId())) {
-                mChats.set(i, chat);
-                notifyItemChanged(i);
+                mChats.remove(i);
+//                notifyItemRemoved(i);
+                mChats.add(0, chat);
+                notifyItemMoved(i, 0);
+                notifyItemChanged(0);
                 break;
             }
     }
@@ -127,9 +144,24 @@ class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHolder> {
         void bindChat(Chat chat) {
             mChat = chat;
             mTitleTextView.setText(mChat.getTitle());
-            mLastMessageTextView.setText(String.format("%s - %s", UiUtil.getUserNameForView(mChat.getLastMessage().getSenderId(), mRoliqueAppUsers.getUsers()), mChat.getLastMessage().getText()));
+            setTextViewBold(mTitleTextView);
+            mTitleTextView.setTextColor(ContextCompat.getColor(mTitleTextView.getContext(),
+                    mChat.isHasNewMessages() ? R.color.amber_500 : R.color.black_alpha_50));
+            mLastMessageTextView.setText(String.format("%s - %s", UiUtil.getUserNameForView(mChat.getLastMessage().getSenderId(),
+                    mRoliqueAppUsers.getUsers()),
+                    mChat.getLastMessage().getText().isEmpty() ?
+                            mChat.getLastMessage().getMedias() == null && mChat.getLastMessage().getMedias().size() > 0 ?
+                                    "" : mChat.getLastMessage().getMedias().get(0).getMediaType() :
+                            mChat.getLastMessage().getText()
+            ));
+            setTextViewBold(mLastMessageTextView);
             mDateTextView.setText(DateUtil.getStringMessageDate(mChat.getLastMessage().getTimeStamp()));
+            setTextViewBold(mDateTextView);
             UiUtil.setImageIfExists(mViewSwitcher, mChat.getImageUrl(), mChat.getTitle(), 80);
+        }
+
+        private void setTextViewBold(TextView textView) {
+            textView.setTypeface(null, mChat.isHasNewMessages() ? Typeface.BOLD : Typeface.NORMAL);
         }
     }
 }

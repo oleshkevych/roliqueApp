@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
@@ -14,6 +15,7 @@ import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v13.app.ActivityCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -62,7 +64,7 @@ public class GalleryActivity extends BaseActivity {
     ImageView mPreviewImageView;
     ImageView mPlayVideoImageView;
     TextView mImagesCountTextView;
-    ImageView mDoneImageView;
+    FloatingActionButton mDoneButton;
     RecyclerView mRecyclerView;
 
     @Override
@@ -71,7 +73,7 @@ public class GalleryActivity extends BaseActivity {
         setContentView(R.layout.activity_gallery);
         mPreviewImageView = getViewById(R.id.image_view_preview);
         mPlayVideoImageView = getViewById(R.id.image_view_play_video);
-        mDoneImageView = getViewById(R.id.image_view_done_toolbar);
+        mDoneButton = getViewById(R.id.button_done);
         mImagesCountTextView = getViewById(R.id.text_view_images_count);
         mRecyclerView = getViewById(R.id.recycler_view_images);
         setUpToolbar();
@@ -92,8 +94,7 @@ public class GalleryActivity extends BaseActivity {
                     @Override
                     public void run() {
                         mAdapter.setMediaContents(mAvailableMediaContents);
-                        findViewById(R.id.progress_bar).setVisibility(View.GONE);
-                        mRecyclerView.setVisibility(View.VISIBLE);
+                        findViewById(R.id.progress_layout).setVisibility(View.GONE);
                     }
                 });
             }
@@ -184,42 +185,12 @@ public class GalleryActivity extends BaseActivity {
                     .setHeight(mediaContent.getHeight())
                     .setWidth(mediaContent.getWidth())
                     .setVideo(mediaContent.getImage())
-                    .setImage(createImage(mediaContent.getImage()))
+                    .setImage(null)
                     .setMediaType(MediaContent.CATEGORY_VIDEO)
                     .setDate(mediaContent.getDate())
                     .create());
         }
         return availableVideoMediaContents;
-    }
-
-    private String createImage(String videoPath) {
-        Bitmap thumb = ThumbnailUtils.createVideoThumbnail(videoPath,
-                MediaStore.Images.Thumbnails.MINI_KIND);
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        thumb.compress(Bitmap.CompressFormat.JPEG, 70, stream);
-        File file = getPreviewFile();
-        try {
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.write(stream.toByteArray());
-            fos.close();
-        } catch (Exception e) {
-            Timber.e(e);
-        }
-        return file.getAbsolutePath();
-    }
-
-    protected File getPreviewFile() {
-        File mediaStorageDir = new File(getCacheDir(), "data");
-        if (!mediaStorageDir.mkdir() && !mediaStorageDir.exists()) {
-            if (!mediaStorageDir.mkdirs()) {
-                Timber.d("failed to create directory");
-                return null;
-            }
-        }
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-        String stringMediaType = ".jpg";
-        String path = mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + stringMediaType;
-        return new File(path);
     }
 
     private List<MediaContent> sortMedias(List<MediaContent> availableMediaContents) {
@@ -234,7 +205,7 @@ public class GalleryActivity extends BaseActivity {
                 onBackPressed();
             }
         });
-        mDoneImageView.setOnClickListener(mOnDoneClickListener);
+        mDoneButton.setOnClickListener(mOnDoneClickListener);
         updatePreview();
     }
 
@@ -243,12 +214,14 @@ public class GalleryActivity extends BaseActivity {
             mPreviewImageView.setVisibility(View.GONE);
             mPlayVideoImageView.setVisibility(View.GONE);
             mImagesCountTextView.setVisibility(View.GONE);
-            mDoneImageView.setVisibility(View.GONE);
+            mDoneButton.setVisibility(View.GONE);
             return;
         }
         MediaContent mediaContent = mSelectedMediaContents.get(mSelectedMediaContents.size() - 1);
+        if (mediaContent.getImage() == null)
+            mediaContent.setImage(createImage(mediaContent.getVideo(), mediaContent.getWidth(), mediaContent.getHeight()));
         mPreviewImageView.setVisibility(View.VISIBLE);
-        mDoneImageView.setVisibility(View.VISIBLE);
+        mDoneButton.setVisibility(View.VISIBLE);
         mPlayVideoImageView.setVisibility(mediaContent.isVideo() ? View.VISIBLE : View.GONE);
         mImagesCountTextView.setVisibility(View.VISIBLE);
         mImagesCountTextView.setText(String.valueOf(mSelectedMediaContents.size()));
@@ -276,12 +249,47 @@ public class GalleryActivity extends BaseActivity {
     View.OnClickListener mOnDoneClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            findViewById(R.id.progress_layout).setVisibility(View.VISIBLE);
+            for (MediaContent mediaContent: mSelectedMediaContents)
+                if (mediaContent.getImage() == null)
+                    mediaContent.setImage(createImage(mediaContent.getVideo(), mediaContent.getWidth(), mediaContent.getHeight()));
             Intent intent = new Intent();
             intent.putParcelableArrayListExtra(getString(R.string.extra_camera_images), (ArrayList<? extends Parcelable>) mSelectedMediaContents);
             setResult(RESULT_OK, intent);
             finish();
         }
     };
+
+    private String createImage(String videoPath, int width, int height) {
+        Bitmap thumb = ThumbnailUtils.createVideoThumbnail(videoPath,
+                MediaStore.Images.Thumbnails.MINI_KIND);
+        Bitmap scaled = Bitmap.createScaledBitmap(thumb, width / 8, height / 8, true);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        scaled.compress(Bitmap.CompressFormat.JPEG, 50, stream);
+        File file = getPreviewFile();
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(stream.toByteArray());
+            fos.close();
+        } catch (Exception e) {
+            Timber.e(e);
+        }
+        return file.getAbsolutePath();
+    }
+
+    private File getPreviewFile() {
+        File mediaStorageDir = new File(getCacheDir(), "data");
+        if (!mediaStorageDir.mkdir() && !mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Timber.d("failed to create directory");
+                return null;
+            }
+        }
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        String stringMediaType = ".jpg";
+        String path = mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + stringMediaType;
+        return new File(path);
+    }
 
     private void setUpRecyclerView(RecyclerView recyclerView) {
         recyclerView.setLayoutManager(new GridLayoutManager(GalleryActivity.this, 3, RecyclerView.VERTICAL, false));

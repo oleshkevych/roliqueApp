@@ -18,7 +18,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,13 +35,16 @@ import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.data.model.Message;
+import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.chat.adapters.MessagesAdapter;
 import io.rolique.roliqueapp.screens.chat.adapters.PreviewAdapter;
 import io.rolique.roliqueapp.screens.chat.decorators.CustomInterpolator;
 import io.rolique.roliqueapp.screens.editChat.ChatEditorActivity;
 import io.rolique.roliqueapp.screens.imageViewer.ImageViewerActivity;
+import io.rolique.roliqueapp.screens.profile.ProfileActivity;
 import io.rolique.roliqueapp.util.DateUtil;
+import io.rolique.roliqueapp.util.ui.UiUtil;
 import timber.log.Timber;
 
 public class ChatActivity extends BaseActivity implements ChatContract.View {
@@ -105,6 +107,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         mToolbar.setTitle(chat.getTitle());
         ImageButton imageButton = findViewById(R.id.button_edit);
         if (chat.getId().equals("main")) imageButton.setVisibility(View.GONE);
+        else if (chat.isSingle()) imageButton.setImageResource(R.drawable.ic_person_white_24dp);
         else
             imageButton.setImageResource(chat.getOwnerId().equals(mPreferences.getId()) ? R.drawable.ic_edit_white_24dp : R.drawable.ic_move_out_white_24dp);
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -151,15 +154,18 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                 mMediaButtonsLayout.setVisibility(View.GONE);
                 mAddImageButton.setVisibility(View.VISIBLE);
                 List<Media> messageMedias = new ArrayList<>();
-                for (MediaContent mediaContent : mediaContents)
-                    messageMedias.add(new Media
+                for (MediaContent mediaContent : mediaContents) {
+                    Media media = new Media
                             .Builder()
                             .setHeight(mediaContent.getHeight())
                             .setWidth(mediaContent.getWidth())
                             .setImageUrl(mediaContent.getImage())
                             .setVideoUrl(mediaContent.isVideo() ? mediaContent.getVideo() : null)
                             .setMediaType(mediaContent.isImage() ? Media.CATEGORY_IMAGE : Media.CATEGORY_VIDEO)
-                            .create());
+                            .create();
+                    media.setImageUrl(UiUtil.resizeImage(ChatActivity.this, media.getImageUrl(), media.getWidth(), media.getHeight()));
+                    messageMedias.add(media);
+                }
                 mChangeableMessage = getMediaMessage(mMessageEditText.getText().toString(), messageMedias);
                 mIsEditing = true;
                 setEnableSend(true);
@@ -540,8 +546,8 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         String text = mMessageEditText.getText().toString();
         if (text.trim().isEmpty()
                 && (mChangeableMessage == null
-                        || mChangeableMessage.getMedias() == null
-                        || mChangeableMessage.getMedias().isEmpty())) return;
+                || mChangeableMessage.getMedias() == null
+                || mChangeableMessage.getMedias().isEmpty())) return;
         Message message;
         if (mIsEditing) {
             mChangeableMessage.setText(text);
@@ -569,7 +575,17 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
 
     @OnClick(R.id.button_edit)
     void onEditClick() {
-        if (mChat.getOwnerId().equals(mPreferences.getId())) {
+        if (mChat.isSingle()) {
+            User user = null;
+            for (String id : mChat.getMemberIds())
+                if (!id.equals(mPreferences.getId()))
+                    for (User user1 : mRoliqueAppUsers.getUsers())
+                        if (user1.getId().equals(id)) {
+                            user = user1;
+                            break;
+                        }
+            startActivity(ProfileActivity.startIntent(ChatActivity.this, user));
+        } else if (mChat.getOwnerId().equals(mPreferences.getId())) {
             startActivityForResult(ChatEditorActivity.startIntent(ChatActivity.this, mChat), RC_CHAT_EDIT);
         } else {
             mPresenter.leaveChat(mChat, mPreferences.getId());

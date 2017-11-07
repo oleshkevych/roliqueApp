@@ -19,5 +19,5 @@ public interface FirebaseValues {
     String USER_DATA = "user_data";
     String MAP = "map";
     String CHECK_IN = "checkin";
-
+    String USER_NEW_MESSAGES = "userNewMessages";
 }

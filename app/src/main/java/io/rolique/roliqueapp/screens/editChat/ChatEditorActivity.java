@@ -35,6 +35,7 @@ import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.editChat.adapters.ImageDecoration;
 import io.rolique.roliqueapp.screens.editChat.adapters.MembersAdapter;
 import io.rolique.roliqueapp.screens.editChat.adapters.UsersAdapter;
+import io.rolique.roliqueapp.screens.profile.ProfileActivity;
 import io.rolique.roliqueapp.util.ui.UiUtil;
 
 public class ChatEditorActivity extends BaseActivity implements ChatEditorContract.View {
@@ -106,7 +107,7 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
     MediaLib.MediaLibListener mMediaLibListener = new MediaLib.MediaLibListener() {
         @Override
         public void onSuccess(List<MediaContent> mediaContents) {
-            mImagePath = mediaContents.get(0).getImage();
+            mImagePath = UiUtil.resizeImage(ChatEditorActivity.this, mediaContents.get(0).getImage(), mediaContents.get(0).getWidth(), mediaContents.get(0).getHeight());
             UiUtil.updateImageIfExists(mImageViewSwitcher, mImagePath, "");
         }
 

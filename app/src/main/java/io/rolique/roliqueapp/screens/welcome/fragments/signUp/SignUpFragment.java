@@ -28,6 +28,7 @@ import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.roliqueapp.BaseFragment;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
+import io.rolique.roliqueapp.screens.editChat.ChatEditorActivity;
 import io.rolique.roliqueapp.screens.navigation.NavigationActivity;
 import io.rolique.roliqueapp.util.ui.UiUtil;
 
@@ -67,7 +68,7 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
     MediaLib.MediaLibListener mMediaLibListener = new MediaLib.MediaLibListener() {
         @Override
         public void onSuccess(List<MediaContent> mediaContents) {
-            mImagePath = mediaContents.get(0).getImage();
+            mImagePath = UiUtil.resizeImage(getActivity(), mediaContents.get(0).getImage(), mediaContents.get(0).getWidth(), mediaContents.get(0).getHeight());
             UiUtil.setImageIfExists(mViewSwitcher, mImagePath, "", 88);
         }
 

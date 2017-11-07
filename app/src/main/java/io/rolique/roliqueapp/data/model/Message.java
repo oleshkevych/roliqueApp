@@ -84,6 +84,7 @@ public class Message implements Parcelable {
         return new Message(chatId, userId, "Welcome!", DateUtil.getStringTime(), "user");
     }
 
+    @Exclude
     public static Message createMediaMessage(String chatId, String userId, List<Media> medias) {
         return new Message(chatId, userId, "Welcome!", DateUtil.getStringTime(), "user", medias, false);
     }

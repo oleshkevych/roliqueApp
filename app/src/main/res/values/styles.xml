@@ -40,4 +40,9 @@
         <item name="android:windowEnterAnimation">@anim/popup_check_in_show</item>
         <item name="android:windowExitAnimation">@anim/popup_check_in_hide</item>
     </style>
+
+    <style name="popupTimesheetAnimation">
+        <item name="android:windowEnterAnimation">@anim/popup_timesheet_show</item>
+        <item name="android:windowExitAnimation">@anim/popup_timesheet_hide</item>
+    </style>
 </resources>
