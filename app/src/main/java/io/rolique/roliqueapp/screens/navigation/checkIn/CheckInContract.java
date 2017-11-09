@@ -16,6 +16,7 @@ interface CheckInContract {
 
     interface View extends BaseView<Presenter> {
         void updateCheckInInView(boolean isCheckedIn);
+        void showCheckInInView(String checkInType);
     }
 
     interface Presenter extends BasePresenter {

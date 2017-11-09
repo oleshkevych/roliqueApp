@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.util.TypedValue;
@@ -30,6 +31,7 @@ import com.bumptech.glide.request.target.Target;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -63,7 +65,7 @@ public class UiUtil {
         GlideApp.with(imageView.getContext())
                 .load(url)
                 .apply(new RequestOptions().transforms(new FitCenter(), new RoundedCorners(cornerRadius)))
-                .placeholder(R.color.green_700_alpha_50)
+                .placeholder(R.drawable.ic_placeholder_grey_160dp)
                 .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
                 .dontAnimate()
                 .listener(new RequestListener<Drawable>() {
@@ -181,10 +183,14 @@ public class UiUtil {
     }
 
     private static void setImage(ImageView imageView, String path) {
-        GlideApp.with(imageView.getContext())
-                .load(path)
-                .apply(new RequestOptions().transforms(new CircleCrop()))
-                .into(imageView);
+        try {
+            GlideApp.with(imageView.getContext())
+                    .load(path)
+                    .apply(new RequestOptions().transforms(new CircleCrop()))
+                    .into(imageView);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static String resizeImage(Context context, String path, int width, int height) {
@@ -216,8 +222,7 @@ public class UiUtil {
         return smallPicture.getAbsolutePath();
     }
 
-    private static int calculateInSampleSize(
-            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+    private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
         // Raw height and width of image
         final int height = options.outHeight;
         final int width = options.outWidth;
@@ -238,14 +243,12 @@ public class UiUtil {
         return inSampleSize;
     }
 
+    @NonNull
     private static File getPreviewFile(Context context) {
         File mediaStorageDir = new File(context.getCacheDir(), "data");
-        if (!mediaStorageDir.mkdir() && !mediaStorageDir.exists()) {
-            if (!mediaStorageDir.mkdirs()) {
+        if (!mediaStorageDir.mkdir() && !mediaStorageDir.exists())
+            if (!mediaStorageDir.mkdirs())
                 Timber.d("failed to create directory");
-                return null;
-            }
-        }
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         Random random = new Random();
         String randomString = String.valueOf(random.nextInt(Integer.MAX_VALUE));

@@ -466,8 +466,8 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         }
 
         @Override
-        public void onMessageRemove(Message message) {
-            mPresenter.removeMessage(message, mChat);
+        public void onMessageRemove(Message message, boolean isInLast20th) {
+            mPresenter.removeMessage(message, mChat, isInLast20th);
         }
 
         @Override
@@ -560,6 +560,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         mMessageEditText.getText().clear();
         resetPreview();
         setEnableSend(false);
+        mAdapter.updateMessage(message);
         mPresenter.setMessage(message, mChat);
     }
 

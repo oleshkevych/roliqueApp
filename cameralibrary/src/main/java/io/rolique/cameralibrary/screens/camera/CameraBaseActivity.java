@@ -506,7 +506,7 @@ public abstract class CameraBaseActivity extends BaseActivity implements CameraC
     View.OnClickListener mOnGalleryClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            startActivityForResult(GalleryActivity.getStartIntent(CameraBaseActivity.this), RC_GALLERY);
+            startActivityForResult(GalleryActivity.getStartIntent(CameraBaseActivity.this, mIsVideoRecord, mIsSinglePhoto || mIsSingleFrontCamera), RC_GALLERY);
         }
     };
 

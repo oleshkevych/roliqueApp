@@ -3,6 +3,7 @@ package io.rolique.roliqueapp;
 import android.app.Application;
 
 import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.core.CrashlyticsCore;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -20,7 +21,12 @@ public class RoliqueApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        Fabric.with(RoliqueApplication.this, new Crashlytics());
+        Crashlytics crashlyticsKit = new Crashlytics.Builder()
+                .core(new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build())
+                .build();
+
+// Initialize Fabric with the debug-disabled crashlytics.
+        Fabric.with(RoliqueApplication.this, crashlyticsKit);
         plantTimber();
         mRepositoryComponent = buildRepositoryComponent();
     }

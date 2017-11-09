@@ -6,19 +6,19 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
 
 import io.rolique.cameralibrary.R;
 import io.rolique.cameralibrary.data.model.MediaContent;
+import io.rolique.cameralibrary.widget.CustomViewPager;
 import io.rolique.cameralibrary.widget.TouchImageView;
 import timber.log.Timber;
 
@@ -38,23 +38,15 @@ public class ImageFragment extends Fragment {
         return fragment;
     }
 
-    interface OnToggleSwipeListener {
-        void onToggleSwipe(boolean isAllowed);
-    }
-
     private MediaContent mMediaContent;
-    private OnToggleSwipeListener mToggleSwipeListener;
     private TouchImageView mTouchImageView;
-
-    public void setToggleSwipeListener(OnToggleSwipeListener toggleSwipeListener) {
-        mToggleSwipeListener = toggleSwipeListener;
-    }
+    CustomViewPager mCustomViewPager;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mMediaContent = getArguments().getParcelable(ARGUMENT_MEDIA_CONTENT);
-        return inflater.inflate(R.layout.fragment_image, container, false);
+        return inflater.inflate(R.layout.fragment_image_lib, container, false);
     }
 
     @Override
@@ -62,11 +54,11 @@ public class ImageFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mTouchImageView = view.findViewById(R.id.touch_image_view);
         final ProgressBar progressBar = view.findViewById(R.id.progress_bar);
+        mCustomViewPager = getViewPager(view.getParent());
         mTouchImageView.setOnDragFinishedListener(new TouchImageView.OnDragFinishedListener() {
             @Override
             public void onDragFinished(boolean isFinished) {
-                if (mToggleSwipeListener != null)
-                    mToggleSwipeListener.onToggleSwipe(isFinished);
+                mCustomViewPager.setScroll(isFinished);
             }
         });
         final LinearLayout errorLayout = view.findViewById(R.id.error_layout);
@@ -79,6 +71,15 @@ public class ImageFragment extends Fragment {
             }
         });
         loadImage(mTouchImageView, progressBar, errorLayout);
+    }
+
+    private CustomViewPager getViewPager(ViewParent viewParent) {
+        if (viewParent instanceof View && viewParent instanceof CustomViewPager)
+            return (CustomViewPager) viewParent;
+        else {
+            ViewParent parent = viewParent.getParent();
+            return getViewPager(parent);
+        }
     }
 
     private void loadImage(final ImageView imageView, final ProgressBar progressBar, final LinearLayout errorLayout) {
@@ -138,8 +139,8 @@ public class ImageFragment extends Fragment {
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if (isVisibleToUser) {
-            if (mToggleSwipeListener != null)
-                mToggleSwipeListener.onToggleSwipe(true);
+            if (mCustomViewPager != null)
+                mCustomViewPager.setScroll(true);
         } else if (mTouchImageView != null) {
             mTouchImageView.removeZoom();
         }

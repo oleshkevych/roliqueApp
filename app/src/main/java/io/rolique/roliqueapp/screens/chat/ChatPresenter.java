@@ -30,6 +30,7 @@ import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.firebaseData.FirebaseValues;
 import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.data.model.Message;
+import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.LinksBuilder;
 
 /**
@@ -45,6 +46,8 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
     Query mChatQuery;
 
     boolean mIsProgressActive;
+    boolean mIsDeleting;
+    Message mLastMessage;
 
     @Inject
     ChatPresenter(RoliqueApplicationPreferences preferences,
@@ -102,9 +105,13 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
                 mIsProgressActive = false;
             }
             Message message = dataSnapshot.getValue(Message.class);
+            if (mIsDeleting && DateUtil.isFirstEarlier(mLastMessage.getTimeStamp(), message.getTimeStamp())) {
+                mIsDeleting = false;
+                return;
+            }
+            mLastMessage = message;
             mView.showNewMessageView(message);
             setLastMessageStatus(mPreferences.getId(), message.getChatId(), false);
-
         }
 
         @Override
@@ -160,6 +167,7 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Message message1 = dataSnapshot.getValue(Message.class);
+                    if (message1 == null) return;
                     if (message1.getId().equals(message.getId()))
                         for (String memberId : chat.getMemberIds()) {
                             DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, memberId, chat.getId()));
@@ -231,12 +239,13 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
     }
 
     @Override
-    public void removeMessage(final Message message, final Chat chat) {
+    public void removeMessage(final Message message, final Chat chat, final boolean isInLast20th) {
+        mIsDeleting = true;
+        setLastMessageStatus(mPreferences.getId(), chat.getId(), false);
         final DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, chat.getMemberIds().get(0), chat.getId()));
         memberRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                setLastMessageStatus(mPreferences.getId(), chat.getId(), false);
                 Message message1 = dataSnapshot.getValue(Message.class);
                 if (message1.getId().equals(message.getId())) {
                     Query messageQuery = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId())).limitToLast(2);
@@ -261,6 +270,9 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
                 }
                 DatabaseReference messageRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId(), message.getId()));
                 messageRef.removeValue();
+                if (!isInLast20th) {
+                    mView.removedMessageView(message.getId());
+                }
             }
 
             @Override

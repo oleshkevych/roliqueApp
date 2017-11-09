@@ -37,7 +37,8 @@
         </activity>
         <activity
             android:name=".screens.welcome.WelcomeActivity"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".screens.editChat.ChatEditorActivity"
             android:screenOrientation="portrait"/>
@@ -47,7 +48,6 @@
             android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".screens.imageViewer.ImageViewerActivity"
-            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Fullscreen"/>
         <activity
             android:name=".screens.profile.ProfileActivity"

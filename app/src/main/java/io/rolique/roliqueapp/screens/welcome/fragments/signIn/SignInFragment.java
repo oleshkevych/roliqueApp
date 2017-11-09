@@ -96,6 +96,7 @@ public class SignInFragment extends BaseFragment implements SignInContract.View 
                     editText.setText(s);
                 }
             } else {
+                if(mEmailSignInEditText == null) return;
                 mEmailSignInEditText.removeTextChangedListener(mOnEmailSignInEditorActionListener);
             }
         }

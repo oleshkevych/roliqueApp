@@ -160,7 +160,7 @@ public class MediaLib {
     }
 
     public void startGallery() {
-        mActivity.startActivityForResult(GalleryActivity.getStartIntent(mActivity), RC_CAMERA);
+        mActivity.startActivityForResult(GalleryActivity.getStartIntent(mActivity, mIsVideoEnabled, mIsSinglePhoto || mIsSingleFrontCamera), RC_CAMERA);
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

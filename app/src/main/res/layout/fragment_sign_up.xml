@@ -22,6 +22,7 @@
         android:id="@+id/layout_form_sign_up"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:overScrollMode="never"
         android:layout_below="@+id/image_view">
 
         <LinearLayout
@@ -37,6 +38,13 @@
 
                 <include layout="@layout/content_image"/>
 
+                <ImageView
+                    android:id="@+id/image_view_edit_photo"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_gravity="end|bottom"
+                    app:srcCompat="@drawable/ic_edit_grey_24dp"
+                    tools:ignore="ContentDescription"/>
             </FrameLayout>
 
             <android.support.design.widget.TextInputLayout
@@ -109,8 +117,8 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:hint="@string/activity_login_confirm_password"
-                    android:imeActionId="@+id/login"
-                    android:imeActionLabel="@string/activity_login_title_activity_login"
+                    android:imeActionId="@+id/button_sign_up"
+                    android:imeActionLabel="@string/activity_sign_up_title"
                     android:imeOptions="actionUnspecified"
                     android:inputType="textPassword"
                     android:maxLines="1"/>

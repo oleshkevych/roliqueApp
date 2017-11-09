@@ -84,15 +84,18 @@
                     android:id="@+id/text_view_message"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
+                    android:gravity="start"
                     android:maxWidth="240dp"
                     android:minWidth="64dp"
                     android:padding="8dp"
+                    android:autoLink="web"
+                    android:textIsSelectable="true"
+                    android:textColorLink="@color/grey_400"
                     android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
                     android:textColor="@color/white"
                     app:layout_constraintStart_toEndOf="@id/image_view_own_edited"
                     tools:background="@drawable/shape_text_view_message_alien_single"
-                    tools:text="45685558955prfkinjeborinoribnoirnoirrbnoirtnboirnboinfboirbfb "/>
+                    tools:text="4568555895n jebort inoribnoirnoirrb noirtnboirnboinfboirbfb "/>
 
                 <LinearLayout
                     android:id="@+id/container_images"

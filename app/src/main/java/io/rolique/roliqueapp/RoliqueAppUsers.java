@@ -112,7 +112,7 @@ public class RoliqueAppUsers implements FirebaseValues {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for (User user : mUsers)
-                        if (user.getId().equals(dataSnapshot.getKey())) {
+                        if (user != null && user.getId() != null && user.getId().equals(dataSnapshot.getKey())) {
                             mUsers.remove(user);
                             return;
                         }

@@ -40,6 +40,7 @@ public abstract class BaseFragment extends Fragment {
     }
 
     protected void hideKeyboard() {
+        if (getActivity() == null) return;
         View view = getActivity().getCurrentFocus();
         if (view == null) return;
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);

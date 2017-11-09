@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
@@ -19,6 +20,7 @@ import com.bumptech.glide.request.target.Target;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.glide.GlideApp;
+import io.rolique.roliqueapp.widget.CustomViewPager;
 import io.rolique.roliqueapp.widget.TouchImageView;
 
 /**
@@ -37,20 +39,12 @@ public class ImageFragment extends Fragment {
         return fragment;
     }
 
-    interface OnToggleSwipeListener {
-        void onToggleSwipe(boolean isAllowed);
-    }
-
     private Media mMedia;
-    private OnToggleSwipeListener mToggleSwipeListener;
+    CustomViewPager mCustomViewPager;
     private TouchImageView mTouchImageView;
 
     public TouchImageView getTouchImageView() {
         return mTouchImageView;
-    }
-
-    public void setToggleSwipeListener(OnToggleSwipeListener toggleSwipeListener) {
-        mToggleSwipeListener = toggleSwipeListener;
     }
 
     @Override
@@ -65,11 +59,12 @@ public class ImageFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mTouchImageView = view.findViewById(R.id.touch_image_view);
         final ProgressBar progressBar = view.findViewById(R.id.progress_bar);
+        mCustomViewPager = getViewPager(view.getParent());
         mTouchImageView.setOnDragFinishedListener(new TouchImageView.OnDragFinishedListener() {
             @Override
             public void onDragFinished(boolean isFinished) {
-                if (mToggleSwipeListener != null)
-                    mToggleSwipeListener.onToggleSwipe(isFinished);
+                if (mCustomViewPager != null)
+                    mCustomViewPager.setScroll(isFinished);
             }
         });
         final LinearLayout errorLayout = view.findViewById(R.id.error_layout);
@@ -82,6 +77,15 @@ public class ImageFragment extends Fragment {
             }
         });
         loadImage(progressBar, errorLayout);
+    }
+
+    private CustomViewPager getViewPager(ViewParent viewParent) {
+        if (viewParent instanceof View && viewParent instanceof CustomViewPager)
+            return (CustomViewPager) viewParent;
+        else {
+            ViewParent parent = viewParent.getParent();
+            return getViewPager(parent);
+        }
     }
 
     private void loadImage(final ProgressBar progressBar, final LinearLayout errorLayout) {
@@ -112,8 +116,8 @@ public class ImageFragment extends Fragment {
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if (isVisibleToUser) {
-            if (mToggleSwipeListener != null)
-                mToggleSwipeListener.onToggleSwipe(true);
+            if (mCustomViewPager != null)
+                mCustomViewPager.setScroll(true);
         } else if (mTouchImageView != null) {
             mTouchImageView.removeZoom();
         }

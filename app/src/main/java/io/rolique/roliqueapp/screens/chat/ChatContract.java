@@ -27,6 +27,6 @@ interface ChatContract {
         void fetchLastMessages(Chat chat);
         void leaveChat(Chat chat, String memberId);
         void setMessage(Message message, Chat chat);
-        void removeMessage(Message message, Chat chat);
+        void removeMessage(Message message, Chat chat, boolean isInLast20th);
     }
 }

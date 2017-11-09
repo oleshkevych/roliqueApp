@@ -9,16 +9,12 @@ import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.view.ViewGroup;
-
-import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.data.model.Media;
-import io.rolique.roliqueapp.glide.GlideApp;
 import io.rolique.roliqueapp.widget.CustomViewPager;
 
 
@@ -68,12 +64,6 @@ public class ImageViewerActivity extends AppCompatActivity {
         int imagesCount = -1;
         for (Media mediaContent : mMediaContents) {
             ImageFragment fragment = ImageFragment.newInstance(mediaContent);
-            fragment.setToggleSwipeListener(new ImageFragment.OnToggleSwipeListener() {
-                @Override
-                public void onToggleSwipe(boolean isAllowed) {
-                    mViewPager.setScroll(isAllowed);
-                }
-            });
             mFragmentViewPagerAdapter.addFragment(fragment);
             imagesCount++;
             if (mMediaContents.indexOf(mediaContent) == startPosition)

@@ -104,7 +104,7 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:foreground="?attr/selectableItemBackground"
-        app:backgroundTint="@color/colorPrimaryDark_alpha_50"
+        app:backgroundTint="@color/colorPrimaryDark_alpha_20"
         app:fabSize="normal"
         app:srcCompat="@drawable/ic_done_white_24dp"/>
 

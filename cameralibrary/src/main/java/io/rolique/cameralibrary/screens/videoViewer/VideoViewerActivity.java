@@ -48,6 +48,8 @@ public class VideoViewerActivity extends AppCompatActivity {
 
     private static final String EXTRA_VIDEOS = "VIDEOS";
     private static final String EXTRA_SELECTED_VIDEO_POSITION = "SELECTED_VIDEO_POSITION";
+    private static final String STATE_SELECTED_POSITION = "STATE_SELECTED_POSITION";
+    private static final String STATE_LAST_POSITION = "STATE_LAST_POSITION";
 
     public static Intent getStartIntent(Context context, String videoPath) {
         Intent intent = new Intent(context, VideoViewerActivity.class);
@@ -83,6 +85,10 @@ public class VideoViewerActivity extends AppCompatActivity {
         ActivityCompat.postponeEnterTransition(VideoViewerActivity.this);
         mPaths = getIntent().getStringArrayListExtra(EXTRA_VIDEOS);
         mPosition = getIntent().getIntExtra(EXTRA_SELECTED_VIDEO_POSITION, 0);
+        if (savedInstanceState != null) {
+            mPosition = savedInstanceState.getInt(STATE_SELECTED_POSITION);
+            mLastPosition = savedInstanceState.getLong(STATE_LAST_POSITION);
+        }
         mBandWithMeter = new DefaultBandwidthMeter();
         DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(VideoViewerActivity.this,
                 Util.getUserAgent(VideoViewerActivity.this, getString(R.string.app_name)));
@@ -112,6 +118,7 @@ public class VideoViewerActivity extends AppCompatActivity {
         mPlayer.setVideoScalingMode(C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
 
         mPlayer.seekToDefaultPosition(mPosition);
+        mPlayer.seekTo(mLastPosition);
         mPlayer.addListener(mPlayerEventListener);
         mPlayerView.setPlayer(mPlayer);
     }
@@ -160,6 +167,13 @@ public class VideoViewerActivity extends AppCompatActivity {
         public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
         }
     };
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(STATE_SELECTED_POSITION, mPosition);
+        outState.putLong(STATE_LAST_POSITION, mLastPosition);
+    }
 
     @Override
     protected void onResume() {

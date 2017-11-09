@@ -3,7 +3,6 @@ package io.rolique.cameralibrary.screens.imageViewer;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,6 +12,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.ImageButton;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -32,6 +32,7 @@ public class ImageViewerActivity extends AppCompatActivity {
 
     private static final String EXTRA_MEDIAS = "IMAGE_PATH";
     private static final String EXTRA_SELECTED_POSITION = "SELECTED_POSITION";
+    private static final String STATE_SELECTED_POSITION = "STATE_SELECTED_POSITION";
     private static final String EXTRA_IS_SHOW_DELETING = "IS_SHOW_DELETING";
 
     public static Intent getStartIntent(Activity activity, List<MediaContent> mediaContents, int position) {
@@ -45,30 +46,35 @@ public class ImageViewerActivity extends AppCompatActivity {
     List<MediaContent> mMediaContents;
     FragmentViewPagerAdapter mFragmentViewPagerAdapter;
     CustomViewPager mViewPager;
+    Toolbar mToolbar;
+    ImageButton mImageButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_image_viewer);
+        setContentView(R.layout.activity_image_viewer_library);
+        mToolbar = findViewById(R.id.toolbar);
+        mImageButton = findViewById(R.id.image_button_delete);
         mMediaContents = getIntent().getParcelableArrayListExtra(EXTRA_MEDIAS);
         int startPosition = getIntent().getIntExtra(EXTRA_SELECTED_POSITION, 0);
+        if (savedInstanceState != null)
+            startPosition = savedInstanceState.getInt(STATE_SELECTED_POSITION);
         boolean isShowDeleting = getIntent().getBooleanExtra(EXTRA_IS_SHOW_DELETING, false);
         setUpToolbar(isShowDeleting);
         setUpViewPager(startPosition);
     }
 
     private void setUpToolbar(boolean isShowDeleting) {
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 onBackPressed();
             }
         });
         if (isShowDeleting)
-            toolbar.findViewById(R.id.image_button_delete).setOnClickListener(mOnDeleteClickListener);
+            mImageButton.setOnClickListener(mOnDeleteClickListener);
         else
-            toolbar.findViewById(R.id.image_button_delete).setVisibility(View.GONE);
+            mImageButton.setVisibility(View.GONE);
     }
 
     View.OnClickListener mOnDeleteClickListener = new View.OnClickListener() {
@@ -89,7 +95,6 @@ public class ImageViewerActivity extends AppCompatActivity {
                             if (mFragmentViewPagerAdapter.getCount() == 1) onBackPressed();
                             mFragmentViewPagerAdapter.removeFragment(index);
                             mFragmentViewPagerAdapter.notifyDataSetChanged();
-//                            setOffscreenPageLimit();
                         }
                     })
                     .show();
@@ -102,12 +107,6 @@ public class ImageViewerActivity extends AppCompatActivity {
         for (MediaContent mediaContent : mMediaContents) {
             if (mediaContent.isImage()) {
                 ImageFragment fragment = ImageFragment.newInstance(mediaContent);
-                fragment.setToggleSwipeListener(new ImageFragment.OnToggleSwipeListener() {
-                    @Override
-                    public void onToggleSwipe(boolean isAllowed) {
-                        mViewPager.setScroll(isAllowed);
-                    }
-                });
                 mFragmentViewPagerAdapter.addFragment(fragment);
                 imagesCount++;
             }
@@ -115,15 +114,10 @@ public class ImageViewerActivity extends AppCompatActivity {
                 startPosition = imagesCount;
         }
         mViewPager = findViewById(R.id.view_pager);
-//        mViewPager.setOffscreenPageLimit(mFragmentViewPagerAdapter.getCount() > 4 ? 5 : mFragmentViewPagerAdapter.getCount());
         mViewPager.setAdapter(mFragmentViewPagerAdapter);
         mViewPager.setCurrentItem(startPosition);
         mViewPager.setOnTouchListener(null);
     }
-
-//    private void setOffscreenPageLimit() {
-//        mViewPager.setOffscreenPageLimit(mFragmentViewPagerAdapter.getCount() > 4 ? 5 : mFragmentViewPagerAdapter.getCount());
-//    }
 
     private class FragmentViewPagerAdapter extends FragmentStatePagerAdapter {
 
@@ -164,6 +158,12 @@ public class ImageViewerActivity extends AppCompatActivity {
         public int getCount() {
             return mFragments.size();
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putLong(STATE_SELECTED_POSITION, mViewPager.getCurrentItem());
     }
 
     @Override

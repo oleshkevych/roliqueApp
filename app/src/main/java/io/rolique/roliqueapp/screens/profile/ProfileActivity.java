@@ -679,6 +679,7 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
 
     @Override
     public void onBackPressed() {
+        hideKeyboard();
         if (mFloatingActionMenu.isOptionVisible()) {
             mFloatingActionMenu.hideOptions();
         } else if (mIsEditMode) {

@@ -1,11 +1,13 @@
 package io.rolique.cameralibrary.screens.gallery;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -42,6 +44,7 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
     private Point mDisplaySize;
     private List<String> mMediaContentsSelected;
     Picasso mPicasso;
+    final Activity mActivity;
 
     interface OnImagesClickListener {
         void onAddImageClick(int position);
@@ -51,15 +54,16 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
 
     private OnImagesClickListener mOnImagesClickListener;
 
-    ImagesAdapter(Context context,
+    ImagesAdapter(Activity activity,
                   OnImagesClickListener onImagesClickListener,
                   Point displaySize) {
-        mInflater = LayoutInflater.from(context);
+        mActivity = activity;
+        mInflater = LayoutInflater.from(activity);
         mMediaContents = new ArrayList<>();
         mMediaContentsSelected = new ArrayList<>();
         mOnImagesClickListener = onImagesClickListener;
         mDisplaySize = displaySize;
-        mPicasso = new Picasso.Builder(context).listener(new Picasso.Listener() {
+        mPicasso = new Picasso.Builder(activity).listener(new Picasso.Listener() {
             @Override
             public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
                 exception.printStackTrace();
@@ -95,28 +99,41 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
         return mMediaContents.size();
     }
 
-    private String createImage(String videoPath) {
-        Bitmap thumb = ThumbnailUtils.createVideoThumbnail(videoPath,
-                MediaStore.Images.Thumbnails.MINI_KIND);
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        thumb.compress(Bitmap.CompressFormat.JPEG, 70, stream);
-        File file = getPreviewFile();
-        try {
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.write(stream.toByteArray());
-            fos.close();
-        } catch (Exception e) {
-            Timber.e(e);
-        }
-        return file.getAbsolutePath();
+    private void createImage(final int contentPosition) {
+        new Thread() {
+            @Override
+            public void run() {
+                Bitmap thumb = ThumbnailUtils.createVideoThumbnail(mMediaContents.get(contentPosition).getVideo(),
+                        MediaStore.Images.Thumbnails.MINI_KIND);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                thumb.compress(Bitmap.CompressFormat.JPEG, 90, stream);
+                File file = getPreviewFile();
+                try {
+                    FileOutputStream fos = new FileOutputStream(file);
+                    fos.write(stream.toByteArray());
+                    fos.close();
+                } catch (Exception e) {
+                    Timber.e(e);
+                }
+                mMediaContents.get(contentPosition).setImage(file.getAbsolutePath());
+                mActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        notifyItemChanged(contentPosition);
+                    }
+                });
+            }
+        }.start();
+
+
     }
 
+    @NonNull
     private File getPreviewFile() {
         File mediaStorageDir = new File(mInflater.getContext().getCacheDir(), "data");
         if (!mediaStorageDir.mkdir() && !mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
                 Timber.d("failed to create directory");
-                return null;
             }
         }
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
@@ -140,7 +157,12 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
 
         void bindImage(MediaContent mediaContent) {
             mMediaContent = mediaContent;
-            mFile = new File(mediaContent.getImage() == null ? createImage(mediaContent.getVideo()) : mediaContent.getImage());
+            if (mediaContent.getImage() == null) {
+                createImage(getAdapterPosition());
+                mFile = getPreviewFile();
+            } else {
+                mFile = new File(mediaContent.getImage());
+            }
             ViewGroup.LayoutParams layoutParams = mImageView.getLayoutParams();
             layoutParams.height = mDisplaySize.x / 3;
             layoutParams.width = mDisplaySize.x / 3;
@@ -158,14 +180,14 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
         }
 
         private void setImageWithRoundCorners(ImageView imageView) {
-                int cornerRadius = imageView.getContext().getResources().getDimensionPixelSize(R.dimen.image_view_corner_radius);
-                mPicasso
-                        .load(mFile)
-                        .fit()
-                        .centerCrop()
-                        .transform(new RoundedCornersTransformation(cornerRadius, 0))
-                        .placeholder(R.color.black)
-                        .into(imageView);
+            int cornerRadius = imageView.getContext().getResources().getDimensionPixelSize(R.dimen.image_view_corner_radius);
+            mPicasso
+                    .load(mFile)
+                    .fit()
+                    .centerCrop()
+                    .transform(new RoundedCornersTransformation(cornerRadius, 0))
+                    .placeholder(R.drawable.ic_placeholder_grey_160dp)
+                    .into(imageView);
         }
 
         private void setUpActionListeners() {

@@ -1,5 +1,8 @@
 package io.rolique.roliqueapp.screens.navigation;
 
+import java.util.Date;
+
+import io.rolique.roliqueapp.data.model.CheckIn;
 import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.screens.BasePresenter;
 import io.rolique.roliqueapp.screens.BaseView;
@@ -15,11 +18,15 @@ interface NavigationContract {
         void setImage(String path, String userName);
         void setUserName(String userName);
         void setImageProgress(boolean isActive);
+        void showCheckInStatusInView(boolean isCheckedIn);
+        void showCheckedInInView(String checkInType);
     }
 
     interface Presenter extends BasePresenter {
         void isLogin();
         void logout();
         void updateUserPicture(Media media);
+        void checkIfUserCheckedIn();
+        void setNewCheckIn(CheckIn checkIn, Date date);
     }
 }

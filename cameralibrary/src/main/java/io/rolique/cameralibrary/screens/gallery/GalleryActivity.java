@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
@@ -49,13 +48,18 @@ import timber.log.Timber;
  */
 public class GalleryActivity extends BaseActivity {
 
-    public static Intent getStartIntent(Context context) {
-        return new Intent(context, GalleryActivity.class);
+    private static final String EXTRA_SINGLE_PHOTO_MODE = "SINGLE_PHOTO_MODE";
+    private static final String EXTRA_VIDEO_ENABLED = "VIDEO_ENABLED";
+    private static final int RC_PERMISSION = 101;
+
+    private static String[] PERMISSIONS = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
+    public static Intent getStartIntent(Context context, boolean isVideoEnabled, boolean isSinglePhoto) {
+        Intent intent = new Intent(context, GalleryActivity.class);
+        intent.putExtra(EXTRA_SINGLE_PHOTO_MODE, isSinglePhoto);
+        intent.putExtra(EXTRA_VIDEO_ENABLED, isVideoEnabled);
+        return intent;
     }
-
-    static final int RC_PERMISSION = 101;
-
-    static String[] PERMISSIONS = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     List<MediaContent> mAvailableMediaContents = new ArrayList<>();
     List<MediaContent> mSelectedMediaContents = new ArrayList<>();
@@ -66,11 +70,15 @@ public class GalleryActivity extends BaseActivity {
     TextView mImagesCountTextView;
     FloatingActionButton mDoneButton;
     RecyclerView mRecyclerView;
+    boolean mIsSinglePhoto;
+    boolean mIsVideoEnabled;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
+        mIsSinglePhoto = getIntent().getBooleanExtra(EXTRA_SINGLE_PHOTO_MODE, false);
+        mIsVideoEnabled = getIntent().getBooleanExtra(EXTRA_VIDEO_ENABLED, false);
         mPreviewImageView = getViewById(R.id.image_view_preview);
         mPlayVideoImageView = getViewById(R.id.image_view_play_video);
         mDoneButton = getViewById(R.id.button_done);
@@ -111,7 +119,8 @@ public class GalleryActivity extends BaseActivity {
                 MediaStore.Images.Media.DATA
         };
         availableMediaContents.addAll(getImages(projection));
-        availableMediaContents.addAll(getVideos(projection));
+        if (mIsVideoEnabled)
+            availableMediaContents.addAll(getVideos(projection));
         return sortMedias(availableMediaContents);
     }
 
@@ -250,7 +259,7 @@ public class GalleryActivity extends BaseActivity {
         @Override
         public void onClick(View v) {
             findViewById(R.id.progress_layout).setVisibility(View.VISIBLE);
-            for (MediaContent mediaContent: mSelectedMediaContents)
+            for (MediaContent mediaContent : mSelectedMediaContents)
                 if (mediaContent.getImage() == null)
                     mediaContent.setImage(createImage(mediaContent.getVideo(), mediaContent.getWidth(), mediaContent.getHeight()));
             Intent intent = new Intent();
@@ -303,7 +312,8 @@ public class GalleryActivity extends BaseActivity {
         @Override
         public void onAddImageClick(int position) {
             mSelectedMediaContents.add(mAvailableMediaContents.get(position));
-            updatePreview();
+            if (mIsSinglePhoto) mDoneButton.performClick();
+            else updatePreview();
         }
 
         @Override

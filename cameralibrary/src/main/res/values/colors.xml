@@ -4,6 +4,7 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#000000</color>
 
+    <color name="colorPrimaryDark_alpha_20">#c1303f9f</color>
     <color name="colorPrimaryDark_alpha_50">#7f303f9f</color>
     <color name="colorPrimaryDark_alpha_80">#34303f9f</color>
 

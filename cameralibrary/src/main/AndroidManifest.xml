@@ -24,11 +24,9 @@
             android:theme="@style/AppTheme.Fullscreen"/>
         <activity
             android:name="io.rolique.cameralibrary.screens.imageViewer.ImageViewerActivity"
-            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Fullscreen"/>
         <activity
             android:name="io.rolique.cameralibrary.screens.videoViewer.VideoViewerActivity"
-            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Fullscreen"/>
         <activity
             android:name="io.rolique.cameralibrary.screens.gallery.GalleryActivity"

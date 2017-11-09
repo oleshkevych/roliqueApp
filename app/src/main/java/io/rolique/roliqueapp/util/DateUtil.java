@@ -40,6 +40,25 @@ public final class DateUtil {
         return isSameDay(cal1, cal2);
     }
 
+    public static boolean isFirstEarlier(String stringDate1, String stringDate2) {
+        Date date1 = transformDate(stringDate1);
+        Date date2 = transformDate(stringDate2);
+        if (date1 == null || date2 == null) {
+            throw new IllegalArgumentException("The dates must not be null");
+        }
+        Calendar cal1 = Calendar.getInstance();
+        cal1.setTime(date1);
+        Calendar cal2 = Calendar.getInstance();
+        cal2.setTime(date2);
+        if (cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR)) {
+            if (cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)) {
+                if (cal1.get(Calendar.HOUR_OF_DAY) == cal2.get(Calendar.HOUR_OF_DAY)) {
+                     return cal1.get(Calendar.MINUTE) > cal2.get(Calendar.MINUTE);
+                } else return cal1.get(Calendar.HOUR_OF_DAY) > cal2.get(Calendar.HOUR_OF_DAY);
+            } else return cal1.get(Calendar.DAY_OF_YEAR) > cal2.get(Calendar.DAY_OF_YEAR);
+        } else return cal1.get(Calendar.YEAR) > cal2.get(Calendar.YEAR);
+    }
+
     public static boolean isSameDay(Calendar cal1, Calendar cal2) {
         if (cal1 == null || cal2 == null) {
             throw new IllegalArgumentException("The dates must not be null");

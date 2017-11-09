@@ -17,7 +17,7 @@ android {
 
     def versionMajor = 0
     def versionMinor = 0
-    def versionPatch = 8
+    def versionPatch = 10
 
     defaultConfig {
         applicationId "io.rolique.roliqueapp"
@@ -54,7 +54,11 @@ android {
                     "dev.maslov@gmail.com," +
                     "vladyslav.bilyi@rolique.io," +
                     "vitman8@gmail.com," +
-                    "viktor.kolomiytsev@rolique.io"
+                    "viktor.kolomiytsev@rolique.io," +
+                    "roman.horobets@rolique.io"
+        }
+        debug {
+
         }
     }
 }

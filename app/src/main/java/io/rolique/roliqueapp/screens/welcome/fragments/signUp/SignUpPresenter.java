@@ -123,7 +123,9 @@ final class SignUpPresenter implements SignUpContract.Presenter, FirebaseValues 
         mChatQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Message message = dataSnapshot.getValue(Message.class);
+                Message message = null;
+                for (DataSnapshot snapshot : dataSnapshot.getChildren())
+                    message = snapshot.getValue(Message.class);
                 DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, userId, "main"));
                 memberRef.setValue(message);
 

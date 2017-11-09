@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -47,17 +48,13 @@ import io.rolique.roliqueapp.BaseFragment;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.data.model.CheckIn;
+import io.rolique.roliqueapp.screens.navigation.NavigationActivity;
 import io.rolique.roliqueapp.screens.timesheetViewer.TimesheetViewerActivity;
 import io.rolique.roliqueapp.util.DateUtil;
 import timber.log.Timber;
 
 
 public class CheckInFragment extends BaseFragment implements CheckInContract.View {
-
-    private static final int RC_LOCATION_PERMISSION = 101;
-
-    static final LatLng ROLIQUE_POSITION = new LatLng(49.841358007066034, 24.023118875920773);
-    static final int RANGE_RADIUS = 50;
 
     public static CheckInFragment newInstance() {
         return new CheckInFragment();
@@ -73,7 +70,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
     boolean mIsPopUpShowing;
     boolean mIsInRange;
     PopupWindow mPopupWindow;
-    View checkInTextView;
+    View mCheckInTextView;
 
     @BindView(R.id.button_check_in) FloatingActionButton mCheckInButton;
     @BindView(R.id.map_view) MapView mMapView;
@@ -89,8 +86,8 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mMapView.onCreate(savedInstanceState);
-        updateCheckInButton();
         setUpPopUpView(mCheckInButton);
+        updateCheckInButton(false);
     }
 
     @Override
@@ -124,7 +121,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
                 }, 500);
             }
         });
-        checkInTextView = popupView.findViewById(R.id.text_view_check_in);
+        mCheckInTextView = popupView.findViewById(R.id.text_view_check_in);
         View businessTextView = popupView.findViewById(R.id.text_view_business);
         businessTextView.setOnTouchListener(mOnTouchListener);
         businessTextView.setOnClickListener(new Button.OnClickListener() {
@@ -157,14 +154,14 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     v.setBackground(ContextCompat.getDrawable(v.getContext(), R.drawable.shape_text_view_check_in_toched));
-                    ((TextView) v).setTextColor(ContextCompat.getColor(v.getContext(),R.color.black_alpha_50));
+                    ((TextView) v).setTextColor(ContextCompat.getColor(v.getContext(), R.color.black_alpha_50));
                     break;
                 case MotionEvent.ACTION_UP:
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             v.setBackground(ContextCompat.getDrawable(v.getContext(), R.drawable.shape_text_view_message_user_single));
-                            ((TextView) v).setTextColor(ContextCompat.getColor(v.getContext(),R.color.white));
+                            ((TextView) v).setTextColor(ContextCompat.getColor(v.getContext(), R.color.white));
                         }
                     }, 100);
                     break;
@@ -185,7 +182,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
         mIsVisibleToUser = isVisibleToUser;
         toggleMapServices(isVisibleToUser);
         if (mIsVisibleToUser && mPresenter != null)
-        mPresenter.isUserAlreadyCheckedIn(new Date());
+            mPresenter.isUserAlreadyCheckedIn(new Date());
     }
 
     private void toggleMapServices(boolean isVisibleToUser) {
@@ -218,14 +215,14 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
         if (!(FragmentCompat.shouldShowRequestPermissionRationale(CheckInFragment.this, Manifest.permission.ACCESS_FINE_LOCATION) &&
                 FragmentCompat.shouldShowRequestPermissionRationale(CheckInFragment.this, Manifest.permission.ACCESS_COARSE_LOCATION))) {
             FragmentCompat.requestPermissions(CheckInFragment.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
-                    RC_LOCATION_PERMISSION);
+                    NavigationActivity.RC_LOCATION_PERMISSION);
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        if (requestCode == RC_LOCATION_PERMISSION) {
+        if (requestCode == NavigationActivity.RC_LOCATION_PERMISSION) {
             if (grantResults.length != 2 || grantResults[0] != PackageManager.PERMISSION_GRANTED
                     || grantResults[1] != PackageManager.PERMISSION_GRANTED) {
                 showSnackbar(mCoordinatorLayout, "Give me permissions!!!!!!!!");
@@ -246,13 +243,13 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
 
             Location.distanceBetween(mLatStart.latitude,
                     mLatStart.longitude,
-                    mCircle.getCenter().latitude,
-                    mCircle.getCenter().longitude,
+                    NavigationActivity.ROLIQUE_POSITION.latitude,
+                    NavigationActivity.ROLIQUE_POSITION.longitude,
                     distance);
 
-            calculationByDistance(mLatStart, mCircle.getCenter());
+            calculationByDistance(mLatStart, NavigationActivity.ROLIQUE_POSITION);
 
-            if (distance[0] <= mCircle.getRadius()) {
+            if (distance[0] <= NavigationActivity.RANGE_RADIUS) {
                 showSnackbar(mCoordinatorLayout, "In range ");
                 mIsInRange = true;
             } else {
@@ -260,7 +257,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
                 mIsInRange = false;
             }
             Timber.e(Arrays.toString(distance));
-            updateCheckInButton();
+//            updateCheckInButton();
         }
     };
 
@@ -289,6 +286,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
 //        return RADIUS * c <= RANGE_RADIUS;
     }
 
+    @SuppressWarnings("MissingPermission")
     private void setUtMap() {
         try {
             MapsInitializer.initialize(getActivity().getApplicationContext());
@@ -302,16 +300,16 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
                 mGoogleMap.setMyLocationEnabled(true);
 
                 mCircle = mGoogleMap.addCircle(new CircleOptions()
-                        .center(ROLIQUE_POSITION)
-                        .radius(RANGE_RADIUS)
+                        .center(NavigationActivity.ROLIQUE_POSITION)
+                        .radius(NavigationActivity.RANGE_RADIUS)
                         .strokeColor(ContextCompat.getColor(mMapView.getContext(), R.color.green_700_alpha_50))
                         .fillColor(ContextCompat.getColor(mMapView.getContext(), R.color.green_700_alpha_90)));
 
                 // For dropping a marker at a point on the Map
-                mGoogleMap.addMarker(new MarkerOptions().position(ROLIQUE_POSITION).title("Rolique").snippet("Your lovely job"));
+                mGoogleMap.addMarker(new MarkerOptions().position(NavigationActivity.ROLIQUE_POSITION).title("Rolique").snippet("Your lovely job"));
 
                 // For zooming automatically to the location of the marker
-                CameraPosition cameraPosition = new CameraPosition.Builder().target(ROLIQUE_POSITION).zoom(18).build();
+                CameraPosition cameraPosition = new CameraPosition.Builder().target(NavigationActivity.ROLIQUE_POSITION).zoom(18).build();
                 mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
             }
@@ -344,35 +342,34 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
     }
 
     private void updateCheckInView() {
-        if(mIsInRange) {
-            checkInTextView.setOnTouchListener(mOnTouchListener);
-            checkInTextView.setOnClickListener(new Button.OnClickListener() {
+        if (mIsInRange) {
+            mCheckInTextView.setOnTouchListener(mOnTouchListener);
+            mCheckInTextView.setOnClickListener(new Button.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     createAndSendCheckIn(CheckIn.CHECK_IN);
                 }
             });
         }
-        checkInTextView.setAlpha(mIsInRange ? 1.0f : 0.5f);
-        checkInTextView.setEnabled(mIsInRange);
+        mCheckInTextView.setAlpha(mIsInRange ? 1.0f : 0.5f);
+        mCheckInTextView.setEnabled(mIsInRange);
     }
-
-    boolean mIsAlreadyCheckedIn;
 
     @Override
     public void updateCheckInInView(boolean isCheckedIn) {
-        mIsAlreadyCheckedIn = isCheckedIn;
-        updateCheckInButton();
+        updateCheckInButton(isCheckedIn);
     }
 
-    private void updateCheckInButton() {
-        if (mIsAlreadyCheckedIn) {
-            mCheckInButton.setEnabled(false);
-            mCheckInButton.setAlpha(0.6f);
-            return;
-        }
-        mCheckInButton.setEnabled(mIsInRange);
-        mCheckInButton.setAlpha(mIsInRange ? 1.0f : 0.6f);
+    @Override
+    public void showCheckInInView(String checkInType) {
+        Toast.makeText(getActivity(), "You successfully checked in with type: " + checkInType, Toast.LENGTH_LONG).show();
+        updateCheckInButton(true);
+    }
+
+    private void updateCheckInButton(boolean isCheckedIn) {
+        if (mCheckInButton == null) return;
+        mCheckInButton.setEnabled(!isCheckedIn);
+        mCheckInButton.setAlpha(!isCheckedIn ? 1.0f : 0.6f);
     }
 
     @Override
@@ -390,7 +387,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
     @Override
     public void onDestroy() {
         if (mMapView != null)
-        mMapView.onDestroy();
+            mMapView.onDestroy();
         super.onDestroy();
     }
 

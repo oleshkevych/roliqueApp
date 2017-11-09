@@ -52,7 +52,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public interface OnMessageActionListener {
         void onMessageEdit(Message message);
 
-        void onMessageRemove(Message message);
+        void onMessageRemove(Message message, boolean isInLast20th);
 
         void onMediaClick(Media media);
     }
@@ -158,16 +158,6 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         mActionListener = actionListener;
     }
 
-    public void setMessages(List<Message> messages) {
-        if (messages.isEmpty()) return;
-        mIsItemMessage = calculateItemsCount(messages);
-        mIsItemMessage.first.add(0, false);
-        mIsItemMessage.second.add(0, 0);
-        mMessages.clear();
-        mMessages.addAll(messages);
-        notifyDataSetChanged();
-    }
-
     public void addTopMessages(List<Message> messages) {
         if (messages.isEmpty()) return;
         Pair<List<Boolean>, List<Integer>> isNewItemsMessages = calculateItemsCount(messages);
@@ -200,9 +190,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         mIsItemMessage.first.add(true);
         mIsItemMessage.second.add(mMessages.size() - 1);
         if (mIsItemMessage.first.size() > 2) {
-            notifyItemInserted(mIsItemMessage.first.size());
+            notifyItemInserted(mIsItemMessage.first.size() - 1);
             notifyItemRangeChanged(mIsItemMessage.first.size() - 2, mIsItemMessage.first.size());
-        } else notifyItemInserted(mIsItemMessage.first.size());
+        } else notifyItemInserted(mIsItemMessage.first.size() - 1);
     }
 
     private Pair<List<Boolean>, List<Integer>> calculateItemsCount(List<Message> messages) {
@@ -247,11 +237,75 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     public void removeMessage(String messageId) {
+        int removedMessageIndex = 0;
         for (int i = 0; i < mMessages.size(); i++)
             if (mMessages.get(i).getId().equals(messageId)) {
+                removedMessageIndex = i;
                 mMessages.remove(i);
                 setMessages(new ArrayList<>(mMessages));
+                return;
+//                break;
             }
+        int viewIndex = 0;
+        for (int i = 0; i < mIsItemMessage.second.size(); i++)
+            if (mIsItemMessage.second.get(i) == removedMessageIndex) {
+                viewIndex = i;
+                break;
+            }
+        if (viewIndex == 0) return;
+        if (mIsItemMessage.first.get(viewIndex - 1)) {
+            mIsItemMessage.first.remove(viewIndex);
+            mIsItemMessage.second.remove(viewIndex);
+            mMessages.remove(removedMessageIndex);
+            notifyItemRemoved(viewIndex);
+            notifyItemChanged(viewIndex - 1);
+        } else {
+            if (viewIndex + 1 < mIsItemMessage.first.size()) {
+                if (mIsItemMessage.first.get(viewIndex + 1)) {
+                    mIsItemMessage.first.remove(viewIndex);
+                    mIsItemMessage.second.remove(viewIndex);
+                    mMessages.remove(removedMessageIndex);
+                    notifyItemRemoved(viewIndex);
+                    notifyItemChanged(viewIndex);
+                    return;
+                } else {
+                    mIsItemMessage.first.remove(viewIndex);
+                    mIsItemMessage.first.remove(viewIndex - 1);
+                    mIsItemMessage.second.remove(viewIndex);
+                    mIsItemMessage.second.remove(viewIndex - 1);
+                    mMessages.remove(removedMessageIndex);
+                    notifyItemRangeRemoved(viewIndex - 1, viewIndex);
+                    return;
+                }
+            }
+            if (viewIndex + 1 == mIsItemMessage.first.size()) {
+                mMessages.remove(removedMessageIndex);
+                mIsItemMessage.first.remove(viewIndex);
+                mIsItemMessage.second.remove(viewIndex);
+                if (!mIsItemMessage.first.get(viewIndex - 1)) {
+                    mIsItemMessage.first.remove(viewIndex - 1);
+                    mIsItemMessage.second.remove(viewIndex - 1);
+                    notifyItemRangeRemoved(viewIndex - 1, viewIndex);
+                } else {
+                    notifyItemRemoved(viewIndex);
+                }
+                notifyItemChanged(mIsItemMessage.first.size() - 1);
+                return;
+            }
+        }
+//                mMessages.remove(i);
+//                setMessages(new ArrayList<>(mMessages));
+    }
+//}
+
+    public void setMessages(List<Message> messages) {
+        if (messages.isEmpty()) return;
+        mIsItemMessage = calculateItemsCount(messages);
+        mIsItemMessage.first.add(0, false);
+        mIsItemMessage.second.add(0, 0);
+        mMessages.clear();
+        mMessages.addAll(messages);
+        notifyDataSetChanged();
     }
 
     class MessageViewHolder extends RecyclerView.ViewHolder {
@@ -482,7 +536,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     public void onClick(View v) {
                         popupWindow.dismiss();
                         if (mActionListener == null) return;
-                        mActionListener.onMessageRemove(mMessage);
+                        boolean isInLast20th = false;
+                        for (int i = mMessages.size() - 1; i > mMessages.size() - 20 && i >= 0; i--)
+                            if (mMessages.get(i).getId().equals(mMessage.getId())) isInLast20th = true;
+                        mActionListener.onMessageRemove(mMessage, isInLast20th);
                     }
                 });
                 popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {

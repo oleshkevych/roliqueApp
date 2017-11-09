@@ -25,7 +25,7 @@ public class GPSTracker extends Service implements LocationListener {
     // The minimum time between updates in milliseconds
     private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1; // 1 minute
 
-    interface PositionChanged {
+    public interface PositionChanged {
         void onPositionChanged(Location location);
     }
 
@@ -52,7 +52,7 @@ public class GPSTracker extends Service implements LocationListener {
     public GPSTracker(Context context, PositionChanged positionChanged) {
         this.mContext = context;
         mPositionChanged = positionChanged;
-        getLocation();
+        mPositionChanged.onPositionChanged(getLocation());
     }
 
     public Location getLocation() {

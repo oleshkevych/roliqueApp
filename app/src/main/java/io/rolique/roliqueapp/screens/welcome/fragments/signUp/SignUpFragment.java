@@ -137,6 +137,7 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
                     editText.setText(s);
                 }
             } else {
+                if(mEmailSignUpEditText == null) return;
                 mEmailSignUpEditText.removeTextChangedListener(mOnEmailSignUpEditorActionListener);
             }
         }
@@ -272,7 +273,7 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
         getView().findViewById(R.id.layout_progress).setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
-    @OnClick(R.id.view_switcher)
+    @OnClick({R.id.view_switcher, R.id.image_view_edit_photo})
     void onImageClick() {
         mMediaLib.startCamera();
     }

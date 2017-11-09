@@ -85,6 +85,6 @@ class CheckInPresenter implements CheckInContract.Presenter, FirebaseValues {
         SimpleDateFormat mDateFormat = new SimpleDateFormat("dd_MM_yyyy", Locale.getDefault());
         DatabaseReference reference = mDatabase.getReference(LinksBuilder.buildUrl(MAP, CHECK_IN, mDateFormat.format(date), mPreferences.getId()));
         reference.setValue(checkIn);
-        mView.updateCheckInInView(true);
+        mView.showCheckInInView(checkIn.getType());
     }
 }

@@ -50,12 +50,12 @@
                 tools:ignore="ContentDescription"/>
 
             <ProgressBar
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
                 android:layout_gravity="end|bottom"
-                android:padding="8dp"
-                android:theme="@style/Widget.Rolique.ProgressBar.White"
-                tools:visibility="visible"/>
+                android:indeterminate="true"
+                android:indeterminateDrawable="@drawable/rotate_message_image_progress_bar"
+                android:padding="8dp"/>
         </ViewSwitcher>
     </FrameLayout>
 

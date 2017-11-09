@@ -39,6 +39,7 @@
 
     <!-- Fragment contacts start-->
     <string name="fragment_contacts_title">Contacts</string>
+    <string name="fragment_contacts_search">Search</string>
     <!-- Fragment contacts end-->
 
     <!-- Fragment check in start-->
