@@ -11,6 +11,7 @@ import io.rolique.roliqueapp.screens.navigation.chats.ChatsFragment;
 import io.rolique.roliqueapp.screens.navigation.checkIn.CheckInFragment;
 import io.rolique.roliqueapp.screens.navigation.contacts.ContactsFragment;
 import io.rolique.roliqueapp.screens.navigation.eat.EatingFragment;
+import io.rolique.roliqueapp.screens.navigation.settings.SettingsFragment;
 
 /**
  * Created by Victor Artemyev on 15/01/2017.
@@ -24,19 +25,21 @@ class FragmentViewPagerAdapter extends FragmentPagerAdapter {
         static final int EAT = 1;
         static final int CONTACTS = 2;
         static final int CHECK_IN = 3;
+        static final int SETTINGS = 4;
     }
 
     public List<Fragment> getFragments() {
         return mFragments;
     }
 
-    private final List<Fragment> mFragments = new ArrayList<>(4);
+    private final List<Fragment> mFragments = new ArrayList<>(5);
 
     {
         mFragments.add(ChatsFragment.newInstance());
         mFragments.add(EatingFragment.newInstance());
         mFragments.add(ContactsFragment.newInstance());
         mFragments.add(CheckInFragment.newInstance());
+        mFragments.add(SettingsFragment.newInstance());
     }
 
     FragmentViewPagerAdapter(FragmentManager fm) {

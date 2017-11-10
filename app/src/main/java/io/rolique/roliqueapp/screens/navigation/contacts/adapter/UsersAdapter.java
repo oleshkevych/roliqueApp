@@ -51,7 +51,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
     public void setUsers(List<User> users) {
         mUsers.clear();
-        mUsers.addAll(users);
+        mUsers.addAll(UiUtil.getSortedUsersList(users));
         notifyDataSetChanged();
     }
 

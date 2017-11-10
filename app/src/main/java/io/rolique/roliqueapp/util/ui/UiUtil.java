@@ -13,7 +13,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.util.TypedValue;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
@@ -31,8 +30,9 @@ import com.bumptech.glide.request.target.Target;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -255,5 +255,16 @@ public class UiUtil {
         String stringMediaType = ".jpg";
         String path = mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + randomString + stringMediaType;
         return new File(path);
+    }
+
+    @NonNull
+    public static List<User> getSortedUsersList(List<User> users) {
+        Collections.sort(users, new Comparator<User>() {
+            @Override
+            public int compare(User o1, User o2) {
+                return getUserNameForView(o1).toLowerCase().compareTo(getUserNameForView(o2).toLowerCase());
+            }
+        });
+        return users;
     }
 }

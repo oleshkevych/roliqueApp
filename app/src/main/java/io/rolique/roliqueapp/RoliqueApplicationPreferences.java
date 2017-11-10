@@ -22,6 +22,9 @@ public class RoliqueApplicationPreferences {
     private static final String KEY_IMAGE_URL = "IMAGE_URL";
     private static final String KEY_TYPE = "TYPE";
     private static final String KEY_LOGGED_IN = "LOGGED_IN";
+    private static final String KEY_NOTIFICATION_TIME = "NOTIFICATION_TIME";
+    private static final String KEY_IS_ON_TOP = "IS_ON_TOP";
+    private static final String KEY_IS_NOTIFICATIONS_ALLOWED = "IS_NOTIFICATIONS_ALLOWED";
 
     public interface UserChangesListener {
         void onInfoChanged();
@@ -115,4 +118,34 @@ public class RoliqueApplicationPreferences {
         mSharedPreferences.edit().clear().apply();
     }
 
+    public boolean isInTop() {
+        return mSharedPreferences.getBoolean(KEY_IS_ON_TOP, false);
+    }
+
+    public void setIsInTop(boolean isInTop) {
+        mSharedPreferences.edit()
+                .putBoolean(KEY_IS_ON_TOP, isInTop)
+                .apply();
+    }
+
+    public String getNotificationTime() {
+        return mSharedPreferences.getString(KEY_NOTIFICATION_TIME, "10 45");
+    }
+
+    public void setNotificationTime(String notificationTime) {
+        mSharedPreferences.edit()
+                .putString(KEY_NOTIFICATION_TIME, notificationTime)
+                .apply();
+    }
+
+    public boolean isNotificationAllowed() {
+        return mSharedPreferences.getBoolean(KEY_IS_NOTIFICATIONS_ALLOWED, true);
+    }
+
+
+    public void setIsNotificationAllowed(boolean isNotificationAllowed) {
+        mSharedPreferences.edit()
+                .putBoolean(KEY_IS_NOTIFICATIONS_ALLOWED, isNotificationAllowed)
+                .apply();
+    }
 }

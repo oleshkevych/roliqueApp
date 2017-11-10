@@ -57,6 +57,8 @@
             android:name=".screens.timesheetViewer.TimesheetViewerActivity"
             android:configChanges="orientation|screenSize"/>
 
+        <receiver android:name=".services.alarmNotification.NotificationAlarmReceiver"/>
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key"/>

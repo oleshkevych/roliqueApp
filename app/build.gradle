@@ -17,7 +17,7 @@ android {
 
     def versionMajor = 0
     def versionMinor = 0
-    def versionPatch = 10
+    def versionPatch = 12
 
     defaultConfig {
         applicationId "io.rolique.roliqueapp"
@@ -55,7 +55,8 @@ android {
                     "vladyslav.bilyi@rolique.io," +
                     "vitman8@gmail.com," +
                     "viktor.kolomiytsev@rolique.io," +
-                    "roman.horobets@rolique.io"
+                    "roman.horobets@rolique.io," +
+                    "sergii.velykodnyi@gmail.com"
         }
         debug {
 
@@ -108,10 +109,10 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
 
+    compile project(path: ':cameralibrary')
     compile('com.crashlytics.sdk.android:crashlytics:2.7.1@aar') {
         transitive = true;
     }
-    compile project(path: ':cameralibrary')
 }
 
 crashlytics {

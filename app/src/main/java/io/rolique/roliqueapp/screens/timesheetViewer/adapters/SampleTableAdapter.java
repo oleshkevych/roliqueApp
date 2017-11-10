@@ -189,9 +189,9 @@ public class SampleTableAdapter implements TableAdapter {
 //set data to table end
 
     public void updateValues(Date date, List<User> users) {
-        mUsers = users;
+        mUsers = UiUtil.getSortedUsersList(users);
         mDate = date;
-        initValuesTable(date, users, true);
+        initValuesTable(date, mUsers, true);
     }
 
     public int getLayoutResource(int row, int column) {

@@ -43,6 +43,7 @@ import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.navigation.checkIn.GPSTracker;
 import io.rolique.roliqueapp.screens.welcome.WelcomeActivity;
+import io.rolique.roliqueapp.util.AlarmBuilder;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.ui.UiUtil;
 import timber.log.Timber;
@@ -53,9 +54,18 @@ import timber.log.Timber;
  */
 public class NavigationActivity extends BaseActivity implements NavigationContract.View {
 
+    private static final String EXTRA_IS_FOR_CHECK_IN = "IS_FOR_CHECK_IN";
+
     public static Intent startIntent(Context context) {
         Intent intent = new Intent(context, NavigationActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        return intent;
+    }
+
+    public static Intent startIntent(Context context, boolean onCheckIn) {
+        Intent intent = new Intent(context, NavigationActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.putExtra(EXTRA_IS_FOR_CHECK_IN, onCheckIn);
         return intent;
     }
 
@@ -119,6 +129,9 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
             setUpToolbar();
             setChatsSelected();
             mPresenter.checkIfUserCheckedIn();
+            if (getIntent().getBooleanExtra(EXTRA_IS_FOR_CHECK_IN, false)) {
+                setCheckInSelected();
+            }
         } else {
             startActivity(WelcomeActivity.startIntent(NavigationActivity.this));
             finish();
@@ -156,20 +169,21 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
                     mToolbar.setTitle(R.string.fragment_chats_title);
                     mIsAlreadyShown = false;
                     mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.CHATS, false);
-//                    if (mGPSTracker == null) mPresenter.checkIfUserCheckedIn();
                     break;
                 case R.id.menu_contacts:
                     mToolbar.setTitle(R.string.fragment_contacts_title);
                     mIsAlreadyShown = false;
                     mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.CONTACTS, false);
-//                    if (mGPSTracker == null) mPresenter.checkIfUserCheckedIn();
                     break;
 //                case R.id.menu_eat:
 //                    mToolbar.setSingle(R.string.fragment_eat_title);
 //                    mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.EAT, false);
 //                    break;
+                case R.id.menu_settings:
+                    mToolbar.setTitle(R.string.fragment_settings_title);
+                    mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.SETTINGS, false);
+                    break;
                 case R.id.menu_check_in:
-                    toggleLocationService(false);
                     mToolbar.setTitle(R.string.fragment_check_in_title);
                     mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.CHECK_IN, false);
                     break;
@@ -192,6 +206,16 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
         }
         mToolbar.setTitle(R.string.fragment_chats_title);
         mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.CHATS, false);
+    }
+
+    private void setCheckInSelected() {
+        Menu menu = mNavigationView.getMenu();
+        for (int i = 0; i < menu.size(); i++) {
+            MenuItem menuItem = menu.getItem(i);
+            if (menuItem.getItemId() == R.id.menu_check_in) menuItem.setChecked(true);
+        }
+        mToolbar.setTitle(R.string.fragment_check_in_title);
+        mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.CHECK_IN, false);
     }
 
     View.OnClickListener mOnImageClickListener = new View.OnClickListener() {
@@ -256,7 +280,8 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     boolean mIsAlreadyShown;
 
     @Override
-    public void showCheckInStatusInView(boolean isCheckedIn) {
+    public void showCheckInStatusInView(boolean isCheckedIn, String checkInTime, boolean isNotificationAllowed) {
+        AlarmBuilder.setAlarm(getApplicationContext(), checkInTime, isCheckedIn, isNotificationAllowed);
         if (mGPSTracker != null && !isCheckedIn) {
             showCheckInMessage();
         }
@@ -284,8 +309,6 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     protected void onResume() {
         super.onResume();
         mPresenter.start();
-//        if (mGPSTracker == null && mViewPager.getCurrentItem() != FragmentViewPagerAdapter.Position.CHECK_IN)
-//            mPresenter.checkIfUserCheckedIn();
     }
 
     @Override

@@ -237,6 +237,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
     GPSTracker.PositionChanged mPositionChanged = new GPSTracker.PositionChanged() {
         @Override
         public void onPositionChanged(Location location) {
+            if (location == null) return;
             mLatStart = new LatLng(location.getLatitude(), location.getLongitude());
             Timber.e("From listener " + mLatStart.toString());
             float[] distance = new float[2];

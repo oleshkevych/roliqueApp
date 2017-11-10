@@ -18,7 +18,7 @@ interface NavigationContract {
         void setImage(String path, String userName);
         void setUserName(String userName);
         void setImageProgress(boolean isActive);
-        void showCheckInStatusInView(boolean isCheckedIn);
+        void showCheckInStatusInView(boolean isCheckedIn, String checkInTime, boolean isNotificationAllowed);
         void showCheckedInInView(String checkInType);
     }
 

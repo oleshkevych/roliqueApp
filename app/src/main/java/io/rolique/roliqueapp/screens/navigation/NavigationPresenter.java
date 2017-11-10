@@ -142,7 +142,7 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
                         break;
                     }
                 }
-                mView.showCheckInStatusInView(isCheckedIn);
+                mView.showCheckInStatusInView(isCheckedIn, mPreferences.getNotificationTime(), mPreferences.isNotificationAllowed());
             }
 
             @Override

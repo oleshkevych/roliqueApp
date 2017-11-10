@@ -114,4 +114,19 @@
 
     <string name="title_activity_maps">Map</string>
 
+    <!--fragment settings start-->
+    <string name="fragment_settings_title">Settings</string>
+    <string name="fragment_settings_alarm_service_id">AlarmService</string>
+    <string name="fragment_settings_alarm_text">Current check in notifications time</string>
+    <string name="fragment_settings_alarm_time_table_title">Set check in notifications time</string>
+    <string name="fragment_settings_alarm_button_text">Change time</string>
+    <string name="fragment_settings_alarm_header_text">Notification settings</string>
+    <string name="fragment_settings_orders_header_text">My position</string>
+    <string name="fragment_settings_orders_position">Set me in the head of the lists</string>
+    <!--fragment settings end-->
+
+    <!--receiver alarm start-->
+    <string name="alarm_receiver_message">Hey! It\'s time to check in!</string>
+    <!--receiver alarm end-->
+
 </resources>

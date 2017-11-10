@@ -28,6 +28,7 @@ import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.screens.navigation.contacts.adapter.UsersAdapter;
 import io.rolique.roliqueapp.screens.profile.ProfileActivity;
+import io.rolique.roliqueapp.util.ui.UiUtil;
 
 public class ContactsFragment extends BaseFragment {
 
