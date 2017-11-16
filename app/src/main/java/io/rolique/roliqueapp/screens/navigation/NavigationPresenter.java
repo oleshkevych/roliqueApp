@@ -2,6 +2,8 @@ package io.rolique.roliqueapp.screens.navigation;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -37,19 +39,22 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
 
     private final NavigationActivity mView;
 
-    RoliqueApplicationPreferences mPreferences;
-    FirebaseAuth mAuth;
-    FirebaseDatabase mDatabase;
+    final RoliqueApplicationPreferences mPreferences;
+    final FirebaseAuth mAuth;
+    final FirebaseDatabase mDatabase;
+    final ConnectivityManager mConnectivityManager;
 
     @Inject
     NavigationPresenter(RoliqueApplicationPreferences preferences,
                         NavigationActivity view,
                         FirebaseAuth auth,
-                        FirebaseDatabase database) {
+                        FirebaseDatabase database,
+                        ConnectivityManager connectivityManager) {
         mView = view;
         mPreferences = preferences;
         mAuth = auth;
         mDatabase = database;
+        mConnectivityManager = connectivityManager;
     }
 
     @Override
@@ -72,6 +77,11 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
 
     @Override
     public void isLogin() {
+        if (lackInternetConnection()) {
+            mView.showConnectionErrorInView();
+            mView.showLoginInView(false);
+            return;
+        }
         if (mAuth.getCurrentUser() != null && mPreferences.isLoggedIn()) {
             mView.showLoginInView(true);
             return;
@@ -97,6 +107,10 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
 
     @Override
     public void updateUserPicture(Media media) {
+        if (lackInternetConnection()) {
+            mView.showConnectionErrorInView();
+            return;
+        }
         mView.setImageProgress(true);
         StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(String.format("%s.jpg", new Date().getTime()));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -130,6 +144,10 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
 
     @Override
     public void checkIfUserCheckedIn() {
+        if (lackInternetConnection()) {
+            mView.showConnectionErrorInView();
+            return;
+        }
         SimpleDateFormat mDateFormat = new SimpleDateFormat("dd_MM_yyyy", Locale.getDefault());
         DatabaseReference reference = mDatabase.getReference(LinksBuilder.buildUrl(MAP, CHECK_IN, mDateFormat.format(new Date())));
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -142,7 +160,8 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
                         break;
                     }
                 }
-                mView.showCheckInStatusInView(isCheckedIn, mPreferences.getNotificationTime(), mPreferences.isNotificationAllowed());
+                mView.showCheckInStatusInView(isCheckedIn);
+                mView.updateAlarm(isCheckedIn, mPreferences.getNotificationTime(), mPreferences.isNotificationAllowed());
             }
 
             @Override
@@ -154,9 +173,23 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
 
     @Override
     public void setNewCheckIn(CheckIn checkIn, Date date) {
+        if (lackInternetConnection()) {
+            mView.showConnectionErrorInView();
+            return;
+        }
         SimpleDateFormat mDateFormat = new SimpleDateFormat("dd_MM_yyyy", Locale.getDefault());
         DatabaseReference reference = mDatabase.getReference(LinksBuilder.buildUrl(MAP, CHECK_IN, mDateFormat.format(date), mPreferences.getId()));
         reference.setValue(checkIn);
         mView.showCheckedInInView(checkIn.getType());
+        mView.updateAlarm(true, mPreferences.getNotificationTime(), mPreferences.isNotificationAllowed());
+    }
+
+    private boolean lackInternetConnection() {
+        boolean isConnected;
+
+        NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
+        isConnected = (networkInfo == null || !networkInfo.isConnectedOrConnecting());
+
+        return isConnected;
     }
 }

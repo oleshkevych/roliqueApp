@@ -5,15 +5,15 @@
     <string name="activity_welcome_title">Welcome to Rolique</string>
     <!-- Activity welcome end-->
 
-    <!-- Activity sign up start-->
+    <!-- Fragment sign up start-->
     <string name="activity_sign_up_title">Sign up</string>
-    <!-- Activity sign up end-->
+    <!-- Fragment sign up end-->
 
-    <!-- Activity sign in start-->
+    <!-- Fragment sign in start-->
     <string name="activity_sign_in_title">Sign In</string>
-    <!-- Activity sign in end-->
+    <!-- Fragment sign in end-->
 
-    <!-- Activity login start-->
+    <!-- Fragment login start-->
     <string name="activity_login_title_activity_login">Sign in</string>
     <string name="activity_login_email">Email</string>
     <string name="activity_login_password">Password</string>
@@ -27,7 +27,7 @@
     <string name="activity_login_first_name">First name</string>
     <string name="activity_login_last_name">Last name</string>
     <string name="activity_login_confirm_password">Confirm password</string>
-    <!-- Activity login end-->
+    <!-- Fragment login end-->
 
     <!-- Fragment chats start-->
     <string name="fragment_chats_title">Chats</string>
@@ -60,7 +60,15 @@
     <string name="navigation_menu_check_in">Check in</string>
     <string name="navigation_menu_suggestions">Your Suggestions</string>
     <string name="navigation_menu_log_out">Log out</string>
+    <string name="navigation_menu_settings">Settings</string>
     <!-- navigation menu end-->
+
+    <!-- Activity navigation start-->
+    <string name="activity_navigation_lack_connection">There is no internet connection</string>
+    <string name="activity_navigation_check_in_successful">You successfully checked in with type:</string>
+    <string name="activity_navigation_check_in_in_range">You are here and still did not check in!) Please check in!</string>
+    <string name="activity_navigation_check_in_outside_range">You are not at office, but perhaps want to check in?)</string>
+    <!-- Activity navigation end-->
 
     <!-- Activity profile start-->
     <string name="activity_profile_details_title">Profile</string>
@@ -130,4 +138,7 @@
     <string name="alarm_receiver_message">Hey! It\'s time to check in!</string>
     <!--receiver alarm end-->
 
+    <!--dialog check in start-->
+    <string name="dialog_check_in_title">Check in</string>
+    <!--dialog check in end-->
 </resources>

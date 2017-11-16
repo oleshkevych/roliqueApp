@@ -1,10 +1,13 @@
-package io.rolique.roliqueapp.screens.navigation.checkIn;
+package io.rolique.roliqueapp.services.gps;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -12,12 +15,19 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
 
+import com.google.android.gms.maps.model.LatLng;
+
+import java.text.DecimalFormat;
+import java.util.Arrays;
+
+import timber.log.Timber;
+
 /**
  * Created by Volodymyr Oleshkevych on 9/8/2017.
  * Copyright (c) 2017, Rolique. All rights reserved.
  */
 
-public class GPSTracker extends Service implements LocationListener {
+public class GPSTrackerService extends Service implements LocationListener {
 
     // The minimum distance to change Updates in meters
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
@@ -25,8 +35,11 @@ public class GPSTracker extends Service implements LocationListener {
     // The minimum time between updates in milliseconds
     private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1; // 1 minute
 
+    public static final LatLng ROLIQUE_POSITION = new LatLng(49.841358007066034, 24.023118875920773);
+    public static final int RANGE_RADIUS = 50;
+
     public interface PositionChanged {
-        void onPositionChanged(Location location);
+        void onPositionChanged(boolean isInRange);
     }
 
     private final PositionChanged mPositionChanged;
@@ -49,12 +62,13 @@ public class GPSTracker extends Service implements LocationListener {
     // Declaring a Location Manager
     protected LocationManager locationManager;
 
-    public GPSTracker(Context context, PositionChanged positionChanged) {
+    public GPSTrackerService(Context context, PositionChanged positionChanged) {
         this.mContext = context;
         mPositionChanged = positionChanged;
-        mPositionChanged.onPositionChanged(getLocation());
+        onPositionChanged(getLocation());
     }
 
+    @SuppressLint("MissingPermission")
     public Location getLocation() {
         try {
             locationManager = (LocationManager) mContext
@@ -119,7 +133,7 @@ public class GPSTracker extends Service implements LocationListener {
      */
     public void stopUsingGPS() {
         if (locationManager != null) {
-            locationManager.removeUpdates(GPSTracker.this);
+            locationManager.removeUpdates(GPSTrackerService.this);
             onDestroy();
         }
     }
@@ -189,9 +203,54 @@ public class GPSTracker extends Service implements LocationListener {
         alertDialog.show();
     }
 
+    public void onPositionChanged(Location location) {
+        if (location == null) return;
+        LatLng mLatStart = new LatLng(location.getLatitude(), location.getLongitude());
+        Timber.e("From listener " + mLatStart.toString());
+        float[] distance = new float[2];
+
+        Location.distanceBetween(mLatStart.latitude,
+                mLatStart.longitude,
+                ROLIQUE_POSITION.latitude,
+                ROLIQUE_POSITION.longitude,
+                distance);
+
+        if (distance[0] <= RANGE_RADIUS) {
+            mPositionChanged.onPositionChanged(true);
+        } else {
+            mPositionChanged.onPositionChanged(false);
+        }
+        Timber.e(Arrays.toString(distance));
+    }
+
+    private void calculationByDistance(LatLng StartP, LatLng EndP) {
+        final int RADIUS = 6371000;// radius of earth in m
+        double lat1 = StartP.latitude;
+        double lat2 = EndP.latitude;
+        double lon1 = StartP.longitude;
+        double lon2 = EndP.longitude;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1))
+                * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
+                * Math.sin(dLon / 2);
+        double c = 2 * Math.asin(Math.sqrt(a));
+        double valueResult = RADIUS * c;
+        double m = valueResult / 1;
+        DecimalFormat newFormat = new DecimalFormat("####");
+        int mInDec = Integer.valueOf(newFormat.format(m));
+        double km = valueResult % 1000;
+        int kmInDec = Integer.valueOf(newFormat.format(km));
+        Timber.e("Radius Value " + valueResult + "   M  " + mInDec
+                + " Meter   " + kmInDec);
+
+//        return RADIUS * c <= RANGE_RADIUS;
+    }
+
     @Override
     public void onLocationChanged(Location location) {
-        mPositionChanged.onPositionChanged(location);
+        onPositionChanged(location);
     }
 
     @Override

@@ -50,6 +50,8 @@ import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.data.model.CheckIn;
 import io.rolique.roliqueapp.screens.navigation.NavigationActivity;
 import io.rolique.roliqueapp.screens.timesheetViewer.TimesheetViewerActivity;
+import io.rolique.roliqueapp.services.gps.GPSTrackerService;
+import io.rolique.roliqueapp.util.AlarmBuilder;
 import io.rolique.roliqueapp.util.DateUtil;
 import timber.log.Timber;
 
@@ -63,8 +65,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
     @Inject CheckInPresenter mPresenter;
 
     GoogleMap mGoogleMap;
-    GPSTracker mGPSTracker;
-    LatLng mLatStart;
+    GPSTrackerService mGPSTrackerService;
     Circle mCircle;
     boolean mIsVisibleToUser;
     boolean mIsPopUpShowing;
@@ -87,7 +88,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
         super.onViewCreated(view, savedInstanceState);
         mMapView.onCreate(savedInstanceState);
         setUpPopUpView(mCheckInButton);
-        updateCheckInButton(false);
+        updateCheckInButton(true);
     }
 
     @Override
@@ -196,18 +197,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
             startMapServices();
         } else {
             mMapView.onPause();
-            if (mGPSTracker != null) mGPSTracker.stopUsingGPS();
-        }
-    }
-
-    private void startMapServices() {
-        setUtMap();
-        mGPSTracker = new GPSTracker(getActivity(), mPositionChanged);
-        if (mGPSTracker.canGetLocation) {
-            mLatStart = new LatLng(mGPSTracker.getLatitude(), mGPSTracker.getLongitude());
-            Timber.e("from resume " + mLatStart.toString());
-        } else {
-            mGPSTracker.showSettingsAlert();
+            if (mGPSTrackerService != null) mGPSTrackerService.stopUsingGPS();
         }
     }
 
@@ -234,57 +224,12 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
         }
     }
 
-    GPSTracker.PositionChanged mPositionChanged = new GPSTracker.PositionChanged() {
-        @Override
-        public void onPositionChanged(Location location) {
-            if (location == null) return;
-            mLatStart = new LatLng(location.getLatitude(), location.getLongitude());
-            Timber.e("From listener " + mLatStart.toString());
-            float[] distance = new float[2];
-
-            Location.distanceBetween(mLatStart.latitude,
-                    mLatStart.longitude,
-                    NavigationActivity.ROLIQUE_POSITION.latitude,
-                    NavigationActivity.ROLIQUE_POSITION.longitude,
-                    distance);
-
-            calculationByDistance(mLatStart, NavigationActivity.ROLIQUE_POSITION);
-
-            if (distance[0] <= NavigationActivity.RANGE_RADIUS) {
-                showSnackbar(mCoordinatorLayout, "In range ");
-                mIsInRange = true;
-            } else {
-                showSnackbar(mCoordinatorLayout, "Outside range ");
-                mIsInRange = false;
-            }
-            Timber.e(Arrays.toString(distance));
-//            updateCheckInButton();
+    private void startMapServices() {
+        setUtMap();
+        mGPSTrackerService = new GPSTrackerService(getActivity(), mPositionChanged);
+        if (!mGPSTrackerService.canGetLocation) {
+            mGPSTrackerService.showSettingsAlert();
         }
-    };
-
-    private void calculationByDistance(LatLng StartP, LatLng EndP) {
-        final int RADIUS = 6371000;// radius of earth in m
-        double lat1 = StartP.latitude;
-        double lat2 = EndP.latitude;
-        double lon1 = StartP.longitude;
-        double lon2 = EndP.longitude;
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1))
-                * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
-                * Math.sin(dLon / 2);
-        double c = 2 * Math.asin(Math.sqrt(a));
-        double valueResult = RADIUS * c;
-        double m = valueResult / 1;
-        DecimalFormat newFormat = new DecimalFormat("####");
-        int mInDec = Integer.valueOf(newFormat.format(m));
-        double km = valueResult % 1000;
-        int kmInDec = Integer.valueOf(newFormat.format(km));
-        Timber.e("Radius Value " + valueResult + "   M  " + mInDec
-                + " Meter   " + kmInDec);
-
-//        return RADIUS * c <= RANGE_RADIUS;
     }
 
     @SuppressWarnings("MissingPermission")
@@ -301,22 +246,29 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
                 mGoogleMap.setMyLocationEnabled(true);
 
                 mCircle = mGoogleMap.addCircle(new CircleOptions()
-                        .center(NavigationActivity.ROLIQUE_POSITION)
-                        .radius(NavigationActivity.RANGE_RADIUS)
+                        .center(GPSTrackerService.ROLIQUE_POSITION)
+                        .radius(GPSTrackerService.RANGE_RADIUS)
                         .strokeColor(ContextCompat.getColor(mMapView.getContext(), R.color.green_700_alpha_50))
                         .fillColor(ContextCompat.getColor(mMapView.getContext(), R.color.green_700_alpha_90)));
 
                 // For dropping a marker at a point on the Map
-                mGoogleMap.addMarker(new MarkerOptions().position(NavigationActivity.ROLIQUE_POSITION).title("Rolique").snippet("Your lovely job"));
+                mGoogleMap.addMarker(new MarkerOptions().position(GPSTrackerService.ROLIQUE_POSITION).title("Rolique").snippet("Your lovely job"));
 
                 // For zooming automatically to the location of the marker
-                CameraPosition cameraPosition = new CameraPosition.Builder().target(NavigationActivity.ROLIQUE_POSITION).zoom(18).build();
+                CameraPosition cameraPosition = new CameraPosition.Builder().target(GPSTrackerService.ROLIQUE_POSITION).zoom(18).build();
                 mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
             }
         });
         mMapView.onResume();
     }
+
+    GPSTrackerService.PositionChanged mPositionChanged = new GPSTrackerService.PositionChanged() {
+        @Override
+        public void onPositionChanged(boolean isInRange) {
+            mIsInRange = isInRange;
+        }
+    };
 
     @OnClick(R.id.button_timesheet)
     void onTimeSheetClick() {
@@ -362,8 +314,19 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
     }
 
     @Override
+    public void showConnectionErrorInView() {
+        Toast.makeText(getActivity(), R.string.activity_navigation_lack_connection, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void updateAlarm(boolean isCheckedIn, String checkInTime, boolean isNotificationAllowed) {
+        AlarmBuilder.setAlarm(getActivity(), checkInTime, isCheckedIn, isNotificationAllowed);
+    }
+
+    @Override
     public void showCheckInInView(String checkInType) {
-        Toast.makeText(getActivity(), "You successfully checked in with type: " + checkInType, Toast.LENGTH_LONG).show();
+        String text = getString(R.string.activity_navigation_check_in_successful);
+        Toast.makeText(getActivity(), String.format("%s %s", text, checkInType), Toast.LENGTH_LONG).show();
         updateCheckInButton(true);
     }
 

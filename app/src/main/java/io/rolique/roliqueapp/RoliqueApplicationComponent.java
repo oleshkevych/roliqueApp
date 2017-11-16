@@ -1,5 +1,7 @@
 package io.rolique.roliqueapp;
 
+import android.net.ConnectivityManager;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -24,4 +26,5 @@ public interface RoliqueApplicationComponent {
 
     RoliqueAppUsers getRoliqueAppUsers();
 
+    ConnectivityManager getConnectivityManager();
 }

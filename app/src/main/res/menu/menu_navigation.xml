@@ -24,7 +24,7 @@
         android:id="@+id/menu_settings"
         android:background="?selectableItemBackground"
         android:icon="@drawable/ic_settings_black_24dp"
-        android:title="@string/fragment_settings_title"/>
+        android:title="@string/navigation_menu_settings"/>
     <item
         android:id="@+id/menu_suggestions"
         android:background="?selectableItemBackground"

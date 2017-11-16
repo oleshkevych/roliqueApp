@@ -18,8 +18,10 @@ interface NavigationContract {
         void setImage(String path, String userName);
         void setUserName(String userName);
         void setImageProgress(boolean isActive);
-        void showCheckInStatusInView(boolean isCheckedIn, String checkInTime, boolean isNotificationAllowed);
+        void showCheckInStatusInView(boolean isCheckedIn);
         void showCheckedInInView(String checkInType);
+        void showConnectionErrorInView();
+        void updateAlarm(boolean isCheckedIn, String checkInTime, boolean isNotificationAllowed);
     }
 
     interface Presenter extends BasePresenter {

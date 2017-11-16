@@ -1,5 +1,8 @@
 package io.rolique.roliqueapp.screens.navigation.checkIn;
 
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -34,16 +37,19 @@ class CheckInPresenter implements CheckInContract.Presenter, FirebaseValues {
     List<User> mUsers;
     FirebaseDatabase mDatabase;
     DatabaseReference mTimesheetReference;
+    final ConnectivityManager mConnectivityManager;
 
     @Inject
     CheckInPresenter(RoliqueApplicationPreferences preferences,
                      CheckInFragment view,
                      RoliqueAppUsers users,
-                     FirebaseDatabase database) {
+                     FirebaseDatabase database,
+                     ConnectivityManager connectivityManager) {
         mView = view;
         mPreferences = preferences;
         mUsers = new ArrayList<>(users.getUsers());
         mDatabase = database;
+        mConnectivityManager = connectivityManager;
     }
 
     @Override
@@ -58,6 +64,11 @@ class CheckInPresenter implements CheckInContract.Presenter, FirebaseValues {
 
     @Override
     public void isUserAlreadyCheckedIn(Date date) {
+        if (lackInternetConnection()) {
+            mView.showConnectionErrorInView();
+            mView.updateCheckInInView(true);
+            return;
+        }
         SimpleDateFormat mDateFormat = new SimpleDateFormat("dd_MM_yyyy", Locale.getDefault());
         mTimesheetReference = mDatabase.getReference(LinksBuilder.buildUrl(MAP, CHECK_IN, mDateFormat.format(date)));
         mTimesheetReference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -71,20 +82,35 @@ class CheckInPresenter implements CheckInContract.Presenter, FirebaseValues {
                     }
                 }
                 mView.updateCheckInInView(isCheckedIn);
+                mView.updateAlarm(isCheckedIn, mPreferences.getNotificationTime(), mPreferences.isNotificationAllowed());
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                mView.updateCheckInInView(false);
+                mView.updateCheckInInView(true);
             }
         });
     }
 
     @Override
     public void setNewCheckIn(CheckIn checkIn, Date date) {
+        if (lackInternetConnection()) {
+            mView.showConnectionErrorInView();
+            return;
+        }
         SimpleDateFormat mDateFormat = new SimpleDateFormat("dd_MM_yyyy", Locale.getDefault());
         DatabaseReference reference = mDatabase.getReference(LinksBuilder.buildUrl(MAP, CHECK_IN, mDateFormat.format(date), mPreferences.getId()));
         reference.setValue(checkIn);
         mView.showCheckInInView(checkIn.getType());
+        mView.updateAlarm(true, mPreferences.getNotificationTime(), mPreferences.isNotificationAllowed());
+    }
+
+    private boolean lackInternetConnection() {
+        boolean isConnected;
+
+        NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
+        isConnected = (networkInfo == null || !networkInfo.isConnectedOrConnecting());
+
+        return isConnected;
     }
 }

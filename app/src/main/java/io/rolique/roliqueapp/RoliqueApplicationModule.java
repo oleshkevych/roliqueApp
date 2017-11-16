@@ -1,6 +1,7 @@
 package io.rolique.roliqueapp;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
@@ -22,12 +23,14 @@ public class RoliqueApplicationModule {
     private final Context mContext;
     private final FirebaseDatabase mFirebaseDatabase;
     private final RoliqueApplicationPreferences mPreferences;
+    private final ConnectivityManager mConnectivityManager;
 
     public RoliqueApplicationModule(Context context, FirebaseAuth auth, FirebaseDatabase database) {
         mContext = context;
         mFirebaseAuth = auth;
         mFirebaseDatabase = database;
         mPreferences = new RoliqueApplicationPreferences(mContext);
+        mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
     }
 
     @Provides
@@ -52,5 +55,11 @@ public class RoliqueApplicationModule {
     @Singleton
     RoliqueAppUsers provideUsers() {
         return new RoliqueAppUsers(mFirebaseAuth, mFirebaseDatabase, mPreferences);
+    }
+
+    @Provides
+    @Singleton
+    ConnectivityManager provideConnectivityManager() {
+        return mConnectivityManager;
     }
 }

@@ -81,7 +81,7 @@ public class SampleTableAdapter implements TableAdapter {
                         calendar.setTime(messageDate);
                         String hour = DateUtil.getStringDate(calendar.get(Calendar.HOUR_OF_DAY));
                         String minutes = DateUtil.getStringDate(calendar.get(Calendar.MINUTE));
-                        int color = R.color.green_700_alpha_50;
+                        int color = R.drawable.item_check_in_ok;
                         if ((calendar.get(Calendar.HOUR_OF_DAY) > 10) ||
                                 (calendar.get(Calendar.HOUR_OF_DAY) == 10 && calendar.get(Calendar.MINUTE) > 47))
                             color = R.drawable.item_check_in_late;
