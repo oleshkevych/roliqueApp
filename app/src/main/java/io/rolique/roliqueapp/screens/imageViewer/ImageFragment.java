@@ -91,25 +91,45 @@ public class ImageFragment extends Fragment {
     private void loadImage(final ProgressBar progressBar, final LinearLayout errorLayout) {
         int maxDim = Math.max(mMedia.getHeight(), mMedia.getWidth());
         final int MAX_SIZE = 1500;
-        GlideApp.with(mTouchImageView)
-                .load(mMedia.getImageUrl())
-                .override(MAX_SIZE * mMedia.getWidth() / maxDim, MAX_SIZE * mMedia.getHeight() / maxDim)
-                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                .listener(new RequestListener<Drawable>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                        progressBar.setVisibility(View.GONE);
-                        errorLayout.setVisibility(View.VISIBLE);
-                        return false;
-                    }
+        if (maxDim == 0)
+            GlideApp.with(mTouchImageView)
+                    .load(mMedia.getImageUrl())
+                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            progressBar.setVisibility(View.GONE);
+                            errorLayout.setVisibility(View.VISIBLE);
+                            return false;
+                        }
 
-                    @Override
-                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                        progressBar.setVisibility(View.GONE);
-                        return false;
-                    }
-                })
-                .into(mTouchImageView);
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            progressBar.setVisibility(View.GONE);
+                            return false;
+                        }
+                    })
+                    .into(mTouchImageView);
+        else
+            GlideApp.with(mTouchImageView)
+                    .load(mMedia.getImageUrl())
+                    .override(MAX_SIZE * mMedia.getWidth() / maxDim, MAX_SIZE * mMedia.getHeight() / maxDim)
+                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            progressBar.setVisibility(View.GONE);
+                            errorLayout.setVisibility(View.VISIBLE);
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            progressBar.setVisibility(View.GONE);
+                            return false;
+                        }
+                    })
+                    .into(mTouchImageView);
     }
 
     @Override

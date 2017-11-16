@@ -1,13 +1,18 @@
 package io.rolique.roliqueapp.widget;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+
 import android.support.design.widget.BottomSheetDialogFragment;
+import android.support.v4.app.DialogFragment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -36,6 +41,7 @@ public class AddPickerDialog extends BottomSheetDialogFragment {
     public interface OnPickListener {
         void onSaveClick(AddPickerDialog dialog, String category, String key, String value);
         void onCancelLinkClick(AddPickerDialog dialog);
+        void onDismissDialog();
     }
 
     @BindView(R.id.text_view_category) TextView mCategoryTextView;
@@ -47,9 +53,21 @@ public class AddPickerDialog extends BottomSheetDialogFragment {
     private OnPickListener mPickListener;
     private String mCategory;
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setStyle(DialogFragment.STYLE_NO_FRAME, R.style.DialogStyle);
+    }
+
     @Nullable
     @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.dialog_add_picker, container, false);
+    }
+
+    @Override
+    public void setupDialog(Dialog dialog, int style) {
+        super.setupDialog(dialog, style);
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
     }
 
     @Override public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -96,6 +114,12 @@ public class AddPickerDialog extends BottomSheetDialogFragment {
     @OnClick(R.id.text_view_cancel)
     protected void onOpenLinkClick() {
         if (mPickListener != null) mPickListener.onCancelLinkClick(AddPickerDialog.this);
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        if (mPickListener != null) mPickListener.onDismissDialog();
+        super.onDismiss(dialog);
     }
 
     public void setOnPickListener(OnPickListener pickListener) {

@@ -120,9 +120,10 @@
     <string name="fragment_settings_alarm_text">Current check in notifications time</string>
     <string name="fragment_settings_alarm_time_table_title">Set check in notifications time</string>
     <string name="fragment_settings_alarm_button_text">Change time</string>
+    <string name="fragment_settings_alarm_confirm">Notifications time was changed</string>
     <string name="fragment_settings_alarm_header_text">Notification settings</string>
-    <string name="fragment_settings_orders_header_text">My position</string>
-    <string name="fragment_settings_orders_position">Set me in the head of the lists</string>
+    <string name="fragment_settings_profile_header_text">My profile</string>
+    <string name="fragment_settings_profile_edit">Edit</string>
     <!--fragment settings end-->
 
     <!--receiver alarm start-->

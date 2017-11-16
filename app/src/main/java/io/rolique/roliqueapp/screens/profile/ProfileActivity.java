@@ -42,6 +42,7 @@ import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.chat.ChatActivity;
+import io.rolique.roliqueapp.screens.imageViewer.ImageViewerActivity;
 import io.rolique.roliqueapp.util.ui.UiUtil;
 import io.rolique.roliqueapp.widget.AddPickerDialog;
 import io.rolique.roliqueapp.widget.FloatingActionMenu;
@@ -53,10 +54,18 @@ import io.rolique.roliqueapp.widget.recyclerPicker.RecyclerPickerDialog;
 public class ProfileActivity extends BaseActivity implements ProfileContract.View {
 
     private static String EXTRA_USER = "USER";
+    private static String EXTRA_IS_EDITING = "IS_EDITING";
 
     public static Intent startIntent(Context context, User user) {
         Intent intent = new Intent(context, ProfileActivity.class);
         intent.putExtra(EXTRA_USER, user);
+        return intent;
+    }
+
+    public static Intent startIntent(Context context, User user, boolean isEditMode) {
+        Intent intent = new Intent(context, ProfileActivity.class);
+        intent.putExtra(EXTRA_USER, user);
+        intent.putExtra(EXTRA_IS_EDITING, isEditMode);
         return intent;
     }
 
@@ -103,6 +112,7 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
         setContentView(R.layout.activity_profile_details);
 
         mUser = getIntent().getParcelableExtra(EXTRA_USER);
+        mIsEditMode = getIntent().getBooleanExtra(EXTRA_IS_EDITING, false);
         mCategories = new ArrayList<>(Arrays.asList(mCategoriesArray));
         mMediaLib = new MediaLib(ProfileActivity.this, mMediaLibListener);
         mMediaLib.setFrontCamera(true);
@@ -113,7 +123,7 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
 
         setButtonsEnabled(mCallButton, false);
         setButtonsEnabled(mMailButton, false);
-        setUpContent(mUser, false);
+        setUpContent(mUser, mIsEditMode);
 
         for (final ProfileCategoryCard profileCategoryCard : mProfileCategoryCards) {
             profileCategoryCard.setOnActionClickListener(mOnActionClickListener);
@@ -523,6 +533,10 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
                     @Override
                     public void onCancelLinkClick(AddPickerDialog dialog) {
                         dialog.dismiss();
+                    }
+
+                    @Override
+                    public void onDismissDialog() {
                         hideKeyboard();
                     }
                 });
@@ -599,6 +613,13 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
     void onImageClick() {
         if (mIsEditMode)
             mMediaLib.startCamera();
+        else if (mUser.getImageUrl().startsWith("http")) {
+            Media media = new Media.Builder()
+                    .setMediaType(Media.CATEGORY_IMAGE)
+                    .setImageUrl(mUser.getImageUrl())
+                    .create();
+            startActivity(ImageViewerActivity.getStartIntent(ProfileActivity.this, media));
+        }
     }
 
     @Override

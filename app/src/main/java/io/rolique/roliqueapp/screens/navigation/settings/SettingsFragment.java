@@ -10,7 +10,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import java.util.Calendar;
 
@@ -22,7 +24,10 @@ import io.rolique.roliqueapp.BaseFragment;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
+import io.rolique.roliqueapp.data.model.User;
+import io.rolique.roliqueapp.screens.profile.ProfileActivity;
 import io.rolique.roliqueapp.util.AlarmBuilder;
+import io.rolique.roliqueapp.util.ui.UiUtil;
 
 public class SettingsFragment extends BaseFragment {
 
@@ -34,10 +39,7 @@ public class SettingsFragment extends BaseFragment {
 
     @BindView(R.id.switch_alarm_time) Switch mNotificationsTimeSwitch;
     @BindView(R.id.button_start_set_dialog) Button mSetTimeButton;
-    @BindView(R.id.switch_user_position) Switch mUserPositionSwitch;
-
-    float heightButton;
-    float widthButton;
+    @BindView(R.id.switch_user_position) TextView mEditUserTextView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -57,15 +59,7 @@ public class SettingsFragment extends BaseFragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setUpTimeSwitch();
-        heightButton = getActivity().getResources().getDimension(R.dimen.table_height);
-        widthButton = getActivity().getResources().getDimension(R.dimen.table_width);
-        mUserPositionSwitch.setChecked(mPreferences.isInTop());
-        mUserPositionSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mPreferences.setIsInTop(isChecked);
-            }
-        });
+        setUpProfile();
     }
 
     protected void setUpTimeSwitch() {
@@ -110,7 +104,7 @@ public class SettingsFragment extends BaseFragment {
                 onTimeSetListener,
                 calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE),
-                false);
+                true);
         timePickerDialog.setTitle(R.string.fragment_settings_alarm_time_table_title);
         timePickerDialog.show();
     }
@@ -127,6 +121,23 @@ public class SettingsFragment extends BaseFragment {
             mPreferences.setNotificationTime(String.format("%s %s", hour, minutes));
             setTimeText(true);
             AlarmBuilder.setAlarm(getActivity(), mPreferences.getNotificationTime(), false, false);
+            Toast.makeText(getActivity(), getString(R.string.fragment_settings_alarm_confirm), Toast.LENGTH_SHORT).show();
         }
     };
+
+    private void setUpProfile() {
+        String text = String.format("%s %s %s", getString(R.string.fragment_settings_profile_edit), mPreferences.getFirstName(), mPreferences.getLastName());
+        mEditUserTextView.setText(text);
+    }
+
+    @OnClick(R.id.switch_user_position)
+    void onEditProfileClick() {
+        User user = new User();
+        user.setImageUrl(mPreferences.getImageUrl());
+        user.setFirstName(mPreferences.getFirstName());
+        user.setLastName(mPreferences.getLastName());
+        user.setId(mPreferences.getId());
+        user.setEmail("");
+        startActivity(ProfileActivity.startIntent(getActivity(), user, true));
+    }
 }

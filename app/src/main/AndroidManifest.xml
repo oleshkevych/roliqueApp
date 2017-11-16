@@ -28,7 +28,8 @@
         <activity
             android:name=".screens.navigation.NavigationActivity"
             android:hardwareAccelerated="true"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -41,7 +42,8 @@
             android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".screens.editChat.ChatEditorActivity"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".screens.chat.ChatActivity"
             android:screenOrientation="portrait"

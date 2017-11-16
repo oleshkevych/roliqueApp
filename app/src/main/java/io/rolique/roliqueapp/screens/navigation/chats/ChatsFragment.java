@@ -1,6 +1,7 @@
 package io.rolique.roliqueapp.screens.navigation.chats;
 
 import android.app.Fragment;
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,6 +22,8 @@ import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.screens.chat.ChatActivity;
 import io.rolique.roliqueapp.screens.editChat.ChatEditorActivity;
+import io.rolique.roliqueapp.util.ui.UiUtil;
+import timber.log.Timber;
 
 public class ChatsFragment extends BaseFragment implements ChatsContract.View {
 

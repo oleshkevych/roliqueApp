@@ -12,6 +12,7 @@ import java.util.Calendar;
 
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.screens.navigation.NavigationActivity;
+import io.rolique.roliqueapp.util.AlarmBuilder;
 import timber.log.Timber;
 
 import static android.app.Notification.DEFAULT_SOUND;
@@ -25,6 +26,7 @@ public class NotificationAlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        AlarmBuilder.resetAlarm(context);
         Calendar calNow = Calendar.getInstance();
         if (calNow.get(Calendar.DAY_OF_WEEK) == 0 ||
                 calNow.get(Calendar.DAY_OF_WEEK) == 7)

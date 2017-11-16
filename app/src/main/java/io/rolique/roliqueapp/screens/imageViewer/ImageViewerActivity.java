@@ -30,8 +30,17 @@ public class ImageViewerActivity extends AppCompatActivity {
 
     public static Intent getStartIntent(Activity activity, List<Media> mediaContents, int position) {
         Intent intent = new Intent(activity, ImageViewerActivity.class);
-        intent.putParcelableArrayListExtra(EXTRA_MEDIAS, new ArrayList<Media>(mediaContents));
+        intent.putParcelableArrayListExtra(EXTRA_MEDIAS, new ArrayList<>(mediaContents));
         intent.putExtra(EXTRA_SELECTED_POSITION, position);
+        return intent;
+    }
+
+    public static Intent getStartIntent(Activity activity, Media mediaContent) {
+        Intent intent = new Intent(activity, ImageViewerActivity.class);
+        ArrayList<Media> medias = new ArrayList<>();
+        medias.add(mediaContent);
+        intent.putParcelableArrayListExtra(EXTRA_MEDIAS, medias);
+        intent.putExtra(EXTRA_SELECTED_POSITION, 0);
         return intent;
     }
 
