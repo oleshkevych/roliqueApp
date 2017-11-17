@@ -51,10 +51,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     public interface OnMessageActionListener {
         void onMessageEdit(Message message);
-
         void onMessageRemove(Message message, boolean isInLast20th);
-
         void onMediaClick(Media media);
+        void onUserClick(User user);
     }
 
     private final LayoutInflater mInflater;
@@ -368,6 +367,16 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             } else {
                 mSenderImageLayout.setVisibility(View.INVISIBLE);
             }
+            mSenderImageLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    for (User user: mUsers)
+                        if (user.getId().equals(mMessage.getSenderId())) {
+                            mActionListener.onUserClick(user);
+                            return;
+                        }
+                }
+            });
         }
 
         private String getUserImageUrl(String senderId, List<User> users) {

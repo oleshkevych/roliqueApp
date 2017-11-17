@@ -494,6 +494,11 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                 startActivity(ImageViewerActivity.getStartIntent(ChatActivity.this, mediaContents, position));
             }
         }
+
+        @Override
+        public void onUserClick(User user) {
+            startActivity(ProfileActivity.startIntent(ChatActivity.this, user));
+        }
     };
 
     private void resetPreview() {
