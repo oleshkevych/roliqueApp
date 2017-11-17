@@ -147,17 +147,23 @@ class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ChatViewHolder> {
             setTextViewBold(mTitleTextView);
             mTitleTextView.setTextColor(ContextCompat.getColor(mTitleTextView.getContext(),
                     mChat.isHasNewMessages() ? R.color.amber_500 : R.color.black_alpha_50));
-            mLastMessageTextView.setText(String.format("%s - %s", UiUtil.getUserNameForView(mChat.getLastMessage().getSenderId(),
-                    mRoliqueAppUsers.getUsers()),
-                    mChat.getLastMessage().getText().isEmpty() ?
-                            mChat.getLastMessage().getMedias() == null && mChat.getLastMessage().getMedias().size() > 0 ?
-                                    "" : mChat.getLastMessage().getMedias().get(0).getMediaType() :
-                            mChat.getLastMessage().getText()
-            ));
+            if (mChat.getLastMessage().getSenderId() == null || mChat.getLastMessage().getSenderId().isEmpty()) {
+                mLastMessageTextView.setText("");
+                mLastMessageTextView.setVisibility(View.GONE);
+            } else {
+                mLastMessageTextView.setText(String.format("%s - %s",
+                        UiUtil.getUserNameForView(mChat.getLastMessage().getSenderId(), mRoliqueAppUsers.getUsers()),
+                        mChat.getLastMessage().getText().isEmpty() ?
+                                mChat.getLastMessage().getMedias() == null || mChat.getLastMessage().getMedias().size() == 0 ?
+                                        "" : mChat.getLastMessage().getMedias().get(0).getMediaType() :
+                                mChat.getLastMessage().getText()
+                ));
+                mLastMessageTextView.setVisibility(View.VISIBLE);
+            }
             setTextViewBold(mLastMessageTextView);
             mDateTextView.setText(DateUtil.getStringMessageDate(mChat.getLastMessage().getTimeStamp()));
             setTextViewBold(mDateTextView);
-            UiUtil.setImageIfExists(mViewSwitcher, mChat.getImageUrl(), mChat.getTitle(), 80);
+            UiUtil.setImageIfExists(mViewSwitcher, mChat.getImageUrl(), mChat.getTitle(), 64);
         }
 
         private void setTextViewBold(TextView textView) {

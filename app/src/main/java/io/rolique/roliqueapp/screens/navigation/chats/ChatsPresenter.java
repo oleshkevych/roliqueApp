@@ -113,7 +113,6 @@ class ChatsPresenter implements ChatsContract.Presenter, FirebaseValues {
                             }
                             chat.setLastMessage(message);
                             checkIfSeen(chat, true);
-                            Timber.e("checkIfSeen(chat, true); " + message.getText());
                         }
 
                         @Override
@@ -134,13 +133,11 @@ class ChatsPresenter implements ChatsContract.Presenter, FirebaseValues {
 
         @Override
         public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            Timber.e("onChildChanged(DataSnapshot dataSnapshot, String s) " + dataSnapshot.getKey());
             DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS, dataSnapshot.getKey()));
             chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     final Chat chat = dataSnapshot.getValue(Chat.class);
-                    Timber.e("onDataChange(DataSnapshot dataSnapshot) " + chat.getTitle());
                     DatabaseReference userChatsRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, mPreferences.getId(), chat.getId()));
                     userChatsRef.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
@@ -148,7 +145,6 @@ class ChatsPresenter implements ChatsContract.Presenter, FirebaseValues {
                             Message message = dataSnapshot.getValue(Message.class);
                             chat.setLastMessage(message);
                             checkIfSeen(chat, false);
-                            Timber.e("checkIfSeen(chat, false); " + message.getText());
                         }
 
                         @Override
@@ -218,7 +214,6 @@ class ChatsPresenter implements ChatsContract.Presenter, FirebaseValues {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Boolean isNotSeen = dataSnapshot.getValue(Boolean.class);
                 chat.setHasNewMessages(isNotSeen == null ? true : isNotSeen);
-                Timber.d(chat.getLastMessage().getText() + " " + (isNotSeen == null ? "NULL" : isNotSeen));
                 if (isNewMessage) mView.showAddedChatInView(chat);
                 else mView.showChangedChatInView(chat);
             }

@@ -37,6 +37,7 @@
 
     <color name="white">#ffffff</color>
     <color name="lime_100_alpha_20">#c0d2d1bc</color>
+    <color name="lime_100_alpha_75">#51d2d1bc</color>
 
     <color name="transparent">#00000000</color>
 

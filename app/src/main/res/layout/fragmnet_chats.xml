@@ -9,9 +9,8 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view_chats"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:scrollbars="vertical"/>
-
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/button_add_chat"
@@ -24,5 +23,5 @@
         android:src="@drawable/ic_add_white_16dp"
         app:backgroundTint="@color/colorPrimaryDark"
         app:fabSize="normal"
-        app:pressedTranslationZ="5dp"/>
+        app:pressedTranslationZ="12dp"/>
 </android.support.design.widget.CoordinatorLayout>
