@@ -221,6 +221,7 @@ public class GPSTrackerService extends Service implements LocationListener {
             mPositionChanged.onPositionChanged(false);
         }
         Timber.e(Arrays.toString(distance));
+        Timber.d("is in range: " + (distance[0] <= RANGE_RADIUS));
     }
 
     private void calculationByDistance(LatLng StartP, LatLng EndP) {

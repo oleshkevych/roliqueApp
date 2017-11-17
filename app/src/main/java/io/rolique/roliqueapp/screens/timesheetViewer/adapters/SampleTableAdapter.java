@@ -145,7 +145,7 @@ public class SampleTableAdapter implements TableAdapter {
 
     @Override
     public int getRowCount() {
-        return mUsers.size() - 1;
+        return mUsers.size();
     }
 
     @Override

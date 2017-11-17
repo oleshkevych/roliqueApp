@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
@@ -197,6 +198,7 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
         Menu menu = mNavigationView.getMenu();
         for (int i = 0; i < menu.size(); i++) {
             MenuItem menuItem = menu.getItem(i);
+            menuItem.setChecked(false);
             if (menuItem.getItemId() == R.id.menu_chats) menuItem.setChecked(true);
         }
         mToolbar.setTitle(R.string.fragment_chats_title);
@@ -207,6 +209,7 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
         Menu menu = mNavigationView.getMenu();
         for (int i = 0; i < menu.size(); i++) {
             MenuItem menuItem = menu.getItem(i);
+            menuItem.setChecked(false);
             if (menuItem.getItemId() == R.id.menu_check_in) menuItem.setChecked(true);
         }
         mToolbar.setTitle(R.string.fragment_check_in_title);
@@ -274,7 +277,8 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
 
     @Override
     public void showCheckInStatusInView(boolean isCheckedIn) {
-        toggleLocationService(!isCheckedIn);
+//        toggleLocationService(!isCheckedIn);
+        toggleLocationService(true);
     }
 
     @Override
@@ -364,15 +368,22 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
         @Override
         public void onPositionChanged(boolean isInRange) {
             mIsInRange = isInRange;
-            showCheckInMessage();
+            if (mIsInRange) showCheckInMessage();
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    showCheckInMessage();
+                }
+            }, 2000);
         }
     };
 
     void showCheckInMessage() {
         if (mIsAlreadyShown) return;
+        mIsAlreadyShown = true;
         CheckInDialog checkInDialog = new CheckInDialog(NavigationActivity.this, mIsInRange, mOnCheckInAction);
         checkInDialog.show();
-        mIsAlreadyShown = true;
         toggleLocationService(false);
     }
 

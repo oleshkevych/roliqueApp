@@ -48,8 +48,6 @@ public class CheckInDialog extends Dialog {
         ButterKnife.bind(CheckInDialog.this);
         setMessage();
         if (mIsInRange)
-            mCheckInTextView.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.black_alpha_50));
-        else
             mCheckInTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -57,6 +55,8 @@ public class CheckInDialog extends Dialog {
                     dismiss();
                 }
             });
+        else
+            mCheckInTextView.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.black_alpha_50));
     }
 
     private void setMessage() {
