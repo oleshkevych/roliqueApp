@@ -61,6 +61,8 @@
 
         <receiver android:name=".services.alarmNotification.NotificationAlarmReceiver"/>
 
+        <receiver android:name=".services.remaidReceiver.RemindReceiver"/>
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key"/>

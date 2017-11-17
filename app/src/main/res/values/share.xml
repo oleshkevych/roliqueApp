@@ -4,4 +4,5 @@
     <string name="extra_chat_from_editor">chat_edited</string>
     <string name="shared_transition_image">io.rolique.TransitionImage</string>
     <string name="extra_camera_images">io.rolique.extra.Images</string>
+    <string name="extra_notification_id">io.rolique.roliqueapp.services.alarmNotification</string>
 </resources>

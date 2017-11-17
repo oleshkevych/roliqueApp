@@ -82,12 +82,14 @@ public class ChatsFragment extends BaseFragment implements ChatsContract.View {
 
     @Override
     public void showAddedChatInView(Chat chat) {
+        if (mRecyclerView == null) return;
         mAdapter.addChat(chat);
         mRecyclerView.scrollToPosition(0);
     }
 
     @Override
     public void showChangedChatInView(Chat chat) {
+        if (mRecyclerView == null) return;
         mAdapter.changeChat(chat);
         mRecyclerView.scrollToPosition(0);
     }

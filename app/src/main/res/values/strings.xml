@@ -136,6 +136,7 @@
 
     <!--receiver alarm start-->
     <string name="alarm_receiver_message">Hey! It\'s time to check in!</string>
+    <string name="alarm_receiver_remind_button">Remind in 10 mins</string>
     <!--receiver alarm end-->
 
     <!--dialog check in start-->

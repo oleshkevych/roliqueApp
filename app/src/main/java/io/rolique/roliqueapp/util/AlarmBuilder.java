@@ -16,6 +16,7 @@ import io.rolique.roliqueapp.services.alarmNotification.NotificationAlarmReceive
 public class AlarmBuilder {
 
     private final static int RQS_1 = 1;
+    private final static int RQS_2 = 2;
 
     public static void resetAlarm(Context context) {
         setAlarm(context, Calendar.getInstance(), true, false);
@@ -29,6 +30,7 @@ public class AlarmBuilder {
         calSet.set(Calendar.SECOND, 0);
         calSet.set(Calendar.MILLISECOND, 0);
         setAlarm(context, calSet, isAlreadyChecked, isCancel);
+        setRemindAlarm(context, true);
     }
 
     private static void setAlarm(Context context, Calendar calSet, boolean isAlreadyChecked, boolean isCancel) {
@@ -44,5 +46,17 @@ public class AlarmBuilder {
         alarmManager.cancel(pendingIntent);
         if (isCancel) return;
         alarmManager.set(AlarmManager.RTC_WAKEUP, calSet.getTimeInMillis(), pendingIntent);
+    }
+
+    public static void setRemindAlarm(Context context, boolean isCancel) {
+        Calendar calNow = Calendar.getInstance();
+
+        Intent intent = new Intent(context, NotificationAlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, RQS_2, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        assert alarmManager != null;
+        alarmManager.cancel(pendingIntent);
+        if (isCancel) return;
+        alarmManager.set(AlarmManager.RTC_WAKEUP, calNow.getTimeInMillis() + 10 * 60 * 1000, pendingIntent);
     }
 }

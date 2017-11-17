@@ -277,8 +277,7 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
 
     @Override
     public void showCheckInStatusInView(boolean isCheckedIn) {
-//        toggleLocationService(!isCheckedIn);
-        toggleLocationService(true);
+        toggleLocationService(!isCheckedIn);
     }
 
     @Override
