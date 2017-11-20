@@ -154,4 +154,20 @@ public final class DateUtil {
         calendar.setTime(date);
         return calendar.get(Calendar.DAY_OF_YEAR);
     }
+
+    public static int getDayOfWeek(Date date) {
+        if (date == null)
+            throw new IllegalArgumentException("The dates must not be null");
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return calendar.get(Calendar.DAY_OF_WEEK);
+    }
+
+    public static int getDayOfMonth(Date date) {
+        if (date == null)
+            throw new IllegalArgumentException("The dates must not be null");
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return calendar.get(Calendar.DAY_OF_MONTH);
+    }
 }

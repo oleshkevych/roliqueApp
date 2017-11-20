@@ -43,6 +43,7 @@ import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.chat.ChatActivity;
 import io.rolique.roliqueapp.screens.imageViewer.ImageViewerActivity;
+import io.rolique.roliqueapp.screens.userCheckIns.UserCheckInsStatisticActivity;
 import io.rolique.roliqueapp.util.ui.UiUtil;
 import io.rolique.roliqueapp.widget.AddPickerDialog;
 import io.rolique.roliqueapp.widget.FloatingActionMenu;
@@ -566,6 +567,11 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
     void onEditClick() {
         mFloatingActionMenu.setEnabled(true);
         setUpContent(mUser, true);
+    }
+
+    @OnClick(R.id.button_check_ins)
+    void onShowStatisticsClick() {
+        startActivity(UserCheckInsStatisticActivity.startIntent(ProfileActivity.this, mUser));
     }
 
     @OnClick(R.id.floating_button_call)

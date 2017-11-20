@@ -58,6 +58,9 @@
         <activity
             android:name=".screens.timesheetViewer.TimesheetViewerActivity"
             android:configChanges="orientation|screenSize"/>
+        <activity
+            android:name=".screens.userCheckIns.UserCheckInsStatisticActivity"
+            android:screenOrientation="portrait"/>
 
         <receiver android:name=".services.alarmNotification.NotificationAlarmReceiver"/>
 

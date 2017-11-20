@@ -97,6 +97,7 @@
     <string name="bottom_dialog_add_value_hint">Set Value</string>
     <string name="bottom_dialog_add_save">SAVE</string>
     <string name="bottom_dialog_add_cancel">CANCEL</string>
+    <string name="bottom_dialog_OK">Ok</string>
     <!--Select bottom dialog end-->
     <!-- Activity profile end-->
 
@@ -142,4 +143,18 @@
     <!--dialog check in start-->
     <string name="dialog_check_in_title">Check in</string>
     <!--dialog check in end-->
+
+    <!--activity user check in statistic start-->
+    <string name="activity_user_check_in_statistic_title">Check in statistics</string>
+    <string name="activity_user_check_in_statistic_header_weekly">Last week check ins statistics for </string>
+    <string name="activity_user_check_in_statistic_header_all_time">Check ins statistics for </string>
+    <string name="activity_user_check_in_statistic_switcher_weekly">Last week</string>
+    <string name="activity_user_check_in_statistic_switcher_all_time">For all time</string>
+    <string name="activity_user_check_in_statistic_chart_title">Delayed statistics for\n</string>
+    <string name="activity_user_check_in_statistic_late">Late</string>
+    <string name="activity_user_check_in_statistic_results">Results</string>
+    <string name="activity_user_check_in_statistic_chart_title_empty">Delayed statistics is empty for\n</string>
+    <string name="activity_user_check_in_statistic_missed_per_week">Missed per week</string>
+    <string name="activity_user_check_in_statistic_missed_per_month">Missed per month</string>
+    <!--activity user check in statistic end-->
 </resources>

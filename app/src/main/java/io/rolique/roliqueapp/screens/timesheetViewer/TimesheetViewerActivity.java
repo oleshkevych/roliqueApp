@@ -41,6 +41,7 @@ import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.timesheetViewer.adapters.SampleTableAdapter;
+import io.rolique.roliqueapp.screens.userCheckIns.UserCheckInsStatisticActivity;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.widget.fixedHeaderTable.TableFixHeaders;
 import timber.log.Timber;
@@ -146,9 +147,16 @@ public class TimesheetViewerActivity extends BaseActivity implements TimesheetCo
     private void setUpTableView() {
         TableFixHeaders tableFixHeaders = findViewById(R.id.table);
         tableFixHeaders.setRowSelectable(false);
-        mAdapter = new SampleTableAdapter(TimesheetViewerActivity.this, mRoliqueAppUsers.getUsers());
+        mAdapter = new SampleTableAdapter(TimesheetViewerActivity.this, mRoliqueAppUsers.getUsers(), mOnClickListener);
         tableFixHeaders.setAdapter(mAdapter);
     }
+
+    SampleTableAdapter.OnClickListener mOnClickListener = new SampleTableAdapter.OnClickListener() {
+        @Override
+        public void onColumnClick(User user) {
+            startActivity(UserCheckInsStatisticActivity.startIntent(TimesheetViewerActivity.this, user));
+        }
+    };
 
     private void setUpPopUpView() {
         final View popupView = LayoutInflater.from(TimesheetViewerActivity.this).inflate(R.layout.content_timesheed_help_popup, null);

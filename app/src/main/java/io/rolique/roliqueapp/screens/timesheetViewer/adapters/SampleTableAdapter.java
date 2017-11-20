@@ -2,8 +2,10 @@ package io.rolique.roliqueapp.screens.timesheetViewer.adapters;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.database.DataSetObservable;
 import android.database.DataSetObserver;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.util.Pair;
@@ -48,14 +50,21 @@ public class SampleTableAdapter implements TableAdapter {
     private SimpleDateFormat mDateFormat;
     private List<List<Pair<String, Integer>>> mTableCheckIns;
 
+    public interface OnClickListener {
+        void onColumnClick(User user);
+    }
+
+    private final OnClickListener mOnClickListener;
+
     /**
      * Constructor
      *
      * @param context The current context.
      */
-    public SampleTableAdapter(Context context, List<User> users) {
+    public SampleTableAdapter(Context context, List<User> users, OnClickListener onClickListener) {
         inflater = LayoutInflater.from(context);
         mUsers = users;
+        mOnClickListener = onClickListener;
         mDate = new Date();
         mDateFormat = new SimpleDateFormat("EEE, d.MM.yy", Locale.getDefault());
         mTableCheckIns = new ArrayList<>(mUsers.size());
@@ -136,11 +145,19 @@ public class SampleTableAdapter implements TableAdapter {
         return converView;
     }
 
-    private void setText(View view, int row, int column) {
+    private void setText(View view, final int row, int column) {
         TextView textView = view.findViewById(R.id.table_item_text);
         textView.setText(getCellString(row, column));
         if (row >= 0 && column >= 0)
             textView.setBackground(ContextCompat.getDrawable(view.getContext(), mTableCheckIns.get(row).get(column).second));
+        if (column == -1 && row >= 0) {
+            textView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mOnClickListener.onColumnClick(mUsers.get(row));
+                }
+            });
+        }
     }
 
     @Override

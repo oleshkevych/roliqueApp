@@ -39,6 +39,7 @@
         android:layout_gravity="bottom|end"
         android:layout_marginBottom="24dp"
         android:layout_marginEnd="24dp"
+        android:foreground="?selectableItemBackground"
         android:visibility="invisible"
         app:backgroundTint="@color/indigo_accent_700"
         app:fabSize="mini"/>
@@ -68,6 +69,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginBottom="24dp"
+        android:foreground="?selectableItemBackground"
         android:layout_marginEnd="24dp"
         android:visibility="invisible"
         app:backgroundTint="@color/indigo_accent_700"
@@ -98,6 +100,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginBottom="24dp"
+        android:foreground="?selectableItemBackground"
         android:layout_marginEnd="24dp"
         android:visibility="invisible"
         app:backgroundTint="@color/indigo_accent_700"
@@ -128,6 +131,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginBottom="24dp"
+        android:foreground="?selectableItemBackground"
         android:layout_marginEnd="24dp"
         android:visibility="invisible"
         app:backgroundTint="@color/indigo_accent_700"
@@ -159,6 +163,7 @@
         android:layout_gravity="bottom|end"
         android:layout_marginBottom="24dp"
         android:layout_marginEnd="24dp"
+        android:foreground="?selectableItemBackground"
         android:visibility="invisible"
         app:backgroundTint="@color/indigo_accent_700"
         app:fabSize="mini"/>
@@ -185,6 +190,7 @@
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/floating_button_toggle_options"
         android:layout_width="wrap_content"
+        android:foreground="?selectableItemBackground"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"

@@ -27,4 +27,14 @@
         app:srcCompat="@drawable/ic_edit_white_24dp"
         tools:ignore="ContentDescription"/>
 
+    <ImageButton
+        android:id="@+id/button_check_ins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|center"
+        android:background="?selectableItemBackground"
+        android:padding="16dp"
+        app:srcCompat="@drawable/ic_show_chart_white_24dp"
+        tools:ignore="ContentDescription"/>
+
 </android.support.v7.widget.Toolbar>

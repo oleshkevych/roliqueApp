@@ -1,5 +1,6 @@
 package io.rolique.roliqueapp.screens.navigation.contacts;
 
+import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -28,7 +29,6 @@ import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.screens.navigation.contacts.adapter.UsersAdapter;
 import io.rolique.roliqueapp.screens.profile.ProfileActivity;
-import io.rolique.roliqueapp.util.ui.UiUtil;
 
 public class ContactsFragment extends BaseFragment {
 
@@ -91,6 +91,7 @@ public class ContactsFragment extends BaseFragment {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void setUpSearchEditText() {
         Drawable searchDrawable = AppCompatResources.getDrawable(mSearchEditText.getContext(), R.drawable.ic_search_black_24dp);
         mSearchEditText.setCompoundDrawablesRelativeWithIntrinsicBounds(searchDrawable, null, null, null);
@@ -136,7 +137,7 @@ public class ContactsFragment extends BaseFragment {
             return;
         }
         List<User> filteredUsers = new ArrayList<>();
-        for (User user: users) {
+        for (User user : users) {
             if (String.format("%s %s", user.getFirstName(), user.getLastName()).toLowerCase().contains(text.toLowerCase())) {
                 filteredUsers.add(user);
             }

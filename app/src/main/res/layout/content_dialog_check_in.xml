@@ -107,6 +107,7 @@
             android:layout_height="wrap_content"
             android:background="@color/transparent"
             android:text="@string/bottom_dialog_add_cancel"
+            android:foreground="?selectableItemBackground"
             android:textColor="@color/colorPrimary"
             tools:ignore="ButtonStyle"/>
 
@@ -115,7 +116,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@color/transparent"
-            android:text="OK"
+            android:foreground="?selectableItemBackground"
+            android:text="@string/bottom_dialog_OK"
             android:textColor="@color/colorPrimary"
             tools:ignore="ButtonStyle"/>
 

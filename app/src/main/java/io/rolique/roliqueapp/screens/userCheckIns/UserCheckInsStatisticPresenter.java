@@ -1,4 +1,4 @@
-package io.rolique.roliqueapp.screens.timesheetViewer;
+package io.rolique.roliqueapp.screens.userCheckIns;
 
 import android.support.annotation.NonNull;
 
@@ -10,12 +10,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
 
-import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.firebaseData.FirebaseValues;
 import io.rolique.roliqueapp.data.model.CheckIn;
@@ -26,56 +24,37 @@ import io.rolique.roliqueapp.util.LinksBuilder;
  * Created by Volodymyr Oleshkevych on 8/16/2017.
  * Copyright (c) 2017, Rolique. All rights reserved.
  */
+class UserCheckInsStatisticPresenter implements UserCheckInsStatisticContract.Presenter, FirebaseValues {
 
-class TimesheetPresenter implements TimesheetContract.Presenter, FirebaseValues {
-
-    private final TimesheetViewerActivity mView;
-
-    RoliqueApplicationPreferences mPreferences;
-    List<User> mUsers;
+    private final UserCheckInsStatisticContract.View mView;
     FirebaseDatabase mDatabase;
-    DatabaseReference mTimesheetReference;
-    ChildEventListener mChildEventListener;
 
     @Inject
-    TimesheetPresenter(RoliqueApplicationPreferences preferences,
-                       TimesheetViewerActivity view,
-                       RoliqueAppUsers users,
-                       FirebaseDatabase database) {
+    UserCheckInsStatisticPresenter(UserCheckInsStatisticContract.View view,
+                                   FirebaseDatabase database) {
         mView = view;
-        mPreferences = preferences;
-        mUsers = new ArrayList<>(users.getUsers());
         mDatabase = database;
     }
 
     @Override
     public void start() {
-
     }
 
     @Override
     public void stop() {
-        resetListener();
     }
 
     @Override
-    public void fetchTimesheetsByDate(Date date) {
+    public void getTimesheetByTime(final User user) {
         mView.showProgressInView(true);
-        setTimesheetListenerByTime(date);
-    }
-
-
-    private void setTimesheetListenerByTime(Date date) {
-        resetListener();
-
-        mTimesheetReference = mDatabase.getReference(LinksBuilder.buildUrl(MAP, CHECK_IN));
+        DatabaseReference mTimesheetReference = mDatabase.getReference(LinksBuilder.buildUrl(MAP, CHECK_IN));
         mTimesheetReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 List<CheckIn> checkIns = parseCheckIns(dataSnapshot);
 
-                setCheckInsToUsers(checkIns);
-                updateCheckInsInView();
+                setCheckInsToUsers(checkIns, user);
+                updateCheckInsInView(user);
             }
 
             @Override
@@ -98,25 +77,14 @@ class TimesheetPresenter implements TimesheetContract.Presenter, FirebaseValues 
         return checkIns;
     }
 
-    void setCheckInsToUsers(List<CheckIn> checkIns) {
+    void setCheckInsToUsers(List<CheckIn> checkIns, User user) {
         for (CheckIn checkIn : checkIns)
-            for (User user : mUsers)
-                if (user.getId().equals(checkIn.getUserId())) {
-                    user.addCheckIn(checkIn);
-                    break;
-                }
+            if (user.getId().equals(checkIn.getUserId()))
+                user.addCheckIn(checkIn);
     }
 
-    void updateCheckInsInView() {
-        mView.updateTable(mUsers);
+    void updateCheckInsInView(User user) {
+        mView.showCheckInInView(user);
         mView.showProgressInView(false);
-    }
-
-    private void resetListener() {
-        if (mTimesheetReference != null) {
-            mTimesheetReference.removeEventListener(mChildEventListener);
-            mChildEventListener = null;
-            mTimesheetReference = null;
-        }
     }
 }
