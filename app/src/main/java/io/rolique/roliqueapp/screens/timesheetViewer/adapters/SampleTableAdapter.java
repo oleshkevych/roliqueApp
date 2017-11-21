@@ -161,6 +161,9 @@ public class SampleTableAdapter implements TableAdapter {
                         showPopUp(mTableCheckIns.get(row).get(column).first.getReason(), view);
                     }
                 });
+            } else {
+                drawableTextView.setOnClickListener(null);
+                drawableTextView.removeDrawables();
             }
         }
         if (column == -1 && row >= 0) {

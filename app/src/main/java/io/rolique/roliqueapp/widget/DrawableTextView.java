@@ -73,6 +73,10 @@ public class DrawableTextView extends AppCompatTextView {
         setCompoundDrawablesWithIntrinsicBounds(null, null, getDrawableFromRes(resId), null);
     }
 
+    public void removeDrawables() {
+        setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+    }
+
     public void setDrawableTop(@DrawableRes int resId) {
         setCompoundDrawablesWithIntrinsicBounds(null, getDrawableFromRes(resId), null, null);
     }
