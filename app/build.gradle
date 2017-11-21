@@ -17,7 +17,7 @@ android {
 
     def versionMajor = 0
     def versionMinor = 0
-    def versionPatch = 16
+    def versionPatch = 17
 
     defaultConfig {
         applicationId "io.rolique.roliqueapp"
