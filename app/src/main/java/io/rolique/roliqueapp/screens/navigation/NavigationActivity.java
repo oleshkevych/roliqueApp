@@ -338,7 +338,7 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
             if (mGPSTrackerService != null) return;
             mGPSTrackerService = new GPSTrackerService(NavigationActivity.this, mPositionChanged);
 
-            if (!mGPSTrackerService.canGetLocation) mGPSTrackerService.showSettingsAlert();
+            if (!mGPSTrackerService.isCanGetLocation()) mGPSTrackerService.showSettingsAlert();
         } else {
             if (mGPSTrackerService != null) mGPSTrackerService.stopUsingGPS();
             mGPSTrackerService = null;

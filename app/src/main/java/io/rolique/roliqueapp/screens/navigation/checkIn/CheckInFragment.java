@@ -241,7 +241,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
     private void startMapServices() {
         setUtMap();
         mGPSTrackerService = new GPSTrackerService(getActivity(), mPositionChanged);
-        if (!mGPSTrackerService.canGetLocation) {
+        if (!mGPSTrackerService.isCanGetLocation()) {
             mGPSTrackerService.showSettingsAlert();
         }
     }
