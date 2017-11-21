@@ -7,7 +7,7 @@ import android.content.Intent;
 
 import java.util.Calendar;
 
-import io.rolique.roliqueapp.services.alarmNotification.NotificationAlarmReceiver;
+import io.rolique.roliqueapp.services.notification.NotificationService;
 
 /**
  * Created by Volodymyr Oleshkevych on 11/10/2017.
@@ -39,8 +39,8 @@ public class AlarmBuilder {
             //Today Set time passed, count to tomorrow
             calSet.add(Calendar.DATE, 1);
 
-        Intent intent = new Intent(context, NotificationAlarmReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, RQS_1, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        Intent intent = new Intent(context, NotificationService.class);
+        PendingIntent pendingIntent = PendingIntent.getService(context, RQS_1, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         assert alarmManager != null;
         alarmManager.cancel(pendingIntent);
@@ -51,8 +51,8 @@ public class AlarmBuilder {
     public static void setRemindAlarm(Context context, boolean isCancel) {
         Calendar calNow = Calendar.getInstance();
 
-        Intent intent = new Intent(context, NotificationAlarmReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, RQS_2, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        Intent intent = new Intent(context, NotificationService.class);
+        PendingIntent pendingIntent = PendingIntent.getService(context, RQS_2, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         assert alarmManager != null;
         alarmManager.cancel(pendingIntent);

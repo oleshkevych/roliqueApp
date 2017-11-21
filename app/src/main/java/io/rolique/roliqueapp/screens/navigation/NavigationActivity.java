@@ -1,6 +1,7 @@
 package io.rolique.roliqueapp.screens.navigation;
 
 import android.Manifest;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -9,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
 import android.support.design.widget.NavigationView;
 import android.support.v13.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -17,7 +17,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -42,6 +41,7 @@ import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.welcome.WelcomeActivity;
 import io.rolique.roliqueapp.services.gps.GPSTrackerService;
+import io.rolique.roliqueapp.services.notification.NotificationService;
 import io.rolique.roliqueapp.util.AlarmBuilder;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.ui.UiUtil;
@@ -312,6 +312,9 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     protected void onResume() {
         super.onResume();
         mPresenter.start();
+        NotificationManager notificationmanager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        assert notificationmanager != null;
+        notificationmanager.cancel(NotificationService.NOTIFICATION_ID);
     }
 
     @Override

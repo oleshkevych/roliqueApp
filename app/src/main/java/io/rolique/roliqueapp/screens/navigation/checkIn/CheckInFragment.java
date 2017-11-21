@@ -1,11 +1,11 @@
 package io.rolique.roliqueapp.screens.navigation.checkIn;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
-import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -33,11 +33,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.text.DecimalFormat;
-import java.util.Arrays;
 import java.util.Date;
 
 import javax.inject.Inject;
@@ -53,7 +50,6 @@ import io.rolique.roliqueapp.screens.timesheetViewer.TimesheetViewerActivity;
 import io.rolique.roliqueapp.services.gps.GPSTrackerService;
 import io.rolique.roliqueapp.util.AlarmBuilder;
 import io.rolique.roliqueapp.util.DateUtil;
-import timber.log.Timber;
 
 
 public class CheckInFragment extends BaseFragment implements CheckInContract.View {
@@ -79,8 +75,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_check_in, container, false);
-        return rootView;
+        return inflater.inflate(R.layout.fragment_check_in, container, false);
     }
 
     @Override
@@ -101,6 +96,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
     }
 
     private void setUpPopUpView(View v) {
+        @SuppressLint("InflateParams")
         final View popupView = LayoutInflater.from(v.getContext()).inflate(R.layout.content_check_in_popup, null);
         mPopupWindow = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         mPopupWindow.setBackgroundDrawable(ContextCompat.getDrawable(v.getContext(), R.drawable.shape_text_view_message_alien_single));
@@ -150,6 +146,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
     }
 
     View.OnTouchListener mOnTouchListener = new View.OnTouchListener() {
+        @SuppressLint("ClickableViewAccessibility")
         @Override
         public boolean onTouch(final View v, MotionEvent event) {
             switch (event.getAction()) {
