@@ -321,6 +321,7 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     @Override
     protected void onStop() {
         mPresenter.stop();
+        if (mGPSTrackerService != null) mIsAlreadyShown = false;
         toggleLocationService(false);
         super.onStop();
     }
@@ -378,7 +379,7 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
                 public void run() {
                     showCheckInMessage();
                 }
-            }, 2000);
+            }, 3000);
         }
     };
 
