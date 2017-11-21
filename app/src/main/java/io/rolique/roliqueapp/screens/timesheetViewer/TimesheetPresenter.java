@@ -20,6 +20,7 @@ import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.firebaseData.FirebaseValues;
 import io.rolique.roliqueapp.data.model.CheckIn;
 import io.rolique.roliqueapp.data.model.User;
+import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.LinksBuilder;
 
 /**
@@ -102,7 +103,15 @@ class TimesheetPresenter implements TimesheetContract.Presenter, FirebaseValues 
         for (CheckIn checkIn : checkIns)
             for (User user : mUsers)
                 if (user.getId().equals(checkIn.getUserId())) {
-                    user.addCheckIn(checkIn);
+                    int index = -1;
+                    for (int i = 0; i < user.getCheckIns().size(); i++)
+                        if (DateUtil.isSameDay(DateUtil.transformDate(user.getCheckIns().get(i).getTime()),
+                                DateUtil.transformDate(checkIn.getTime()))) {
+                            index = i;
+                            break;
+                        }
+                    if (index == -1) user.addCheckIn(checkIn);
+                    else user.getCheckIns().set(index, checkIn);
                     break;
                 }
     }

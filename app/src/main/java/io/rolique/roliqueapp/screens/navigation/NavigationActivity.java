@@ -46,6 +46,7 @@ import io.rolique.roliqueapp.util.AlarmBuilder;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.ui.UiUtil;
 import io.rolique.roliqueapp.widget.CheckInDialog;
+import io.rolique.roliqueapp.widget.ReasonDialogFragment;
 
 /**
  * Created by Volodymyr Oleshkevych on 8/22/2017.
@@ -392,8 +393,25 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     CheckInDialog.OnCheckInAction mOnCheckInAction = new CheckInDialog.OnCheckInAction() {
         @Override
         public void onCheckInClick(String type) {
-            CheckIn checkIn = new CheckIn(DateUtil.getStringTime(), type);
-            mPresenter.setNewCheckIn(checkIn, new Date());
+            final CheckIn checkIn = new CheckIn(DateUtil.getStringTime(), type);
+            if (type.equals(CheckIn.CHECK_IN) && DateUtil.isLate()) {
+                ReasonDialogFragment fragment = ReasonDialogFragment.getFragment();
+                fragment.show(getFragmentManager(), ReasonDialogFragment.TAG);
+                fragment.setOnClickListener(new ReasonDialogFragment.OnClickListener() {
+                    @Override
+                    public void onButtonClick(String reason) {
+                        if (reason.isEmpty()) sendCheckIn(checkIn);
+                        checkIn.setReason(reason);
+                        sendCheckIn(checkIn);
+                    }
+                });
+            } else {
+                sendCheckIn(checkIn);
+            }
         }
     };
+
+    protected void sendCheckIn(CheckIn checkIn) {
+        mPresenter.setNewCheckIn(checkIn, new Date());
+    }
 }

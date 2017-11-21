@@ -50,6 +50,7 @@ import io.rolique.roliqueapp.screens.timesheetViewer.TimesheetViewerActivity;
 import io.rolique.roliqueapp.services.gps.GPSTrackerService;
 import io.rolique.roliqueapp.util.AlarmBuilder;
 import io.rolique.roliqueapp.util.DateUtil;
+import io.rolique.roliqueapp.widget.ReasonDialogFragment;
 
 
 public class CheckInFragment extends BaseFragment implements CheckInContract.View {
@@ -96,8 +97,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
     }
 
     private void setUpPopUpView(View v) {
-        @SuppressLint("InflateParams")
-        final View popupView = LayoutInflater.from(v.getContext()).inflate(R.layout.content_check_in_popup, null);
+        @SuppressLint("InflateParams") final View popupView = LayoutInflater.from(v.getContext()).inflate(R.layout.content_check_in_popup, null);
         mPopupWindow = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         mPopupWindow.setBackgroundDrawable(ContextCompat.getDrawable(v.getContext(), R.drawable.shape_text_view_message_alien_single));
         mPopupWindow.setOutsideTouchable(true);
@@ -169,9 +169,26 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
     };
 
     void createAndSendCheckIn(@CheckIn.Type String type) {
-        CheckIn checkIn = new CheckIn(DateUtil.getStringTime(), type);
-        mPresenter.setNewCheckIn(checkIn, new Date());
+        final CheckIn checkIn = new CheckIn(DateUtil.getStringTime(), type);
         mPopupWindow.dismiss();
+        if (type.equals(CheckIn.CHECK_IN) && DateUtil.isLate()) {
+            ReasonDialogFragment fragment = ReasonDialogFragment.getFragment();
+            fragment.show(getFragmentManager(), ReasonDialogFragment.TAG);
+            fragment.setOnClickListener(new ReasonDialogFragment.OnClickListener() {
+                @Override
+                public void onButtonClick(String reason) {
+                    if (reason.isEmpty()) sendCheckIn(checkIn);
+                    checkIn.setReason(reason);
+                    sendCheckIn(checkIn);
+                }
+            });
+        } else {
+            sendCheckIn(checkIn);
+        }
+    }
+
+    protected void sendCheckIn(CheckIn checkIn) {
+        mPresenter.setNewCheckIn(checkIn, new Date());
     }
 
     @Override

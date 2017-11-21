@@ -170,4 +170,10 @@ public final class DateUtil {
         calendar.setTime(date);
         return calendar.get(Calendar.DAY_OF_MONTH);
     }
+
+    public static boolean isLate() {
+        Calendar calendar = Calendar.getInstance();
+        return ((calendar.get(Calendar.HOUR_OF_DAY) > 10) ||
+                (calendar.get(Calendar.HOUR_OF_DAY) == 10 && calendar.get(Calendar.MINUTE) > 47));
+    }
 }

@@ -2,16 +2,19 @@ package io.rolique.roliqueapp.screens.timesheetViewer.adapters;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.database.DataSetObservable;
 import android.database.DataSetObserver;
-import android.graphics.drawable.Drawable;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.util.Pair;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
@@ -26,6 +29,7 @@ import io.rolique.roliqueapp.data.model.CheckIn;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.ui.UiUtil;
+import io.rolique.roliqueapp.widget.DrawableTextView;
 import io.rolique.roliqueapp.widget.fixedHeaderTable.adapter.TableAdapter;
 import timber.log.Timber;
 
@@ -48,7 +52,7 @@ public class SampleTableAdapter implements TableAdapter {
     private List<User> mUsers;
     private Date mDate;
     private SimpleDateFormat mDateFormat;
-    private List<List<Pair<String, Integer>>> mTableCheckIns;
+    private List<List<Pair<CheckIn, Integer>>> mTableCheckIns;
 
     public interface OnClickListener {
         void onColumnClick(User user);
@@ -78,32 +82,30 @@ public class SampleTableAdapter implements TableAdapter {
     private void initValuesTable(Date date, List<User> users, boolean isUpdate) {
         Date dateStart = new Date();
         for (int j = 0; j < users.size(); j++) {
-            List<Pair<String, Integer>> pairs = new ArrayList<>(9);
+            List<Pair<CheckIn, Integer>> pairs = new ArrayList<>(9);
             for (int i = 0; i < 9; i++) {
                 CheckIn checkIn = users.get(j).getCheckInByDayOfYear(DateUtil.getDayOfYear(getDateByDayOfWeek(i + 1, date)));
                 if (checkIn == null)
-                    pairs.add(new Pair<>("", R.drawable.item_check_in_empty));
+                    pairs.add(new Pair<>(new CheckIn("", CheckIn.BUSINESS_TRIP), R.drawable.item_check_in_empty));
                 else switch (checkIn.getType()) {
                     case CheckIn.CHECK_IN:
                         Date messageDate = DateUtil.transformDate(checkIn.getTime());
                         Calendar calendar = Calendar.getInstance();
                         calendar.setTime(messageDate);
-                        String hour = DateUtil.getStringDate(calendar.get(Calendar.HOUR_OF_DAY));
-                        String minutes = DateUtil.getStringDate(calendar.get(Calendar.MINUTE));
                         int color = R.drawable.item_check_in_ok;
                         if ((calendar.get(Calendar.HOUR_OF_DAY) > 10) ||
                                 (calendar.get(Calendar.HOUR_OF_DAY) == 10 && calendar.get(Calendar.MINUTE) > 47))
                             color = R.drawable.item_check_in_late;
-                        pairs.add(i, new Pair<>(String.format("%s:%s", hour, minutes), color));
+                        pairs.add(i, new Pair<>(checkIn, color));
                         break;
                     case CheckIn.BUSINESS_TRIP:
-                        pairs.add(new Pair<>(getCheckInTime(checkIn.getTime()), R.drawable.item_check_in_business_trip));
+                        pairs.add(new Pair<>(checkIn, R.drawable.item_check_in_business_trip));
                         break;
                     case CheckIn.DAY_OFF:
-                        pairs.add(new Pair<>(getCheckInTime(checkIn.getTime()), R.drawable.item_check_in_day_off));
+                        pairs.add(new Pair<>(checkIn, R.drawable.item_check_in_day_off));
                         break;
                     case CheckIn.REMOTELY:
-                        pairs.add(new Pair<>(getCheckInTime(checkIn.getTime()), R.drawable.item_check_in_remotely));
+                        pairs.add(new Pair<>(checkIn, R.drawable.item_check_in_remotely));
                 }
             }
             if (mTableCheckIns.size() == j)
@@ -117,6 +119,7 @@ public class SampleTableAdapter implements TableAdapter {
     }
 
     private String getCheckInTime(String stringDate) {
+        if (stringDate.isEmpty()) return "";
         Date messageDate = DateUtil.transformDate(stringDate);
         Calendar messageCalendar = Calendar.getInstance();
         messageCalendar.setTime(messageDate);
@@ -145,19 +148,44 @@ public class SampleTableAdapter implements TableAdapter {
         return converView;
     }
 
-    private void setText(View view, final int row, int column) {
-        TextView textView = view.findViewById(R.id.table_item_text);
-        textView.setText(getCellString(row, column));
-        if (row >= 0 && column >= 0)
-            textView.setBackground(ContextCompat.getDrawable(view.getContext(), mTableCheckIns.get(row).get(column).second));
+    private void setText(View view, final int row, final int column) {
+        DrawableTextView drawableTextView = view.findViewById(R.id.table_item_text);
+        drawableTextView.setText(getCellString(row, column));
+        if (row >= 0 && column >= 0) {
+            drawableTextView.setBackground(ContextCompat.getDrawable(view.getContext(), mTableCheckIns.get(row).get(column).second));
+            if (mTableCheckIns.get(row).get(column).first.hasReason()) {
+                drawableTextView.setDrawableRight(R.drawable.ic_info_white_16dp);
+                drawableTextView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        showPopUp(mTableCheckIns.get(row).get(column).first.getReason(), view);
+                    }
+                });
+            }
+        }
         if (column == -1 && row >= 0) {
-            textView.setOnClickListener(new View.OnClickListener() {
+            drawableTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     mOnClickListener.onColumnClick(mUsers.get(row));
                 }
             });
         }
+    }
+
+    private void showPopUp(String reason, View v) {
+        final View popupView = inflater.inflate(R.layout.content_reason_popup, null);
+        final PopupWindow popupWindow = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        popupWindow.setBackgroundDrawable(ContextCompat.getDrawable(v.getContext(), R.drawable.shape_message_popup));
+        popupWindow.setOutsideTouchable(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            popupWindow.setAttachedInDecor(true);
+        }
+        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        popupWindow.setAnimationStyle(R.style.popupAnimation);
+        TextView textView = popupView.findViewById(R.id.text_view_reason);
+        textView.setText(reason);
+        popupWindow.showAsDropDown(v, 0, v.getMeasuredHeight() * (-2), Gravity.TOP);
     }
 
     @Override
@@ -188,7 +216,7 @@ public class SampleTableAdapter implements TableAdapter {
             return getStringDate(column + 1);
         if (column == -1)
             return UiUtil.getUserNameForView(mUsers.get(row));
-        return mTableCheckIns.get(row).get(column).first;
+        return getCheckInTime(mTableCheckIns.get(row).get(column).first.getTime());
     }
 
     private String getStringDate(int dayOfWeek) {

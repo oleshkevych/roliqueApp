@@ -47,6 +47,8 @@ public class CheckIn implements Parcelable {
     public String mTime;
     @PropertyName("type")
     public String mType;
+    @PropertyName("reason")
+    public String mReason;
 
     public CheckIn() {
     }
@@ -61,6 +63,7 @@ public class CheckIn implements Parcelable {
         mUserId = in.readString();
         mTime = in.readString();
         mType = in.readString();
+        mReason = in.readString();
     }
 
     @Exclude
@@ -101,6 +104,21 @@ public class CheckIn implements Parcelable {
         return calendar.get(Calendar.DAY_OF_WEEK);
     }
 
+    @Exclude
+    public String getReason() {
+        return mReason;
+    }
+
+    @Exclude
+    public boolean hasReason() {
+        return mReason != null && !mReason.isEmpty();
+    }
+
+    @Exclude
+    public void setReason(String reason) {
+        mReason = reason;
+    }
+
     public static final Parcelable.Creator<CheckIn> CREATOR = new Parcelable.Creator<CheckIn>() {
         @Override
         public CheckIn createFromParcel(Parcel in) {
@@ -123,6 +141,7 @@ public class CheckIn implements Parcelable {
         dest.writeString(mUserId);
         dest.writeString(mTime);
         dest.writeString(mType);
+        dest.writeString(mReason);
     }
 
     @Override

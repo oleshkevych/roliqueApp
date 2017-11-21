@@ -157,4 +157,9 @@
     <string name="activity_user_check_in_statistic_missed_per_week">Missed per week</string>
     <string name="activity_user_check_in_statistic_missed_per_month">Missed per month</string>
     <!--activity user check in statistic end-->
+
+    <!--fragment reason start-->
+    <string name="fragment_reason_dialog_header">Reason for late</string>
+    <string name="fragment_reason_dialog_title_hint">Notes (Optional)</string>
+    <!--fragment reason end-->
 </resources>
