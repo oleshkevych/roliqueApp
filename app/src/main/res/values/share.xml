@@ -5,4 +5,7 @@
     <string name="shared_transition_image">io.rolique.TransitionImage</string>
     <string name="extra_camera_images">io.rolique.extra.Images</string>
     <string name="extra_notification_id">io.rolique.roliqueapp.services.alarmNotification</string>
+    <string name="extra_shared_preferences">ACCOUNT_PREF</string>
+    <string name="extra_shared_preferences_notification_time">NOTIFICATION_TIME</string>
+    <string name="extra_shared_preferences_notification_allowed">IS_NOTIFICATIONS_ALLOWED</string>
 </resources>

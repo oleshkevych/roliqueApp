@@ -85,7 +85,7 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     private FragmentViewPagerAdapter mFragmentViewPagerAdapter;
     MediaLib mMediaLib;
 
-    boolean mIsAlreadyShown;
+    boolean mIsCheckInAlertAlreadyShown;
     private GPSTrackerService mGPSTrackerService;
     boolean mIsInRange;
 
@@ -181,6 +181,8 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
                     mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.SETTINGS, false);
                     break;
                 case R.id.menu_check_in:
+                    toggleLocationService(false);
+                    mIsCheckInAlertAlreadyShown = true;
                     mToolbar.setTitle(R.string.fragment_check_in_title);
                     mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.CHECK_IN, false);
                     break;
@@ -321,13 +323,13 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     @Override
     protected void onStop() {
         mPresenter.stop();
-        if (mGPSTrackerService != null) mIsAlreadyShown = false;
+        if (mGPSTrackerService != null) mIsCheckInAlertAlreadyShown = false;
         toggleLocationService(false);
         super.onStop();
     }
 
     protected void toggleLocationService(boolean isStart) {
-        if (isStart && !mIsAlreadyShown) {
+        if (isStart && !mIsCheckInAlertAlreadyShown) {
             if (ContextCompat.checkSelfPermission(NavigationActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED &&
                     ContextCompat.checkSelfPermission(NavigationActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -384,8 +386,8 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     };
 
     void showCheckInMessage() {
-        if (mIsAlreadyShown) return;
-        mIsAlreadyShown = true;
+        if (mIsCheckInAlertAlreadyShown) return;
+        mIsCheckInAlertAlreadyShown = true;
         CheckInDialog checkInDialog = new CheckInDialog(NavigationActivity.this, mIsInRange, mOnCheckInAction);
         checkInDialog.show();
         toggleLocationService(false);

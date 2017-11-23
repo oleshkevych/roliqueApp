@@ -2,11 +2,14 @@ package io.rolique.roliqueapp.util;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 
 import java.util.Calendar;
 
+import io.rolique.roliqueapp.services.bootReceiver.SampleBootReceiver;
 import io.rolique.roliqueapp.services.notification.NotificationService;
 
 /**
@@ -14,9 +17,6 @@ import io.rolique.roliqueapp.services.notification.NotificationService;
  * Copyright (c) 2017, Rolique. All rights reserved.
  */
 public class AlarmBuilder {
-
-    private final static int RQS_1 = 1;
-    private final static int RQS_2 = 2;
 
     public static void resetAlarm(Context context) {
         setAlarm(context, Calendar.getInstance(), true, false);
@@ -34,6 +34,8 @@ public class AlarmBuilder {
     }
 
     private static void setAlarm(Context context, Calendar calSet, boolean isAlreadyChecked, boolean isCancel) {
+        setUpAlarmLifecycle(context, isCancel);
+        int RQS_1 = 1;
         Calendar calNow = Calendar.getInstance();
         if (calSet.compareTo(calNow) <= 0 || isAlreadyChecked)
             //Today Set time passed, count to tomorrow
@@ -41,6 +43,7 @@ public class AlarmBuilder {
 
         Intent intent = new Intent(context, NotificationService.class);
         PendingIntent pendingIntent = PendingIntent.getService(context, RQS_1, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         assert alarmManager != null;
         alarmManager.cancel(pendingIntent);
@@ -48,9 +51,20 @@ public class AlarmBuilder {
         alarmManager.set(AlarmManager.RTC_WAKEUP, calSet.getTimeInMillis(), pendingIntent);
     }
 
-    public static void setRemindAlarm(Context context, boolean isCancel) {
-        Calendar calNow = Calendar.getInstance();
+    private static void setUpAlarmLifecycle(Context context, boolean isCancel) {
+        ComponentName receiver = new ComponentName(context, SampleBootReceiver.class);
+        PackageManager pm = context.getPackageManager();
 
+        pm.setComponentEnabledSetting(receiver,
+                isCancel ?
+                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED :
+                        PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP);
+    }
+
+    public static void setRemindAlarm(Context context, boolean isCancel) {
+        int RQS_2 = 2;
+        Calendar calNow = Calendar.getInstance();
         Intent intent = new Intent(context, NotificationService.class);
         PendingIntent pendingIntent = PendingIntent.getService(context, RQS_2, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);

@@ -2,6 +2,8 @@ package io.rolique.roliqueapp.screens.navigation.settings;
 
 import android.app.Fragment;
 import android.app.TimePickerDialog;
+import android.content.ComponentName;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -26,6 +28,7 @@ import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.screens.profile.ProfileActivity;
+import io.rolique.roliqueapp.services.bootReceiver.SampleBootReceiver;
 import io.rolique.roliqueapp.util.AlarmBuilder;
 import io.rolique.roliqueapp.util.ui.UiUtil;
 
@@ -67,19 +70,12 @@ public class SettingsFragment extends BaseFragment {
         mNotificationsTimeSwitch.setChecked(isNotificationAllowed);
         setTimeText(isNotificationAllowed);
 
-//        mSetTimeButton.setScaleX(isNotificationAllowed ? widthButton : 0);
-//        mSetTimeButton.setScaleY(isNotificationAllowed ? heightButton : 0);
         mNotificationsTimeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mPreferences.setIsNotificationAllowed(isChecked);
                 setTimeText(isChecked);
                 AlarmBuilder.setAlarm(getActivity(), mPreferences.getNotificationTime(), false, !isChecked);
-//                mSetTimeButton.animate()
-//                        .scaleX(mNotificationsTimeSwitch.getScaleX() == 0 ? widthButton : 0)
-//                        .scaleY(mNotificationsTimeSwitch.getScaleY() == 0 ? heightButton : 0)
-//                        .setDuration(300)
-//                        .start();
             }
         });
     }

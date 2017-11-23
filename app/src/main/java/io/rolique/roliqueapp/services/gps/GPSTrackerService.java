@@ -84,6 +84,7 @@ public class GPSTrackerService extends Service implements LocationListener {
             mIsNetworkEnabled = mLocationManager
                     .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
             if (mIsNetworkEnabled) {
+                mCanGetLocation = true;
                 mLocationManager.requestLocationUpdates(
                         LocationManager.NETWORK_PROVIDER,
                         MIN_TIME_BW_UPDATES,
@@ -237,7 +238,6 @@ public class GPSTrackerService extends Service implements LocationListener {
     @Override
     public void onProviderDisabled(String provider) {
         Timber.e(provider);
-        showSettingsAlert();
     }
 
     @Override
@@ -246,6 +246,7 @@ public class GPSTrackerService extends Service implements LocationListener {
         if (mSettingsDialog != null && mSettingsDialog.isShowing())
             mSettingsDialog.dismiss();
         getLocation();
+        mCanGetLocation = true;
     }
 
     @Override

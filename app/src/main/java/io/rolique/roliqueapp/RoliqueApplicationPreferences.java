@@ -15,16 +15,12 @@ import io.rolique.roliqueapp.data.model.User;
 @Singleton
 public class RoliqueApplicationPreferences {
 
-    private static final String ACCOUNT_PREF = "ACCOUNT_PREF";
     private static final String KEY_ID = "ID";
     private static final String KEY_FIRST_NAME = "FIRST_NAME";
     private static final String KEY_LAST_NAME = "LAST_NAME";
     private static final String KEY_IMAGE_URL = "IMAGE_URL";
     private static final String KEY_TYPE = "TYPE";
     private static final String KEY_LOGGED_IN = "LOGGED_IN";
-    private static final String KEY_NOTIFICATION_TIME = "NOTIFICATION_TIME";
-    private static final String KEY_IS_ON_TOP = "IS_ON_TOP";
-    private static final String KEY_IS_NOTIFICATIONS_ALLOWED = "IS_NOTIFICATIONS_ALLOWED";
 
     public interface UserChangesListener {
         void onInfoChanged();
@@ -32,11 +28,13 @@ public class RoliqueApplicationPreferences {
 
     private UserChangesListener mListener;
     private final SharedPreferences mSharedPreferences;
+    private final Context mContext;
 
     RoliqueApplicationPreferences(Context context) {
+        mContext = context;
         mSharedPreferences = context
                 .getApplicationContext()
-                .getSharedPreferences(ACCOUNT_PREF, Context.MODE_PRIVATE);
+                .getSharedPreferences(context.getString(R.string.extra_shared_preferences), Context.MODE_PRIVATE);
     }
 
     public void setListener(UserChangesListener listener) {
@@ -118,34 +116,24 @@ public class RoliqueApplicationPreferences {
         mSharedPreferences.edit().clear().apply();
     }
 
-    public boolean isInTop() {
-        return mSharedPreferences.getBoolean(KEY_IS_ON_TOP, false);
-    }
-
-    public void setIsInTop(boolean isInTop) {
-        mSharedPreferences.edit()
-                .putBoolean(KEY_IS_ON_TOP, isInTop)
-                .apply();
-    }
-
     public String getNotificationTime() {
-        return mSharedPreferences.getString(KEY_NOTIFICATION_TIME, "10 45");
+        return mSharedPreferences.getString(mContext.getString(R.string.extra_shared_preferences_notification_time), "10 45");
     }
 
     public void setNotificationTime(String notificationTime) {
         mSharedPreferences.edit()
-                .putString(KEY_NOTIFICATION_TIME, notificationTime)
+                .putString(mContext.getString(R.string.extra_shared_preferences_notification_time), notificationTime)
                 .apply();
     }
 
     public boolean isNotificationAllowed() {
-        return mSharedPreferences.getBoolean(KEY_IS_NOTIFICATIONS_ALLOWED, true);
+        return mSharedPreferences.getBoolean(mContext.getString(R.string.extra_shared_preferences_notification_allowed), true);
     }
 
 
     public void setIsNotificationAllowed(boolean isNotificationAllowed) {
         mSharedPreferences.edit()
-                .putBoolean(KEY_IS_NOTIFICATIONS_ALLOWED, isNotificationAllowed)
+                .putBoolean(mContext.getString(R.string.extra_shared_preferences_notification_allowed), isNotificationAllowed)
                 .apply();
     }
 }

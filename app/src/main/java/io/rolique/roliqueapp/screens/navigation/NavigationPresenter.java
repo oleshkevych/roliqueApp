@@ -77,16 +77,16 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
 
     @Override
     public void isLogin() {
-        if (lackInternetConnection()) {
-            mView.showConnectionErrorInView();
-            mView.showLoginInView(false);
-            return;
-        }
-        if (mAuth.getCurrentUser() != null && mPreferences.isLoggedIn()) {
-            mView.showLoginInView(true);
-            return;
-        }
-        mView.showLoginInView(false);
+//        if (lackInternetConnection()) {
+//            mView.showConnectionErrorInView();
+//            mView.showLoginInView(false);
+//            return;
+//        }
+//        if (mAuth.getCurrentUser() != null && mPreferences.isLoggedIn()) {
+//            mView.showLoginInView(true);
+//            return;
+//        }
+        mView.showLoginInView(mPreferences.isLoggedIn());
     }
 
     private RoliqueApplicationPreferences.UserChangesListener mListener = new RoliqueApplicationPreferences.UserChangesListener() {
