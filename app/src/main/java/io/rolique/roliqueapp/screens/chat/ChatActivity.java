@@ -226,9 +226,6 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
 
             @Override
             public void onRemoveClick(int position) {
-//                new File(mChangeableMessage.getMedias().get(position).getImageUrl()).delete();
-//                if (mChangeableMessage.getMedias().get(position).isVideo())
-//                    new File(mChangeableMessage.getMedias().get(position).getVideoUrl()).delete();
                 mChangeableMessage.getMedias().remove(position);
                 mPreviewAdapter.removeItem(position);
                 if (mChangeableMessage.getMedias().size() == 0) resetPreview();
@@ -242,8 +239,6 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         mAdapter = new MessagesAdapter(ChatActivity.this, mPreferences.getId(), mRoliqueAppUsers.getUsers());
         messagesRecyclerView.setAdapter(mAdapter);
         mAdapter.setActionListener(mActionListener);
-//        final ItemDecorator itemDecorator = new ItemDecorator();
-//        messagesRecyclerView.addItemDecoration(itemDecorator);
         setUpScrollListener(messagesRecyclerView, linearLayoutManager);
     }
 
@@ -253,17 +248,13 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
             @Override
             public void onScrolled(final RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-//                if (mIsKeyboardShown) {
-//                    mIsKeyboardShown = false;
-//                    hideKeyboard();
-//                }
                 if (linearLayoutManager.findFirstVisibleItemPosition() == 4 && mIsFetchMessageEnabled) {
                     mIsFetchMessageEnabled = false;
                     mPresenter.getTopMessages(mAdapter.getFirstMessageId(), mChat);
                 }
                 if ((!recyclerView.canScrollVertically(-1) || !recyclerView.canScrollVertically(1)) && !mIsBoundsWorking) {
                     mIsBoundsWorking = true;
-                    long animationDuration = Math.abs(mAverageSpeed) > 100 ? 1500 : 500;
+                    long animationDuration = Math.abs(mAverageSpeed) > 100 ? 500 : 200;
                     mAverageSpeed = (Math.abs(mAverageSpeed) > 200 ? 200 :
                             Math.abs(mAverageSpeed) > 20 ? Math.abs(mAverageSpeed) : 20);
                     animationDuration = Math.abs(animationDuration);
@@ -312,7 +303,6 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                     setUpDrag(!recyclerView.canScrollVertically(-1),
                             !recyclerView.canScrollVertically(1),
                             recyclerView);
-//                itemDecorator.setSpeed(dy);
                 calculateScrollingSpeed(dy);
             }
         });
@@ -344,46 +334,47 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                 @SuppressLint("ClickableViewAccessibility")
                 @Override
                 public boolean onTouch(final View v, MotionEvent event) {
-                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        mStartY = event.getRawY();
-                        mIsDrugging = true;
-                        mDy = 0;
-                        return false;
-                    }
-                    if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                        float dy = event.getRawY() - mStartY;
-                        if (mIsKeyboardShown && Math.abs(dy) > 200) {
-                            mIsKeyboardShown = false;
-                            hideKeyboard();
-                        }
-                        if (isBottomEndVisible && dy < 0 && mStartY != 0) {
-                            if ((Math.abs(Math.abs(dy) - Math.abs(mDy * 2))) > 10) {
-                                mDy = dy / 2;
-                                v.setTranslationY(mDy);
-                                mIsDrugging = mDy < 0;
-                                return mIsDrugging;
-                            }
-                        } else if (isTopEndVisible && dy > 0 && mStartY != 0) {
-                            if ((Math.abs(Math.abs(dy) - Math.abs(mDy * 2))) > 10) {
-                                mDy = dy / 2;
-                                v.setTranslationY(mDy);
-                                mIsDrugging = mDy > 0;
-                                return mIsDrugging;
-                            }
-                        } else if ((isBottomEndVisible && dy > 0) || (isTopEndVisible && dy < 0)) {
-                            recyclerView.setTranslationY(0);
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            mStartY = event.getRawY();
+                            mIsDrugging = true;
                             mDy = 0;
-                            mStartY = 0;
-                            mIsDrugging = false;
+                            mIsNewTouch = true;
                             return false;
-                        }
-                    }
-                    if (event.getAction() == MotionEvent.ACTION_UP) {
-                        animateViewBack(mDy, recyclerView, isBottomEndVisible, isTopEndVisible);
-                        mStartY = 0;
-                        mDy = 0;
-                        mIsDrugging = false;
-                        return true;
+                        case MotionEvent.ACTION_MOVE:
+                            float dy = event.getRawY() - mStartY;
+                            if (mIsKeyboardShown && Math.abs(dy) > 200) {
+                                mIsKeyboardShown = false;
+                                hideKeyboard();
+                            }
+                            if (isBottomEndVisible && dy < 0 && mStartY != 0) {
+                                if ((Math.abs(Math.abs(dy) - Math.abs(mDy * 2))) > 10) {
+                                    mDy = dy / 2;
+                                    v.setTranslationY(mDy);
+                                    mIsDrugging = mDy < 0;
+                                    return mIsDrugging;
+                                }
+                            } else if (isTopEndVisible && dy > 0 && mStartY != 0) {
+                                if ((Math.abs(Math.abs(dy) - Math.abs(mDy * 2))) > 10) {
+                                    mDy = dy / 2;
+                                    v.setTranslationY(mDy);
+                                    mIsDrugging = mDy > 0;
+                                    return mIsDrugging;
+                                }
+                            } else if ((isBottomEndVisible && dy > 0) || (isTopEndVisible && dy < 0)) {
+                                recyclerView.setTranslationY(0);
+                                mDy = 0;
+                                mStartY = 0;
+                                mIsDrugging = false;
+                                return false;
+                            }
+                            return mIsDrugging;
+                        case MotionEvent.ACTION_UP:
+                            mIsDrugging = false;
+                            mStartY = 0;
+                            animateViewBack(mDy, recyclerView, isBottomEndVisible, isTopEndVisible);
+                            mDy = 0;
+                            return true;
                     }
                     return mIsDrugging;
                 }
@@ -396,53 +387,77 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         }
     }
 
-    private void animateViewBack(float dy, final View view, final boolean isBottomVisible, final boolean isTopVisible) {
+    boolean mIsNewTouch;
+
+    private void animateViewBack(final float dy, final View view, final boolean isBottomVisible, final boolean isTopVisible) {
+        mIsNewTouch = false;
         if (view.getTranslationY() == 0) return;
-        long animationDuration = Math.round(Math.abs(dy) * 2);
-        TranslateAnimation animation = new TranslateAnimation(0, 0, 0, isBottomVisible ? Math.abs(dy) : Math.abs(dy) * (-1));
-        animation.setRepeatCount(0);
-        animation.setInterpolator(new CustomInterpolator());
-        animation.setDuration(animationDuration);
-        animation.setFillAfter(true);
-        animation.setAnimationListener(new Animation.AnimationListener() {
+        new Thread(new Runnable() {
             @Override
-            public void onAnimationStart(Animation animation) {
-                view.setOnTouchListener(mOnTouchListener);
-            }
+            public void run() {
+                long animationDuration = Math.round(Math.abs(dy) > 500 ? 250 : 150);
+                final TranslateAnimation viewBackAnimation = new TranslateAnimation(0, 0, 0, isBottomVisible ? Math.abs(dy) : Math.abs(dy) * (-1));
+                viewBackAnimation.setRepeatCount(0);
+                viewBackAnimation.setInterpolator(new CustomInterpolator());
+                viewBackAnimation.setDuration(animationDuration);
+                viewBackAnimation.setFillAfter(true);
+                viewBackAnimation.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                view.setOnTouchListener(mOnTouchListener);
+                            }
+                        });
+                    }
 
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                view.setOnTouchListener(mOnTouchListener);
-                mIsSetDrug = false;
-                mStartY = 0;
-                view.setTranslationY(0);
-                mDy = 0;
-                view.clearAnimation();
-                setUpDrag(isTopVisible, isBottomVisible, view);
-            }
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                view.setOnTouchListener(mOnTouchListener);
+                                mIsSetDrug = false;
+                                mDy = 0;
+                                view.setTranslationY(0);
+                                view.clearAnimation();
+                                setUpDrag(isTopVisible, isBottomVisible, view);
+                            }
+                        });
+                    }
 
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+                    }
+                });
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!mIsNewTouch)
+                            view.startAnimation(viewBackAnimation);
+                    }
+                });
             }
-        });
-        view.startAnimation(animation);
+        }).run();
     }
 
     View.OnTouchListener mOnTouchListener = new View.OnTouchListener() {
         @SuppressLint("ClickableViewAccessibility")
         @Override
         public boolean onTouch(final View v, MotionEvent event) {
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                mStartY = event.getRawY();
-                return false;
-            }
-            if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                float dy = event.getRawY() - mStartY;
-                if (mIsKeyboardShown && Math.abs(dy) > 200) {
-                    mIsKeyboardShown = false;
-                    hideKeyboard();
-                }
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    mIsNewTouch = true;
+                    v.clearAnimation();
+                    mStartY = event.getRawY();
+                    return false;
+                case MotionEvent.ACTION_MOVE:
+                    float dy = event.getRawY() - mStartY;
+                    if (mIsKeyboardShown && Math.abs(dy) > 200) {
+                        mIsKeyboardShown = false;
+                        hideKeyboard();
+                    }
             }
             return false;
         }
