@@ -36,6 +36,11 @@
         <item name="android:windowExitAnimation">@anim/popup_hide</item>
     </style>
 
+    <style name="popupLateReasonAnimation">
+        <item name="android:windowEnterAnimation">@anim/popup_late_reason_show</item>
+        <item name="android:windowExitAnimation">@anim/popup_late_reason_hide</item>
+    </style>
+
     <style name="popupCheckInAnimation">
         <item name="android:windowEnterAnimation">@anim/popup_check_in_show</item>
         <item name="android:windowExitAnimation">@anim/popup_check_in_hide</item>

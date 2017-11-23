@@ -10,7 +10,6 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.util.Pair;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -185,10 +184,10 @@ public class SampleTableAdapter implements TableAdapter {
             popupWindow.setAttachedInDecor(true);
         }
         popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        popupWindow.setAnimationStyle(R.style.popupAnimation);
+        popupWindow.setAnimationStyle(R.style.popupLateReasonAnimation);
         TextView textView = popupView.findViewById(R.id.text_view_reason);
         textView.setText(reason);
-        popupWindow.showAsDropDown(v, 0, v.getMeasuredHeight() * (-2), Gravity.TOP);
+        popupWindow.showAsDropDown(v, 0, v.getMeasuredHeight() / (-3));
     }
 
     @Override
