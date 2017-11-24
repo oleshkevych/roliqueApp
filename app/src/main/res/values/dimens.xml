@@ -19,4 +19,8 @@
     <dimen name="shadow_size">8dp</dimen>
     <!--table dimens end-->
 
+    <integer name="card_flip_left_in">500</integer>
+    <integer name="card_flip_time_full">1000</integer>
+    <integer name="card_flip_time_half">500</integer>
+
 </resources>

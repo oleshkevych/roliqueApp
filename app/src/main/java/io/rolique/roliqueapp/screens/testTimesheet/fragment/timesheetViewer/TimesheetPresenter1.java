@@ -1,0 +1,119 @@
+package io.rolique.roliqueapp.screens.testTimesheet.fragment.timesheetViewer;
+
+import android.support.annotation.NonNull;
+
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.inject.Inject;
+
+import io.rolique.roliqueapp.RoliqueAppUsers;
+import io.rolique.roliqueapp.RoliqueApplicationPreferences;
+import io.rolique.roliqueapp.data.firebaseData.FirebaseValues;
+import io.rolique.roliqueapp.data.model.CheckIn;
+import io.rolique.roliqueapp.data.model.User;
+import io.rolique.roliqueapp.util.DateUtil;
+import io.rolique.roliqueapp.util.LinksBuilder;
+
+/**
+ * Created by Volodymyr Oleshkevych on 8/16/2017.
+ * Copyright (c) 2017, Rolique. All rights reserved.
+ */
+
+class TimesheetPresenter1 implements TimesheetContract1.Presenter, FirebaseValues {
+
+    private final TimesheetViewerFragment mView;
+
+    RoliqueApplicationPreferences mPreferences;
+    List<User> mUsers;
+    FirebaseDatabase mDatabase;
+
+    @Inject
+    TimesheetPresenter1(RoliqueApplicationPreferences preferences,
+                        TimesheetViewerFragment view,
+                        RoliqueAppUsers users,
+                        FirebaseDatabase database) {
+        mView = view;
+        mPreferences = preferences;
+        mUsers = new ArrayList<>(users.getUsers());
+        mDatabase = database;
+    }
+
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void fetchTimesheetsByDate(Date date) {
+        mView.showProgressInView(true);
+        setTimesheetListenerByTime(date);
+    }
+
+
+    private void setTimesheetListenerByTime(Date date) {
+        DatabaseReference mTimesheetReference = mDatabase.getReference(LinksBuilder.buildUrl(MAP, CHECK_IN));
+        mTimesheetReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                List<CheckIn> checkIns = parseCheckIns(dataSnapshot);
+
+                setCheckInsToUsers(checkIns);
+                updateCheckInsInView();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    @NonNull
+    List<CheckIn> parseCheckIns(DataSnapshot dataSnapshot) {
+        List<CheckIn> checkIns = new ArrayList<>();
+        for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren())
+            for (DataSnapshot snapshot : dataSnapshot1.getChildren()) {
+                CheckIn checkIn = snapshot.getValue(CheckIn.class);
+                assert checkIn != null;
+                checkIn.setUserId(snapshot.getKey());
+                checkIns.add(checkIn);
+            }
+        return checkIns;
+    }
+
+    void setCheckInsToUsers(List<CheckIn> checkIns) {
+        for (CheckIn checkIn : checkIns)
+            for (User user : mUsers)
+                if (user.getId().equals(checkIn.getUserId())) {
+                    int index = -1;
+                    for (int i = 0; i < user.getCheckIns().size(); i++)
+                        if (DateUtil.isSameDay(DateUtil.transformDate(user.getCheckIns().get(i).getTime()),
+                                DateUtil.transformDate(checkIn.getTime()))) {
+                            index = i;
+                            break;
+                        }
+                    if (index == -1) user.addCheckIn(checkIn);
+                    else user.getCheckIns().set(index, checkIn);
+                    break;
+                }
+    }
+
+    void updateCheckInsInView() {
+        mView.updateTable(mUsers);
+        mView.showProgressInView(false);
+    }
+}

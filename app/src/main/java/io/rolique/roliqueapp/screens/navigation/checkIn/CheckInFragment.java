@@ -46,7 +46,7 @@ import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.data.model.CheckIn;
 import io.rolique.roliqueapp.screens.navigation.NavigationActivity;
-import io.rolique.roliqueapp.screens.timesheetViewer.TimesheetViewerActivity;
+import io.rolique.roliqueapp.screens.testTimesheet.FlippableTimesheetActivity;
 import io.rolique.roliqueapp.services.gps.GPSTrackerService;
 import io.rolique.roliqueapp.util.AlarmBuilder;
 import io.rolique.roliqueapp.util.DateUtil;
@@ -286,7 +286,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
 
     @OnClick(R.id.button_timesheet)
     void onTimeSheetClick() {
-        startActivity(TimesheetViewerActivity.startIntent(getActivity()));
+        startActivity(FlippableTimesheetActivity.startIntent(getActivity()));
     }
 
     @OnClick(R.id.button_check_in)

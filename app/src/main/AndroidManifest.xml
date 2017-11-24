@@ -68,6 +68,11 @@
             android:configChanges="orientation|screenSize"/>
 
         <activity
+            android:name=".screens.testTimesheet.FlippableTimesheetActivity"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/AppTheme.Fullscreen"/>
+
+        <activity
             android:name=".screens.userCheckIns.UserCheckInsStatisticActivity"
             android:screenOrientation="portrait"/>
 

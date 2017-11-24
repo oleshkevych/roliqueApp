@@ -7,4 +7,5 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:maxLines="2"
+    android:layout_margin="1dp"
     tools:text="bwdnevfuiwbreuweuib"/>
