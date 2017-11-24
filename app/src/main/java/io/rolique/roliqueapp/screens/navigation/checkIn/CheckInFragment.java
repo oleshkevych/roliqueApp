@@ -279,7 +279,7 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
 
     GPSTrackerService.PositionChanged mPositionChanged = new GPSTrackerService.PositionChanged() {
         @Override
-        public void onPositionChanged(boolean isInRange) {
+        public void onPositionChanged(boolean isInRange, double distance) {
             mIsInRange = isInRange;
         }
     };

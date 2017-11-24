@@ -27,8 +27,11 @@ import javax.inject.Inject;
 
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.firebaseData.FirebaseValues;
+import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.data.model.CheckIn;
 import io.rolique.roliqueapp.data.model.Media;
+import io.rolique.roliqueapp.data.model.Message;
+import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.LinksBuilder;
 
 /**
@@ -59,7 +62,7 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
 
     @Override
     public void start() {
-        if(mPreferences.isLoggedIn()) {
+        if (mPreferences.isLoggedIn()) {
             mPreferences.setListener(mListener);
             mView.setImage(mPreferences.getImageUrl(), getName());
             mView.setUserName(getName());
@@ -77,15 +80,6 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
 
     @Override
     public void isLogin() {
-//        if (lackInternetConnection()) {
-//            mView.showConnectionErrorInView();
-//            mView.showLoginInView(false);
-//            return;
-//        }
-//        if (mAuth.getCurrentUser() != null && mPreferences.isLoggedIn()) {
-//            mView.showLoginInView(true);
-//            return;
-//        }
         mView.showLoginInView(mPreferences.isLoggedIn());
     }
 
@@ -128,7 +122,6 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                 @SuppressWarnings("VisibleForTests") String downloadUrl = taskSnapshot.getDownloadUrl().toString();
                 updateUserInfo(downloadUrl);
             }
@@ -182,6 +175,48 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
         reference.setValue(checkIn);
         mView.showCheckedInInView(checkIn.getType());
         mView.updateAlarm(true, mPreferences.getNotificationTime(), mPreferences.isNotificationAllowed());
+    }
+
+    @Override
+    public void sendMessageLateToMainChat(final String messageText) {
+        final DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS, MAIN_CHAT_ID));
+        chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                final Chat mainChat = dataSnapshot.getValue(Chat.class);
+                DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, MAIN_CHAT_ID)).push();
+                String id = chatRef.getKey();
+                Message message = createMessage(messageText);
+                message.setId(id);
+                assert mainChat != null;
+                for (String memberId : mainChat.getMemberIds()) {
+                    DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, memberId, MAIN_CHAT_ID));
+                    memberRef.setValue(message);
+                    setLastMessageStatus(memberId, MAIN_CHAT_ID, true);
+                }
+                setLastMessageStatus(mPreferences.getId(), MAIN_CHAT_ID, false);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private Message createMessage(String messageText) {
+        Message.Builder builder = new Message.Builder();
+        return builder.setChatId(MAIN_CHAT_ID)
+                .setSenderId(mPreferences.getId())
+                .setText(messageText)
+                .setType("user")
+                .setTimeStamp(DateUtil.getStringTime())
+                .create();
+    }
+
+    private void setLastMessageStatus(String userId, String chatId, boolean isNotRead) {
+        DatabaseReference messageRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_NEW_MESSAGES, userId, chatId));
+        messageRef.setValue(isNotRead);
     }
 
     private boolean lackInternetConnection() {

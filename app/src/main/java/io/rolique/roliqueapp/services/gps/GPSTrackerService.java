@@ -38,7 +38,7 @@ public class GPSTrackerService extends Service implements LocationListener {
     public static final int RANGE_RADIUS = 50;
 
     public interface PositionChanged {
-        void onPositionChanged(boolean isInRange);
+        void onPositionChanged(boolean isInRange, double distance);
     }
 
     private final PositionChanged mPositionChanged;
@@ -57,6 +57,7 @@ public class GPSTrackerService extends Service implements LocationListener {
     Location mLocation; // mLocation
     double mLatitude; // mLatitude
     double mLongitude; // mLongitude
+    double mDistance; // mLongitude
 
     // Declaring a Location Manager
     LocationManager mLocationManager;
@@ -145,6 +146,13 @@ public class GPSTrackerService extends Service implements LocationListener {
     }
 
     /**
+     * Function to get Distance
+     */
+    public double getDistance() {
+        return mDistance;
+    }
+
+    /**
      * Function to check GPS/wifi enabled
      *
      * @return boolean
@@ -200,7 +208,8 @@ public class GPSTrackerService extends Service implements LocationListener {
                 ROLIQUE_POSITION.longitude,
                 distance);
 
-        mPositionChanged.onPositionChanged(distance[0] <= RANGE_RADIUS);
+        mDistance = distance[0];
+        mPositionChanged.onPositionChanged(distance[0] <= RANGE_RADIUS, distance[0]);
         Timber.e(Arrays.toString(distance));
         Timber.d("is in range: " + (distance[0] <= RANGE_RADIUS));
     }

@@ -142,6 +142,12 @@
 
     <!--dialog check in start-->
     <string name="dialog_check_in_title">Check in</string>
+    <string name="dialog_check_button_remotely">Remotely</string>
+    <string name="dialog_check_button_late">Late</string>
+    <string name="dialog_check_text_view_time">Set Time</string>
+    <string name="dialog_check_text_view_location">Use My Location</string>
+    <string name="dialog_check_late_message">Hi everyone! I will come at </string>
+    <string name="dialog_check_in_confirm">Confirm</string>
     <!--dialog check in end-->
 
     <!--activity user check in statistic start-->

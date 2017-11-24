@@ -30,5 +30,6 @@ interface NavigationContract {
         void updateUserPicture(Media media);
         void checkIfUserCheckedIn();
         void setNewCheckIn(CheckIn checkIn, Date date);
+        void sendMessageLateToMainChat(String messageText);
     }
 }

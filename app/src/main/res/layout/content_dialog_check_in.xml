@@ -8,6 +8,7 @@
     android:orientation="vertical">
 
     <io.rolique.roliqueapp.widget.DrawableTextView
+        android:id="@+id/drawable_text_view_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -96,6 +97,43 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/container_late"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/text_view_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:foreground="?android:selectableItemBackground"
+            android:gravity="center"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:text="@string/dialog_check_text_view_location"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
+            android:textColor="@color/grey_500"/>
+
+        <TextView
+            android:id="@+id/text_view_set_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:foreground="?android:selectableItemBackground"
+            android:gravity="center"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:text="@string/dialog_check_text_view_time"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
+            android:textColor="@color/grey_500"/>
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
@@ -106,10 +144,32 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@color/transparent"
-            android:text="@string/bottom_dialog_add_cancel"
+            android:text="@android:string/cancel"
             android:foreground="?selectableItemBackground"
             android:textColor="@color/colorPrimary"
             tools:ignore="ButtonStyle"/>
+
+        <Button
+            android:id="@+id/button_remotely"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            android:foreground="?selectableItemBackground"
+            android:text="@string/dialog_check_button_remotely"
+            android:textColor="@color/colorPrimary"
+            tools:ignore="ButtonStyle"
+            android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/button_late"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            android:foreground="?selectableItemBackground"
+            android:text="@string/dialog_check_button_late"
+            android:textColor="@color/colorPrimary"
+            tools:ignore="ButtonStyle"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/button_ok"
@@ -117,9 +177,10 @@
             android:layout_height="wrap_content"
             android:background="@color/transparent"
             android:foreground="?selectableItemBackground"
-            android:text="@string/bottom_dialog_OK"
+            android:text="@android:string/ok"
             android:textColor="@color/colorPrimary"
-            tools:ignore="ButtonStyle"/>
+            tools:ignore="ButtonStyle"
+            android:visibility="gone"/>
 
     </LinearLayout>
 </LinearLayout>

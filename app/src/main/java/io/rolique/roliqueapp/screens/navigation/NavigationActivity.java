@@ -82,12 +82,10 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     private TextView mNameTextView;
     private ViewSwitcher mNavigationImageSwitcher;
     private ViewSwitcher mNavigationViewSwitcher;
-    private FragmentViewPagerAdapter mFragmentViewPagerAdapter;
     MediaLib mMediaLib;
 
     boolean mIsCheckInAlertAlreadyShown;
     private GPSTrackerService mGPSTrackerService;
-    boolean mIsInRange;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -138,8 +136,8 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     }
 
     private void setUpFragments() {
-        mFragmentViewPagerAdapter = new FragmentViewPagerAdapter(getFragmentManager());
-        mViewPager.setAdapter(mFragmentViewPagerAdapter);
+        FragmentViewPagerAdapter fragmentViewPagerAdapter = new FragmentViewPagerAdapter(getFragmentManager());
+        mViewPager.setAdapter(fragmentViewPagerAdapter);
         mViewPager.setOffscreenPageLimit(4);
     }
 
@@ -372,23 +370,25 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
 
     GPSTrackerService.PositionChanged mPositionChanged = new GPSTrackerService.PositionChanged() {
         @Override
-        public void onPositionChanged(boolean isInRange) {
-            mIsInRange = isInRange;
-            if (mIsInRange) showCheckInMessage();
+        public void onPositionChanged(final boolean isInRange, final double distance) {
+            if (isInRange) showCheckInMessage(true, distance);
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showCheckInMessage();
+                    showCheckInMessage(isInRange, distance);
                 }
             }, 3000);
         }
     };
 
-    void showCheckInMessage() {
+    void showCheckInMessage(boolean isInRange, double distance) {
         if (mIsCheckInAlertAlreadyShown) return;
         mIsCheckInAlertAlreadyShown = true;
-        CheckInDialog checkInDialog = new CheckInDialog(NavigationActivity.this, mIsInRange, mOnCheckInAction);
+        CheckInDialog checkInDialog = new CheckInDialog(NavigationActivity.this,
+                isInRange,
+                mOnCheckInAction,
+                distance);
         checkInDialog.show();
         toggleLocationService(false);
     }
@@ -411,6 +411,11 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
             } else {
                 sendCheckIn(checkIn);
             }
+        }
+
+        @Override
+        public void onLateMessageSelected(String messageText) {
+            mPresenter.sendMessageLateToMainChat(messageText);
         }
     };
 
