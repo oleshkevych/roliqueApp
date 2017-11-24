@@ -44,16 +44,8 @@ import timber.log.Timber;
 
 public class TimesheetViewerFragment extends BaseFragment implements TimesheetContract1.View {
 
-    public static final String ARG_DATE = "DATE";
-    public static final String ARG_ORIENTATION = "ORIENTATION";
-
-    public static TimesheetViewerFragment startIntent(long tableDate, int orientation) {
-        Bundle args = new Bundle();
-        args.putLong(ARG_DATE, tableDate);
-        args.putInt(ARG_ORIENTATION, orientation);
-        TimesheetViewerFragment fragment = new TimesheetViewerFragment();
-        fragment.setArguments(args);
-        return fragment;
+    public static TimesheetViewerFragment startIntent() {
+        return new TimesheetViewerFragment();
     }
 
     private static final String TABLE_DATE = "DATE";
@@ -70,7 +62,6 @@ public class TimesheetViewerFragment extends BaseFragment implements TimesheetCo
     Date mTableDate;
     private PopupWindow mPopupWindow;
     boolean mIsPopUpShowing;
-    boolean mIsUserUpdated;
     int mConfigOrientation;
 
     public interface OnUserClickListener {
@@ -82,25 +73,26 @@ public class TimesheetViewerFragment extends BaseFragment implements TimesheetCo
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        if (mTableDate == null && savedInstanceState == null) {
-            mTableDate = new Date(getArguments().getLong(ARG_DATE));
-            mConfigOrientation = getArguments().getInt(ARG_ORIENTATION);
-        }
         return inflater.inflate(R.layout.activity_timesheet_viewer, container, false);
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if (savedInstanceState == null)
+
+        setUpTableView(view);
+        if (savedInstanceState == null) {
+            if (mTableDate == null) {
+                mTableDate = new Date();
+                mConfigOrientation = Configuration.ORIENTATION_PORTRAIT;
+                mPresenter.fetchTimesheetsByDate(new Date());
+            }
             updateViewOrientation();
-        else
+        } else {
             mTableDate = new Date(savedInstanceState.getLong(TABLE_DATE));
+        }
         setUpToolbar(view);
         updateTimeInView(view);
-        setUpTableView(view);
-        if (!mIsUserUpdated)
-            mPresenter.fetchTimesheetsByDate(new Date());
         setUpPopUpView();
     }
 
@@ -226,7 +218,6 @@ public class TimesheetViewerFragment extends BaseFragment implements TimesheetCo
     @Override
     public void updateTable(List<User> users) {
         mAdapter.updateValues(mTableDate, users);
-        mIsUserUpdated = true;
     }
 
     @Override
