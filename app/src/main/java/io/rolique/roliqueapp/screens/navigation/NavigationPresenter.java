@@ -189,6 +189,8 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
                 Message message = createMessage(messageText);
                 message.setId(id);
                 assert mainChat != null;
+                DatabaseReference messageRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, MAIN_CHAT_ID, message.getId()));
+                messageRef.setValue(message);
                 for (String memberId : mainChat.getMemberIds()) {
                     DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, memberId, MAIN_CHAT_ID));
                     memberRef.setValue(message);

@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.util.AlarmBuilder;
+import timber.log.Timber;
 
 /**
  * Created by Volodymyr Oleshkevych on 11/22/2017.
@@ -19,12 +20,13 @@ public class SampleBootReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Toast.makeText(context, "Start Boot Broadcast", Toast.LENGTH_LONG).show();
 
-            SharedPreferences sharedPreferences = context
-                    .getApplicationContext()
-                    .getSharedPreferences(context.getString(R.string.extra_shared_preferences), Context.MODE_PRIVATE);
-            String time = sharedPreferences.getString(context.getString(R.string.extra_shared_preferences_notification_time), "10 45");
-            boolean isAllowed = sharedPreferences.getBoolean(context.getString(R.string.extra_shared_preferences_notification_allowed), true);
+        SharedPreferences sharedPreferences = context
+                .getApplicationContext()
+                .getSharedPreferences(context.getString(R.string.extra_shared_preferences), Context.MODE_PRIVATE);
+        String time = sharedPreferences.getString(context.getString(R.string.extra_shared_preferences_notification_time), "10 45");
+        boolean isAllowed = sharedPreferences.getBoolean(context.getString(R.string.extra_shared_preferences_notification_allowed), true);
 
+        Timber.e("Start reboot, time: " + time + " isAllowed " + isAllowed);
         if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
             AlarmBuilder.setAlarm(context, time, false, !isAllowed);
             Toast.makeText(context, "Reseted Alarm", Toast.LENGTH_LONG).show();

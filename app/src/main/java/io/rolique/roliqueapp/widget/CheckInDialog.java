@@ -95,7 +95,7 @@ public class CheckInDialog extends Dialog {
         mContainerLateButtons.setVisibility(View.GONE);
         v.setVisibility(View.GONE);
         mTitleDrawableTextView.setText(R.string.dialog_check_in_title);
-        mTitleDrawableTextView.setDrawableLeft(R.drawable.ic_my_location_white_24dp);
+        mTitleDrawableTextView.setDrawableLeft(R.drawable.ic_my_location_black_24dp);
         if (!mIsInRange)
             mLateButton.setVisibility(View.VISIBLE);
     }
@@ -124,13 +124,14 @@ public class CheckInDialog extends Dialog {
     }
 
     @OnClick(R.id.button_late)
-    void onLateClick(View v) {
+    void onLateClick() {
         mMessageTextView.setVisibility(View.GONE);
         mContainerCheckInsButtons.setVisibility(View.GONE);
         mContainerLateButtons.setVisibility(View.VISIBLE);
-        v.setVisibility(View.GONE);
+        mLateButton.setVisibility(View.GONE);
+        mRemotelyButton.setVisibility(View.VISIBLE);
         mTitleDrawableTextView.setText(R.string.dialog_check_button_late);
-        mTitleDrawableTextView.setDrawableLeft(R.drawable.ic_timer_white_24dp);
+        mTitleDrawableTextView.setDrawableLeft(R.drawable.ic_timer_black_24dp);
     }
 
     @OnClick(R.id.text_view_location)
