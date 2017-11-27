@@ -58,7 +58,8 @@ android {
                     "viktor.kolomiytsev@rolique.io," +
                     "roman.horobets@rolique.io," +
                     "sergii.velykodnyi@gmail.com," +
-                    "igor.semenyuk@rolique.io"
+                    "igor.semenyuk@rolique.io," +
+                    "khrystyna.hlushko@rolique.io "
         }
         debug {
             minifyEnabled false
