@@ -155,7 +155,7 @@
     <string name="activity_user_check_in_statistic_header_weekly">Last week check ins statistics for </string>
     <string name="activity_user_check_in_statistic_header_all_time">Check ins statistics for </string>
     <string name="activity_user_check_in_statistic_switcher_weekly">Last week</string>
-    <string name="activity_user_check_in_statistic_switcher_all_time">For all time</string>
+    <string name="activity_user_check_in_statistic_switcher_all_time">Last month</string>
     <string name="activity_user_check_in_statistic_chart_title">Delayed statistics for\n</string>
     <string name="activity_user_check_in_statistic_late">Late</string>
     <string name="activity_user_check_in_statistic_results">Results</string>

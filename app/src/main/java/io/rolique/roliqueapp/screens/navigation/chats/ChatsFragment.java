@@ -77,7 +77,8 @@ public class ChatsFragment extends BaseFragment implements ChatsContract.View {
 
     @OnClick(R.id.button_add_chat)
     void onAddChatClick() {
-        startActivity(ChatEditorActivity.startIntent(getActivity()));
+//        startActivity(ChatEditorActivity.startIntent(getActivity()));
+
     }
 
     @Override

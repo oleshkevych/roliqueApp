@@ -6,6 +6,8 @@ import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.core.CrashlyticsCore;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
@@ -28,6 +30,9 @@ public class RoliqueApplication extends Application {
 // Initialize Fabric with the debug-disabled crashlytics.
         Fabric.with(RoliqueApplication.this, crashlyticsKit);
         plantTimber();
+        Timber.e("ID: " + FirebaseInstanceId.getInstance().getToken());
+        String username = "puf";
+        FirebaseMessaging.getInstance().subscribeToTopic("user_"+username);
         mRepositoryComponent = buildRepositoryComponent();
     }
 

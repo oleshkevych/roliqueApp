@@ -389,7 +389,11 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
                 isInRange,
                 mOnCheckInAction,
                 distance);
-        checkInDialog.show();
+        try {
+            checkInDialog.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         toggleLocationService(false);
     }
 
