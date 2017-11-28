@@ -31,8 +31,7 @@ public class RoliqueApplication extends Application {
         Fabric.with(RoliqueApplication.this, crashlyticsKit);
         plantTimber();
         Timber.e("ID: " + FirebaseInstanceId.getInstance().getToken());
-        String username = "puf";
-        FirebaseMessaging.getInstance().subscribeToTopic("user_"+username);
+        FirebaseMessaging.getInstance().subscribeToTopic("main");
         mRepositoryComponent = buildRepositoryComponent();
     }
 

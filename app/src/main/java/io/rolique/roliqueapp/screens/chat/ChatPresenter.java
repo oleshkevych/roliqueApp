@@ -1,5 +1,6 @@
 package io.rolique.roliqueapp.screens.chat;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -30,8 +31,10 @@ import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.firebaseData.FirebaseValues;
 import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.data.model.Message;
+import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.LinksBuilder;
+import io.rolique.roliqueapp.util.ui.UiUtil;
 
 /**
  * Created by Volodymyr Oleshkevych on 8/16/2017.
@@ -48,6 +51,8 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
     boolean mIsProgressActive;
     boolean mIsDeleting;
     Message mLastMessage;
+
+    SenderNotificationRequestManager mSenderNotificationRequestManager;
 
     @Inject
     ChatPresenter(RoliqueApplicationPreferences preferences,
@@ -91,12 +96,18 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
     }
 
     @Override
-    public void fetchLastMessages(Chat chat) {
+    public void fetchLastMessages(Context context, Chat chat) {
+        mSenderNotificationRequestManager = new SenderNotificationRequestManager(context, chat, getUserName());
         mIsProgressActive = true;
         DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES));
         mChatQuery = chatRef.child(chat.getId()).limitToLast(20);
         mChatQuery.addChildEventListener(mChildEventListener);
     }
+
+    private String getUserName() {
+        return String.format("%s %s", mPreferences.getFirstName(), mPreferences.getLastName());
+    }
+
 
     private ChildEventListener mChildEventListener = new ChildEventListener() {
         @Override
@@ -105,6 +116,7 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
                 mIsProgressActive = false;
             }
             Message message = dataSnapshot.getValue(Message.class);
+            assert message != null;
             if (mIsDeleting && DateUtil.isFirstEarlier(mLastMessage.getTimeStamp(), message.getTimeStamp())) {
                 mIsDeleting = false;
                 return;
@@ -161,6 +173,7 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
                 setLastMessageStatus(memberId, chat.getId(), true);
             }
             setLastMessageStatus(mPreferences.getId(), chat.getId(), false);
+            notifyAllMembers(message);
         } else {
             DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_CHAT, chat.getMemberIds().get(0), chat.getId()));
             memberRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -238,6 +251,10 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
         });
     }
 
+    private void notifyAllMembers(Message message) {
+        mSenderNotificationRequestManager.sendMessage(message);
+    }
+
     @Override
     public void removeMessage(final Message message, final Chat chat, final boolean isInLast20th) {
         mIsDeleting = true;
@@ -247,6 +264,7 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Message message1 = dataSnapshot.getValue(Message.class);
+                assert message1 != null;
                 if (message1.getId().equals(message.getId())) {
                     Query messageQuery = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES, chat.getId())).limitToLast(2);
                     messageQuery.addListenerForSingleValueEvent(new ValueEventListener() {

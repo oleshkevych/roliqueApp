@@ -49,8 +49,6 @@ import timber.log.Timber;
  */
 public class UiUtil {
 
-    public static String vova;
-
     public static String getUserNameForView(String senderId, List<User> users) {
         for (User user : users)
             if (user.getId().equals(senderId))
@@ -63,7 +61,6 @@ public class UiUtil {
     }
 
     public static void setImageWithRoundCorners(final ImageView imageView, String url) {
-        vova = "VOVA";
         int cornerRadius = imageView.getContext().getResources().getDimensionPixelSize(R.dimen.image_view_corner_radius);
         GlideApp.with(imageView.getContext())
                 .load(url)

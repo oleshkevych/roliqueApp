@@ -315,7 +315,7 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
         mPresenter.start();
         NotificationManager notificationmanager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         assert notificationmanager != null;
-        notificationmanager.cancel(NotificationService.NOTIFICATION_ID);
+        notificationmanager.cancelAll();
     }
 
     @Override

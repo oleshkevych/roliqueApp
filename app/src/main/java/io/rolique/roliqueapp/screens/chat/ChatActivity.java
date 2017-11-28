@@ -3,6 +3,7 @@ package io.rolique.roliqueapp.screens.chat;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -91,7 +92,7 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         setUpMediaLib();
         setUpRecyclerView();
 
-        mPresenter.fetchLastMessages(mChat);
+        mPresenter.fetchLastMessages(ChatActivity.this, mChat);
     }
 
     @Override
@@ -581,7 +582,15 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         resetPreview();
         setEnableSend(false);
         mAdapter.updateMessage(message);
-        mPresenter.setMessage(message, mChat);
+        new SendMessage().execute(message);
+    }
+
+    private class SendMessage extends AsyncTask<Message, Void, Void> {
+
+        protected Void doInBackground(Message... message) {
+            mPresenter.setMessage(message[0], mChat);
+            return null;
+        }
     }
 
     private Message getMessage(String messageText) {

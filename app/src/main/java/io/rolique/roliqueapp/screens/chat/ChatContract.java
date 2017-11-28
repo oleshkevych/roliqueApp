@@ -1,5 +1,7 @@
 package io.rolique.roliqueapp.screens.chat;
 
+import android.content.Context;
+
 import java.util.List;
 
 import io.rolique.roliqueapp.data.model.Chat;
@@ -24,7 +26,7 @@ interface ChatContract {
 
     interface Presenter extends BasePresenter {
         void getTopMessages(String firstMessageId, Chat chat);
-        void fetchLastMessages(Chat chat);
+        void fetchLastMessages(Context context, Chat chat);
         void leaveChat(Chat chat, String memberId);
         void setMessage(Message message, Chat chat);
         void removeMessage(Message message, Chat chat, boolean isInLast20th);
