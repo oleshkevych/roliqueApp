@@ -17,7 +17,7 @@ android {
 
     def versionMajor = 0
     def versionMinor = 0
-    def versionPatch = 23
+    def versionPatch = 24
 
     defaultConfig {
         applicationId "io.rolique.roliqueapp"
@@ -94,6 +94,8 @@ dependencies {
     compile "com.google.firebase:firebase-auth:$FIREBASE_LIBRARY_VERSION"
     compile "com.google.firebase:firebase-storage:$FIREBASE_LIBRARY_VERSION"
     compile "com.google.firebase:firebase-messaging:$FIREBASE_LIBRARY_VERSION"
+
+    compile 'com.android.support:multidex:1.0.2'
 
     final GLIDE_LIBRARY_VERSION = '4.1.1'
     compile "com.github.bumptech.glide:glide:$GLIDE_LIBRARY_VERSION"

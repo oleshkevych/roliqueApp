@@ -41,7 +41,6 @@ import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.welcome.WelcomeActivity;
 import io.rolique.roliqueapp.services.gps.GPSTrackerService;
-import io.rolique.roliqueapp.services.notification.NotificationService;
 import io.rolique.roliqueapp.util.AlarmBuilder;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.ui.UiUtil;
@@ -170,6 +169,9 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
                     mToolbar.setTitle(R.string.fragment_contacts_title);
                     mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.CONTACTS, false);
                     break;
+                case R.id.menu_email:
+                    startGmail();
+                    break;
 //                case R.id.menu_eat:
 //                    mToolbar.setSingle(R.string.fragment_eat_title);
 //                    mViewPager.setCurrentItem(FragmentViewPagerAdapter.Position.EAT, false);
@@ -194,6 +196,19 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
             return true;
         }
     };
+
+    protected void startGmail() {
+        Intent intent = getPackageManager().getLaunchIntentForPackage("com.google.android.gm");
+        if (intent != null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } else {
+            intent = new Intent(Intent.ACTION_VIEW);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setData(Uri.parse("market://details?id=" + "com.google.android.gm"));
+            startActivity(intent);
+        }
+    }
 
     private void setChatsSelected() {
         Menu menu = mNavigationView.getMenu();

@@ -23,6 +23,7 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import butterknife.OnEditorAction;
 import io.rolique.cameralibrary.MediaLib;
 import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.roliqueapp.BaseFragment;
@@ -88,7 +89,6 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
         super.onViewCreated(view, savedInstanceState);
         setUpToolbar();
         UiUtil.setImageIfExists(mViewSwitcher, mImagePath, "", 88);
-        mConfirmPasswordSignUpEditText.setOnEditorActionListener(mOnEditorActionListener);
         mEmailSignUpEditText.setOnFocusChangeListener(mOnFocusChangeListener);
 
         mLastNameEditText.addTextChangedListener(mOnNameEditorActionListener);
@@ -113,17 +113,6 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
                 .build()
                 .inject(SignUpFragment.this);
     }
-
-    TextView.OnEditorActionListener mOnEditorActionListener = new TextView.OnEditorActionListener() {
-        @Override
-        public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-            if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                attemptLogin();
-                return true;
-            }
-            return false;
-        }
-    };
 
     TextView.OnFocusChangeListener mOnFocusChangeListener = new View.OnFocusChangeListener() {
         @Override
@@ -282,6 +271,12 @@ public class SignUpFragment extends BaseFragment implements SignUpContract.View 
     void onSignClick() {
         hideKeyboard();
         attemptLogin();
+    }
+
+    @OnEditorAction(R.id.edit_text_confirm_password_sign_up)
+    boolean onLoginClick() {
+        onSignClick();
+        return false;
     }
 
     @Override

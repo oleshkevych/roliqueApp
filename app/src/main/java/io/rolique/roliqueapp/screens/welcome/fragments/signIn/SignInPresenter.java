@@ -73,6 +73,17 @@ final class SignInPresenter implements SignInContract.Presenter, FirebaseValues 
                 });
     }
 
+    @Override
+    public void resetPassMail(String email) {
+        mAuth.sendPasswordResetEmail(email)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        mView.showEmailSentInView(task.isSuccessful());
+                    }
+                });
+    }
+
     private void saveSignInCredentials(final String uid) {
         mQuery = mDatabase.getReference(AUTH_USER).child(uid);
         mQuery.addValueEventListener(mListener);

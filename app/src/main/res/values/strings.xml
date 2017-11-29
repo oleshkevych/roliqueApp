@@ -27,6 +27,9 @@
     <string name="activity_login_first_name">First name</string>
     <string name="activity_login_last_name">Last name</string>
     <string name="activity_login_confirm_password">Confirm password</string>
+    <string name="activity_login_reset_password">Reset Password</string>
+    <string name="activity_login_email_sent">You will receive email in a moment. Follow the instructions</string>
+    <string name="activity_login_email_error">Something goes wrong. Check entered email address</string>
     <!-- Fragment login end-->
 
     <!-- Fragment chats start-->
@@ -58,6 +61,7 @@
 
     <!-- navigation menu start-->
     <string name="navigation_menu_check_in">Check in</string>
+    <string name="navigation_menu_email">Email</string>
     <string name="navigation_menu_suggestions">Your Suggestions</string>
     <string name="navigation_menu_log_out">Log out</string>
     <string name="navigation_menu_settings">Settings</string>

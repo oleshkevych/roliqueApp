@@ -55,9 +55,9 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:hint="@string/activity_login_password"
-                android:imeActionId="@+id/login"
+                android:imeActionId="@integer/action_login"
                 android:imeActionLabel="@string/activity_login_title_activity_login"
-                android:imeOptions="actionUnspecified"
+                android:imeOptions="actionDone"
                 android:inputType="textPassword"
                 android:maxLines="1"/>
 
@@ -69,6 +69,16 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/activity_login_title_activity_login"
+            android:textStyle="bold"
+            android:theme="@style/Widget.Rolique.Button.Blue"/>
+
+        <Button
+            android:id="@+id/button_reset_password"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_gravity="end"
+            android:text="@string/activity_login_reset_password"
             android:textStyle="bold"
             android:theme="@style/Widget.Rolique.Button.Blue"/>
     </LinearLayout>

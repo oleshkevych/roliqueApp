@@ -19,6 +19,7 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import butterknife.OnEditorAction;
 import io.rolique.roliqueapp.BaseFragment;
 import io.rolique.roliqueapp.R;
 import io.rolique.roliqueapp.RoliqueApplication;
@@ -50,7 +51,6 @@ public class SignInFragment extends BaseFragment implements SignInContract.View 
         super.onViewCreated(view, savedInstanceState);
         setUpToolbar();
 
-        mPasswordSignInEditText.setOnEditorActionListener(mOnEditorActionListener);
         mEmailSignInEditText.setOnFocusChangeListener(mOnFocusChangeListener);
     }
 
@@ -72,17 +72,6 @@ public class SignInFragment extends BaseFragment implements SignInContract.View 
             }
         });
     }
-
-    TextView.OnEditorActionListener mOnEditorActionListener = new TextView.OnEditorActionListener() {
-        @Override
-        public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-            if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                attemptLogin();
-                return true;
-            }
-            return false;
-        }
-    };
 
     TextView.OnFocusChangeListener mOnFocusChangeListener = new View.OnFocusChangeListener() {
         @Override
@@ -166,7 +155,7 @@ public class SignInFragment extends BaseFragment implements SignInContract.View 
 
     private boolean lacksPassword(EditText passwordView) {
         String password = getInputText(passwordView);
-        if (TextUtils.isEmpty(password) || password.length() <= 6) {
+        if (TextUtils.isEmpty(password)) {
             passwordView.setError(getString(R.string.activity_login_error_invalid_password));
             passwordView.requestFocus();
             return true;
@@ -189,9 +178,23 @@ public class SignInFragment extends BaseFragment implements SignInContract.View 
         attemptLogin();
     }
 
+    @OnClick(R.id.button_reset_password)
+    void onResetPasswordClick() {
+        hideKeyboard();
+        if (!lacksEmail(mEmailSignInEditText)) {
+            showProgress(true);
+            mPresenter.resetPassMail(getInputText(mEmailSignInEditText));
+        }
+    }
+
+    @OnEditorAction(R.id.edit_text_password_sign_in)
+    boolean onLoginClick() {
+        onSignClick();
+        return false;
+    }
+
     @Override
     public void showLoginInView() {
-        showProgress(false);
         startActivity(NavigationActivity.startIntent(getActivity()));
         getActivity().finish();
     }
@@ -200,6 +203,12 @@ public class SignInFragment extends BaseFragment implements SignInContract.View 
     public void showLoginError(String message) {
         showProgress(false);
         showSnackbar(getView(), message);
+    }
+
+    @Override
+    public void showEmailSentInView(boolean isSent) {
+        showProgress(false);
+        showSnackbar(getView(), isSent ? getString(R.string.activity_login_email_sent) : getString(R.string.activity_login_email_error));
     }
 
     @Override

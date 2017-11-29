@@ -1,6 +1,9 @@
 package io.rolique.roliqueapp;
 
 import android.app.Application;
+import android.content.Context;
+import android.support.multidex.MultiDexApplication;
+import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.core.CrashlyticsCore;
@@ -16,7 +19,7 @@ import timber.log.Timber;
  * Created by Volodymyr Oleshkevych on 8/16/2017.
  * Copyright (c) 2017, Rolique. All rights reserved.
  */
-public class RoliqueApplication extends Application {
+public class RoliqueApplication extends MultiDexApplication {
 
     private RoliqueApplicationComponent mRepositoryComponent;
 

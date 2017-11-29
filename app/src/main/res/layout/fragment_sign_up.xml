@@ -117,9 +117,9 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:hint="@string/activity_login_confirm_password"
-                    android:imeActionId="@+id/button_sign_up"
+                    android:imeActionId="@integer/action_login"
                     android:imeActionLabel="@string/activity_sign_up_title"
-                    android:imeOptions="actionUnspecified"
+                    android:imeOptions="actionDone"
                     android:inputType="textPassword"
                     android:maxLines="1"/>
             </android.support.design.widget.TextInputLayout>

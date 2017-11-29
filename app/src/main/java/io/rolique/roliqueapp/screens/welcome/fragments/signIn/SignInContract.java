@@ -15,9 +15,11 @@ interface SignInContract {
     interface View extends BaseView<Presenter> {
         void showLoginInView();
         void showLoginError(String message);
+        void showEmailSentInView(boolean isSent);
     }
 
     interface Presenter extends BasePresenter {
         void signIn(String email, String password, Activity activity);
+        void resetPassMail(String email);
     }
 }
