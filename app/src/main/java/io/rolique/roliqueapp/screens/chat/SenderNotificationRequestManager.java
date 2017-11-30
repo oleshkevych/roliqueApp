@@ -86,7 +86,7 @@ public class SenderNotificationRequestManager {
         };
     }
 
-    public void sendMessage(Message message) {
+    void sendMessage(Message message) {
         try {
             Timber.d(createPOST(URL, message));
         } catch (Exception e) {

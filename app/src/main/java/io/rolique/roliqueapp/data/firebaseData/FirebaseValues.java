@@ -20,6 +20,9 @@ public interface FirebaseValues {
     String MAP = "map";
     String CHECK_IN = "checkin";
     String USER_NEW_MESSAGES = "userNewMessages";
+    String USER_TOKEN = "userToken";
+    String TOKEN = "token";
+    String USER_MUTES = "userMutes";
 
     String MAIN_CHAT_ID = "main";
 }

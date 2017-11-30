@@ -6,14 +6,20 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -33,6 +39,7 @@ import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.data.model.Message;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.LinksBuilder;
+import timber.log.Timber;
 
 /**
  * Created by Volodymyr Oleshkevych on 8/16/2017.
@@ -66,7 +73,13 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
             mPreferences.setListener(mListener);
             mView.setImage(mPreferences.getImageUrl(), getName());
             mView.setUserName(getName());
+            getUserToken();
         }
+    }
+
+    private void getUserToken() {
+        DatabaseReference memberRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_TOKEN, mPreferences.getId(), TOKEN));
+        memberRef.setValue(FirebaseInstanceId.getInstance().getToken());
     }
 
     protected String getName() {
