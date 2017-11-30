@@ -2,6 +2,7 @@ package io.rolique.roliqueapp.data.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.google.firebase.database.Exclude;
@@ -35,6 +36,9 @@ public class User implements Parcelable {
     public String mEmail;
     @Exclude
     private List<CheckIn> mCheckIns = new ArrayList<>();
+    @Exclude
+    @Nullable
+    private String mFirebaseToken;
 
     public User() {
     }
@@ -59,6 +63,7 @@ public class User implements Parcelable {
         mImageUrl = in.readString();
         mType = in.readString();
         mEmail = in.readString();
+        mFirebaseToken = in.readString();
         in.readTypedList(mCheckIns, CheckIn.CREATOR);
     }
 
@@ -127,6 +132,18 @@ public class User implements Parcelable {
         return mCheckIns;
     }
 
+    public String getFirebaseToken() {
+        return mFirebaseToken;
+    }
+
+    public boolean hasFirebaseToken() {
+        return mFirebaseToken != null;
+    }
+
+    public void setFirebaseToken(@NonNull String firebaseToken) {
+        mFirebaseToken = firebaseToken;
+    }
+
     @Exclude
     public void setCheckIns(List<CheckIn> checkIns) {
         mCheckIns = checkIns == null ? new ArrayList<CheckIn>() : checkIns;
@@ -146,7 +163,6 @@ public class User implements Parcelable {
                 return checkIn;
         return null;
     }
-
 
     public static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>() {
         @Override
@@ -173,6 +189,7 @@ public class User implements Parcelable {
         dest.writeString(mImageUrl);
         dest.writeString(mType);
         dest.writeString(mEmail);
+        dest.writeString(mFirebaseToken);
         dest.writeTypedList(mCheckIns);
     }
 
@@ -185,6 +202,8 @@ public class User implements Parcelable {
                 ", mImageUrl='" + mImageUrl + '\'' +
                 ", mType='" + mType + '\'' +
                 ", mEmail='" + mEmail + '\'' +
+                ", mCheckIns=" + mCheckIns +
+                ", mFirebaseToken='" + mFirebaseToken + '\'' +
                 '}';
     }
 }

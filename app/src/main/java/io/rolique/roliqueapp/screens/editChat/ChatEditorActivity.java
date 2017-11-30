@@ -1,9 +1,10 @@
 package io.rolique.roliqueapp.screens.editChat;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -27,7 +28,6 @@ import butterknife.OnTouch;
 import io.rolique.cameralibrary.MediaLib;
 import io.rolique.cameralibrary.data.model.MediaContent;
 import io.rolique.roliqueapp.R;
-import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.model.Chat;
@@ -68,9 +68,9 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
     @BindView(R.id.edit_text_chat_name) EditText mChatNameEditText;
 
     @Inject ChatEditorPresenter mPresenter;
-    @Inject RoliqueAppUsers mRoliqueAppUsers;
     @Inject RoliqueApplicationPreferences mPreferences;
 
+    List<User> mUsers = new ArrayList<>();
     MembersAdapter mMembersAdapter;
     UsersAdapter mUsersAdapter;
     Chat mChat;
@@ -79,6 +79,7 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
     boolean mIsEditingMode;
     boolean mIsDeleted;
     boolean mIsView;
+    boolean isAllTasksFinished;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +97,6 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
         setUpMediaLib();
         setUpToolbar();
         setUpHeader();
-        setUpRecyclersView();
     }
 
     @Override
@@ -176,32 +176,27 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
         }
     };
 
-    private void setUpRecyclersView() {
-        if (mRoliqueAppUsers.getUsers().isEmpty()) {
-            setProgressIndicator(true);
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    setUpRecyclersView();
-                }
-            }, 500);
-        } else {
-            setProgressIndicator(false);
-            RecyclerView usersRecyclerView = getViewById(R.id.recycler_view_users);
-            usersRecyclerView.setLayoutManager(new LinearLayoutManager(ChatEditorActivity.this));
-            mUsersAdapter = new UsersAdapter(ChatEditorActivity.this, getUsers(mRoliqueAppUsers.getUsers()), mIsView);
-            usersRecyclerView.setAdapter(mUsersAdapter);
-            mUsersAdapter.setOnItemClickListener(mOnItemClickListener);
+    @Override
+    public void showUserInView(List<User> users) {
+        mUsers.addAll(users);
+        setUpRecyclersView();
+    }
 
-            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(ChatEditorActivity.this);
-            linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-            RecyclerView membersRecyclerView = getViewById(R.id.recycler_view_members);
-            membersRecyclerView.setLayoutManager(linearLayoutManager);
-            membersRecyclerView.addItemDecoration(new ImageDecoration(getResources().getDimensionPixelSize(R.dimen.members_recycler_padding)));
-            mMembersAdapter = new MembersAdapter(ChatEditorActivity.this);
-            membersRecyclerView.setAdapter(mMembersAdapter);
-            if (mIsEditingMode) setMembersInView();
-        }
+    private void setUpRecyclersView() {
+        RecyclerView usersRecyclerView = getViewById(R.id.recycler_view_users);
+        usersRecyclerView.setLayoutManager(new LinearLayoutManager(ChatEditorActivity.this));
+        mUsersAdapter = new UsersAdapter(ChatEditorActivity.this, getUsers(mUsers), mIsView);
+        usersRecyclerView.setAdapter(mUsersAdapter);
+        mUsersAdapter.setOnItemClickListener(mOnItemClickListener);
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(ChatEditorActivity.this);
+        linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        RecyclerView membersRecyclerView = getViewById(R.id.recycler_view_members);
+        membersRecyclerView.setLayoutManager(linearLayoutManager);
+        membersRecyclerView.addItemDecoration(new ImageDecoration(getResources().getDimensionPixelSize(R.dimen.members_recycler_padding)));
+        mMembersAdapter = new MembersAdapter(ChatEditorActivity.this);
+        membersRecyclerView.setAdapter(mMembersAdapter);
+        if (mIsEditingMode) setMembersInView();
     }
 
     private List<User> getUsers(List<User> users) {
@@ -214,7 +209,7 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
     private void setMembersInView() {
         List<String> ids = new ArrayList<>();
         for (String memberId : mChat.getMemberIds())
-            for (User user : mRoliqueAppUsers.getUsers())
+            for (User user : mUsers)
                 if (memberId.equals(user.getId()) && !memberId.equals(mPreferences.getId())) {
                     mMembersAdapter.addMember(getPairForImage(user));
                     ids.add(memberId);
@@ -261,6 +256,7 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
         if (mIsEditingMode) {
             chat.setId(mChat.getId());
             mPresenter.editChat(chat, mChat);
+            subscribeMembers(chat);
         } else {
             mPresenter.saveNewChat(chat);
         }
@@ -280,11 +276,25 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
         return members;
     }
 
+    private void subscribeMembers(Chat chat) {
+        mPresenter.fetchMutedUsers(chat);
+    }
+
     @OnClick(R.id.button_delete)
     void onDeleteClick() {
         if (mIsView) return;
         mIsDeleted = true;
         mPresenter.deleteChat(mChat);
+        new DeleteChatThread().execute(mChat);
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private class DeleteChatThread extends AsyncTask<Chat, Void, Void> {
+
+        protected Void doInBackground(Chat... chats) {
+            mPresenter.deleteChatSubscribtion(ChatEditorActivity.this, chats[0]);
+            return null;
+        }
     }
 
     @Override
@@ -299,7 +309,8 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
         intent.putExtra(getString(R.string.extra_chat_from_edit), mIsDeleted);
         intent.putExtra(getString(R.string.extra_chat_from_editor), chat);
         setResult(RESULT_OK, intent);
-        finish();
+        if (isAllTasksFinished) finish();
+        else isAllTasksFinished = true;
     }
 
     @Override
@@ -316,5 +327,42 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
     @Override
     public void showErrorInView(String message) {
         showSnackbar(message);
+    }
+
+    @Override
+    public void subscribeMembersInView(Chat chat) {
+        subscribeMembers(chat);
+    }
+
+    @Override
+    public void showFinishAsyncInView() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (isAllTasksFinished) finish();
+                else isAllTasksFinished = true;
+            }
+        });
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void setUnMutedUsers(final Chat chat, final List<User> unMutedUsers) {
+        new SubscribeThread().execute(new Pair<>(chat, unMutedUsers));
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private class SubscribeThread extends AsyncTask<Pair<Chat, List<User>>, Void, Void> {
+
+        protected Void doInBackground(Pair<Chat, List<User>>... pairs) {
+            mPresenter.subscribeMembers(ChatEditorActivity.this, pairs[0].first, pairs[0].second);
+            return null;
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mPresenter.start();
     }
 }

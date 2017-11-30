@@ -92,7 +92,6 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
                 mView.showErrorInView(databaseError.toException().getMessage());
             }
         });
-
     }
 
     @Override

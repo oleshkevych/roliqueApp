@@ -1,29 +1,38 @@
 package io.rolique.roliqueapp.screens.editChat;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
 
+import io.rolique.roliqueapp.RoliqueAppUsers;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.firebaseData.FirebaseValues;
 import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.data.model.Message;
+import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.LinksBuilder;
+import timber.log.Timber;
 
 /**
  * Created by Volodymyr Oleshkevych on 8/16/2017.
@@ -36,18 +45,63 @@ class ChatEditorPresenter implements ChatEditorContract.Presenter, FirebaseValue
     private RoliqueApplicationPreferences mPreferences;
 
     FirebaseDatabase mDatabase;
+    RoliqueAppUsers mRoliqueAppUsers;
+    List<User> mUserWithTokens;
 
     @Inject
     ChatEditorPresenter(RoliqueApplicationPreferences preferences,
                         ChatEditorContract.View view,
-                        FirebaseDatabase database) {
+                        FirebaseDatabase database,
+                        RoliqueAppUsers roliqueAppUsers) {
         mView = view;
         mPreferences = preferences;
         mDatabase = database;
+        mRoliqueAppUsers = roliqueAppUsers;
     }
 
     @Override
     public void start() {
+        if (mUserWithTokens != null) return;
+        mView.setProgressIndicator(true);
+        if (mRoliqueAppUsers.getUsers().isEmpty()) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    start();
+                }
+            }, 500);
+            return;
+        }
+        fetchUserTokens();
+    }
+
+    private void fetchUserTokens() {
+        DatabaseReference tokensRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_TOKEN));
+        tokensRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                List<User> users = new ArrayList<>(mRoliqueAppUsers.getUsers());
+                mUserWithTokens = new ArrayList<>();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    for (User user : users)
+                        if (user.getId().equals(snapshot.getKey())) {
+                            String token = snapshot.child(TOKEN).getValue().toString();
+                            assert token != null;
+                            Timber.e(user.getId() + " " + token);
+                            user.setFirebaseToken(token);
+                            mUserWithTokens.add(user);
+                            break;
+                        }
+                    mView.showUserInView(users);
+                    mView.setProgressIndicator(false);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
@@ -60,7 +114,7 @@ class ChatEditorPresenter implements ChatEditorContract.Presenter, FirebaseValue
         DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS)).push();
         String id = chatRef.getKey();
         chat.setId(id);
-
+        mView.subscribeMembersInView(chat);
         uploadImage(chat, null);
     }
 
@@ -119,7 +173,6 @@ class ChatEditorPresenter implements ChatEditorContract.Presenter, FirebaseValue
         messageRef.setValue(chatMessage);
         for (String memberId : memberIds)
             connectChatToMember(chat.getId(), memberId);
-        mView.setProgressIndicator(false);
         mView.showSavedInView(chat);
     }
 
@@ -168,5 +221,67 @@ class ChatEditorPresenter implements ChatEditorContract.Presenter, FirebaseValue
         DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, CHATS, chat.getId()));
         chatRef.removeValue();
         mView.showSavedInView(chat);
+    }
+
+    @Override
+    public void fetchMutedUsers(final Chat chat) {
+        DatabaseReference tokensRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_MUTES));
+        tokensRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                List<User> unMutedMemberUsers = new ArrayList<>();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    for (User user : mUserWithTokens)
+                        if (user.getId().equals(snapshot.getKey())) {
+                            if (snapshot.child(chat.getId()).getValue() != null) {
+                                boolean isMuted = snapshot.child(chat.getId()).getValue(Boolean.class);
+                                Timber.e(user.getId() + " " + isMuted);
+                                if (!isMuted) unMutedMemberUsers.add(user);
+                            } else {
+                                unMutedMemberUsers.add(user);
+                            }
+                            break;
+                        }
+                }
+                mView.setUnMutedUsers(chat, unMutedMemberUsers);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    @Override
+    public void subscribeMembers(Context context, Chat chat, List<User> unMutedMemberUsers) {
+        sendRequest(context, chat, unMutedMemberUsers, true, false);
+    }
+
+    @Override
+    public void deleteChatSubscribtion(Context context, Chat chat) {
+        List<User> memberUsers = new ArrayList<>();
+        for (User user : mUserWithTokens)
+            if (chat.getMemberIds().contains(user.getId()))
+                memberUsers.add(user);
+        sendRequest(context, chat, memberUsers, false, true);
+    }
+
+    void sendRequest(Context context, Chat chat, List<User> users, boolean isSubscribe, boolean isDeleteChat) {
+        SubscribeManager subscribeManager = new SubscribeManager(context, chat);
+        if (subscribeManager.sendSubscribeRequest(createTokenList(users), isSubscribe))
+            for (User user : users) {
+                DatabaseReference muteRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_MUTES, user.getId(), chat.getId()));
+                if (isDeleteChat) muteRef.removeValue();
+                else muteRef.setValue(!isSubscribe);
+            }
+        mView.showFinishAsyncInView();
+    }
+
+    private List<String> createTokenList(List<User> users) {
+        List<String> tokens = new ArrayList<>();
+        for (User user : users)
+            tokens.add(user.getFirebaseToken());
+        return tokens;
     }
 }
