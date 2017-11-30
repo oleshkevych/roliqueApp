@@ -28,19 +28,21 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     private final LayoutInflater mInflater;
     private List<User> mUsers;
     private List<String> mSelectedUserIds;
+    private final boolean mIsView;
 
     public interface OnItemClickListener {
+        void onUserClick(User user);
         void onUserSelected(User user);
-
         void onUserUnselected(User user);
     }
 
     private OnItemClickListener mOnItemClickListener;
 
-    public UsersAdapter(Context context, List<User> users) {
+    public UsersAdapter(Context context, List<User> users, boolean isView) {
         mInflater = LayoutInflater.from(context);
         mUsers = users;
         mSelectedUserIds = new ArrayList<>();
+        mIsView = isView;
     }
 
     @Override
@@ -88,6 +90,10 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         final View.OnClickListener mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (mIsView) {
+                    mOnItemClickListener.onUserClick(mUser);
+                    return;
+                }
                 if (mSelectedUserIds.contains(mUser.getId())) {
                     mOnItemClickListener.onUserUnselected(mUser);
                     mSelectedUserIds.remove(mUser.getId());

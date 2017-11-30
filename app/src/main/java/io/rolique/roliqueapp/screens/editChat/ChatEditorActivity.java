@@ -8,6 +8,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Pair;
 import android.view.View;
@@ -41,10 +42,18 @@ import io.rolique.roliqueapp.util.ui.UiUtil;
 public class ChatEditorActivity extends BaseActivity implements ChatEditorContract.View {
 
     private static final String EXTRA_CHAT = "CHAT";
+    private static final String EXTRA_IS_VIEW = "IS_VIEW";
 
     public static Intent startIntent(Context context, Chat chat) {
         Intent intent = new Intent(context, ChatEditorActivity.class);
         intent.putExtra(EXTRA_CHAT, chat);
+        return intent;
+    }
+
+    public static Intent startIntent(Context context, Chat chat, boolean isView) {
+        Intent intent = new Intent(context, ChatEditorActivity.class);
+        intent.putExtra(EXTRA_CHAT, chat);
+        intent.putExtra(EXTRA_IS_VIEW, isView);
         return intent;
     }
 
@@ -69,6 +78,7 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
     String mImagePath = "";
     boolean mIsEditingMode;
     boolean mIsDeleted;
+    boolean mIsView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +88,7 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
         if (getIntent().hasExtra(EXTRA_CHAT)) {
             mIsEditingMode = true;
             mChat = getIntent().getParcelableExtra(EXTRA_CHAT);
+            mIsView = getIntent().getBooleanExtra(EXTRA_IS_VIEW, false);
             findViewById(R.id.button_delete).setVisibility(View.VISIBLE);
             mImagePath = mChat.getImageUrl();
         }
@@ -130,6 +141,7 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
                 onBackPressed();
             }
         });
+        mProgressViewSwitcher.setVisibility(mIsView ? View.GONE : View.VISIBLE);
     }
 
     private void setUpHeader() {
@@ -138,6 +150,12 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
             mChatNameEditText.setText(mChat.getTitle());
         }
         UiUtil.setImageIfExists(mImageViewSwitcher, mImagePath, mChat == null ? "" : mChat.getTitle(), 88);
+        if (mIsView) {
+            mChatNameEditText.setEnabled(false);
+            mChatNameEditText.setInputType(InputType.TYPE_NULL);
+            mChatNameEditText.setCursorVisible(false);
+        }
+
     }
 
     TextWatcher mOnNameEditorActionListener = new TextWatcher() {
@@ -171,7 +189,7 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
             setProgressIndicator(false);
             RecyclerView usersRecyclerView = getViewById(R.id.recycler_view_users);
             usersRecyclerView.setLayoutManager(new LinearLayoutManager(ChatEditorActivity.this));
-            mUsersAdapter = new UsersAdapter(ChatEditorActivity.this, getUsers(mRoliqueAppUsers.getUsers()));
+            mUsersAdapter = new UsersAdapter(ChatEditorActivity.this, getUsers(mRoliqueAppUsers.getUsers()), mIsView);
             usersRecyclerView.setAdapter(mUsersAdapter);
             mUsersAdapter.setOnItemClickListener(mOnItemClickListener);
 
@@ -211,6 +229,11 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
 
     UsersAdapter.OnItemClickListener mOnItemClickListener = new UsersAdapter.OnItemClickListener() {
         @Override
+        public void onUserClick(User user) {
+            startActivity(ProfileActivity.startIntent(ChatEditorActivity.this, user));
+        }
+
+        @Override
         public void onUserSelected(User user) {
             mMembersAdapter.addMember(getPairForImage(user));
         }
@@ -223,6 +246,7 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
 
     @OnClick(R.id.view_switcher)
     void onImageClick() {
+        if (mIsView) return;
         mMediaLib.startCamera();
     }
 
@@ -258,6 +282,7 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
 
     @OnClick(R.id.button_delete)
     void onDeleteClick() {
+        if (mIsView) return;
         mIsDeleted = true;
         mPresenter.deleteChat(mChat);
     }

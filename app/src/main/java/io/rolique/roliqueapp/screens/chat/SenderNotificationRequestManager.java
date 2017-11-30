@@ -114,7 +114,6 @@ public class SenderNotificationRequestManager {
                 "                \"body\": \"%s : %s\"," +
                 "                \"title\": \"%s\"," +
                 "                \"sound\": \"default\"," +
-                "                \"click_action\": \"action\"," +
                 "                \"chatId\": \"%s\"}" +
                 "}", mChat.getId(), mUserName, getMessage(message), mChat.getTitle(), mChat.getId());
     }

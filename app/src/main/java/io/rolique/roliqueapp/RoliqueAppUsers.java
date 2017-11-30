@@ -67,11 +67,14 @@ public class RoliqueAppUsers implements FirebaseValues {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     User user = dataSnapshot.getValue(User.class);
-                    for (int i = 0; i < mUsers.size(); i++)
+                    if (user.getId().equals(mPreferences.getId()))
+                        mPreferences.logIn(user);
+                    for (int i = 0; i < mUsers.size(); i++) {
                         if (mUsers.get(i).getId().equals(user.getId())) {
                             mUsers.set(i, user);
                             return;
                         }
+                    }
                     mUsers.add(user);
                 }
 

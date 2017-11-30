@@ -18,6 +18,7 @@ import android.view.animation.TranslateAnimation;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,7 +106,8 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
     }
 
     private void setUpToolbar(Chat chat) {
-        mToolbar.setTitle(chat.getTitle());
+        TextView chatTitleTextView =  mToolbar.findViewById(R.id.text_view_toolbar_title);
+        chatTitleTextView.setText(chat.getTitle());
         ImageButton imageButton = findViewById(R.id.button_edit);
         if (chat.getId().equals("main")) imageButton.setVisibility(View.GONE);
         else if (chat.isSingle()) imageButton.setImageResource(R.drawable.ic_person_white_24dp);
@@ -117,6 +119,14 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
                 onBackPressed();
             }
         });
+        if (!chat.getOwnerId().equals(mPreferences.getId())) {
+            chatTitleTextView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(ChatEditorActivity.startIntent(ChatActivity.this, mChat, true));
+                }
+            });
+        }
     }
 
     private void setUpMessageEditText() {
@@ -528,6 +538,8 @@ public class ChatActivity extends BaseActivity implements ChatContract.View {
         mSendButton.setAlpha(isEnable ? 1.0f : 0.5f);
         mSendButton.setClickable(isEnable);
     }
+
+
 
     @OnClick(R.id.edit_text_message)
     void onMessageFieldClick() {
