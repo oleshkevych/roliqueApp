@@ -1,4 +1,4 @@
-package io.rolique.roliqueapp.util;
+package io.rolique.roliqueapp.data.remote;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -23,7 +23,7 @@ import timber.log.Timber;
  * Created by Volodymyr Oleshkevych on 11/30/2017.
  * Copyright (c) 2017, Rolique. All rights reserved.
  */
-public class RequestBuilder {
+class RequestBuilder {
 
     private static final String HEADER_NAME_CONTENT_TYPE = "Content-Type";
 
@@ -40,7 +40,7 @@ public class RequestBuilder {
     private final String mIdKey;
     private final String mHeaderValue;
 
-    public RequestBuilder(Context context, String idKey, String headerValue) {
+    RequestBuilder(Context context, String idKey, String headerValue) {
         mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         mOkHttpClient = buildClient();
         mIdKey = idKey;
@@ -81,7 +81,7 @@ public class RequestBuilder {
         };
     }
 
-    public String sendPOST(String url, String json) throws Exception {
+    String sendPOST(String url, String json) throws Exception {
         if (isThereInternetConnection()) {
             Timber.d(json);
             Request request = buildPOSTRequest(url, json);

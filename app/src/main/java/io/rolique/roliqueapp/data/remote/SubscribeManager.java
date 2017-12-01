@@ -1,11 +1,10 @@
-package io.rolique.roliqueapp.screens.editChat;
+package io.rolique.roliqueapp.data.remote;
 
 import android.content.Context;
 
 import java.util.List;
 
 import io.rolique.roliqueapp.data.model.Chat;
-import io.rolique.roliqueapp.util.RequestBuilder;
 import timber.log.Timber;
 
 /**
@@ -22,12 +21,12 @@ public class SubscribeManager {
     private final Chat mChat;
     private final RequestBuilder mRequestBuilder;
 
-    SubscribeManager(Context context, Chat chat) {
+    public SubscribeManager(Context context, Chat chat) {
         mChat = chat;
         mRequestBuilder = new RequestBuilder(context, API_KEY_ID, HEADER_VALUE_X_FORM);
     }
 
-    boolean sendSubscribeRequest(List<String> tokens, boolean isSubscribe) {
+    public boolean sendSubscribeRequest(List<String> tokens, boolean isSubscribe) {
         try {
             String url = URL + (isSubscribe ? "batchAdd" : "batchRemove");
             Timber.d(mRequestBuilder.sendPOST(url, createJson(tokens)));

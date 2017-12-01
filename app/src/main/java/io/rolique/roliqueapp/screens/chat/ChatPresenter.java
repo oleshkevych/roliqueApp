@@ -31,10 +31,9 @@ import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.firebaseData.FirebaseValues;
 import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.data.model.Message;
-import io.rolique.roliqueapp.data.model.User;
+import io.rolique.roliqueapp.data.remote.MessageNotificationRequestManager;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.LinksBuilder;
-import io.rolique.roliqueapp.util.ui.UiUtil;
 
 /**
  * Created by Volodymyr Oleshkevych on 8/16/2017.
@@ -52,7 +51,7 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
     boolean mIsDeleting;
     Message mLastMessage;
 
-    SenderNotificationRequestManager mSenderNotificationRequestManager;
+    MessageNotificationRequestManager mMessageNotificationRequestManager;
 
     @Inject
     ChatPresenter(RoliqueApplicationPreferences preferences,
@@ -96,7 +95,7 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
 
     @Override
     public void fetchLastMessages(Context context, Chat chat) {
-        mSenderNotificationRequestManager = new SenderNotificationRequestManager(context, chat, getUserName());
+        mMessageNotificationRequestManager = new MessageNotificationRequestManager(context, chat, getUserName());
         mIsProgressActive = true;
         DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES));
         mChatQuery = chatRef.child(chat.getId()).limitToLast(20);
@@ -251,7 +250,7 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
     }
 
     private void notifyAllMembers(Message message) {
-        mSenderNotificationRequestManager.sendMessage(message);
+        mMessageNotificationRequestManager.sendMessage(message);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package io.rolique.roliqueapp.screens.profile;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
@@ -31,8 +32,10 @@ import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.data.model.Message;
 import io.rolique.roliqueapp.data.model.User;
+import io.rolique.roliqueapp.data.remote.SubscribeManager;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.LinksBuilder;
+import timber.log.Timber;
 
 /**
  * Created by Volodymyr Oleshkevych on 8/16/2017.
@@ -201,10 +204,11 @@ class ProfilePresenter implements ProfileContract.Presenter, FirebaseValues {
             if (chat.isSingle()
                     && chat.getMemberIds().contains(userId)
                     && chat.getMemberIds().contains(profileId)) {
-                mView.showChatInView(chat);
+                mView.startChatInView(chat);
                 return;
             }
-        mView.showChatInView(createNewChat(userId, profileId, profileImageUrl, profileName));
+            Chat chat = createNewChat(userId, profileId, profileImageUrl, profileName);
+        fetchUserTokens(userId, profileId, chat);
     }
 
     private Chat createNewChat(final String userId, final String profileId, String profileImageUrl, String profileName) {
@@ -235,6 +239,30 @@ class ProfilePresenter implements ProfileContract.Presenter, FirebaseValues {
         return chat;
     }
 
+    private void fetchUserTokens(final String userId, final String profileId, final Chat newChat) {
+        DatabaseReference tokensRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_TOKEN));
+        tokensRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                List<String> userTokens = new ArrayList<>();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    if (userId.equals(snapshot.getKey()) || profileId.equals(snapshot.getKey())) {
+                        String token = snapshot.child(TOKEN).getValue().toString();
+                        assert token != null;
+                        userTokens.add(token);
+                        if (userTokens.size() == 2) break;
+                    }
+                }
+                mView.showChatInView(newChat, userTokens);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     @Override
     public void updatePhoto(Media media, final User user) {
         mView.showProgressInView(true);
@@ -260,6 +288,18 @@ class ProfilePresenter implements ProfileContract.Presenter, FirebaseValues {
             }
         });
     }
+
+    @Override
+    public void subscribeMembers(Context context, Chat chat, List<String> userTokens) {
+            SubscribeManager subscribeManager = new SubscribeManager(context, chat);
+            if (subscribeManager.sendSubscribeRequest(userTokens, true))
+                for (String userId : chat.getMemberIds()) {
+                    DatabaseReference muteRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_MUTES, userId, chat.getId()));
+                    muteRef.setValue(false);
+                }
+            mView.startChatInView(chat);
+        }
+
 
     private void updateUserInfo(String imagePath, User user) {
         DatabaseReference imageRef = mDatabase.getReference(LinksBuilder.buildUrl(AUTH, USERS, user.getId(), "image_url"));

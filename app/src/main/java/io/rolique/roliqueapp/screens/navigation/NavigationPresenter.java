@@ -1,5 +1,6 @@
 package io.rolique.roliqueapp.screens.navigation;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
@@ -37,6 +38,7 @@ import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.data.model.CheckIn;
 import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.data.model.Message;
+import io.rolique.roliqueapp.data.remote.MessageNotificationRequestManager;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.LinksBuilder;
 import timber.log.Timber;
@@ -210,6 +212,7 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
                     setLastMessageStatus(memberId, MAIN_CHAT_ID, true);
                 }
                 setLastMessageStatus(mPreferences.getId(), MAIN_CHAT_ID, false);
+                mView.showSentLateMessageInView(message);
             }
 
             @Override
@@ -232,6 +235,19 @@ class NavigationPresenter implements NavigationContract.Presenter, FirebaseValue
     private void setLastMessageStatus(String userId, String chatId, boolean isNotRead) {
         DatabaseReference messageRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_NEW_MESSAGES, userId, chatId));
         messageRef.setValue(isNotRead);
+    }
+
+    @Override
+    public void notifyMembers(Context context, Message message) {
+        Chat chat = new Chat();
+        chat.setTitle("Main");
+        chat.setId(MAIN_CHAT_ID);
+        MessageNotificationRequestManager messageNotificationRequestManager = new MessageNotificationRequestManager(context, chat, getUserName());
+        messageNotificationRequestManager.sendMessage(message);
+    }
+
+    private String getUserName() {
+        return String.format("%s %s", mPreferences.getFirstName(), mPreferences.getLastName());
     }
 
     private boolean lackInternetConnection() {

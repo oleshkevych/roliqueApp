@@ -30,6 +30,7 @@ import io.rolique.roliqueapp.data.firebaseData.FirebaseValues;
 import io.rolique.roliqueapp.data.model.Chat;
 import io.rolique.roliqueapp.data.model.Message;
 import io.rolique.roliqueapp.data.model.User;
+import io.rolique.roliqueapp.data.remote.SubscribeManager;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.LinksBuilder;
 import timber.log.Timber;

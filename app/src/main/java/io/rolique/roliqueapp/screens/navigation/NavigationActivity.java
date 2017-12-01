@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -38,6 +39,7 @@ import io.rolique.roliqueapp.RoliqueApplication;
 import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.model.CheckIn;
 import io.rolique.roliqueapp.data.model.Media;
+import io.rolique.roliqueapp.data.model.Message;
 import io.rolique.roliqueapp.screens.BaseActivity;
 import io.rolique.roliqueapp.screens.welcome.WelcomeActivity;
 import io.rolique.roliqueapp.services.gps.GPSTrackerService;
@@ -422,7 +424,10 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
                 fragment.setOnClickListener(new ReasonDialogFragment.OnClickListener() {
                     @Override
                     public void onButtonClick(String reason) {
-                        if (reason.isEmpty()) sendCheckIn(checkIn);
+                        if (reason.isEmpty()) {
+                            sendCheckIn(checkIn);
+                            return;
+                        }
                         checkIn.setReason(reason);
                         sendCheckIn(checkIn);
                     }
@@ -437,6 +442,20 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
             mPresenter.sendMessageLateToMainChat(messageText);
         }
     };
+
+    @Override
+    public void showSentLateMessageInView(Message message) {
+        new SendNotification().execute(message);
+    }
+
+    private class SendNotification extends AsyncTask<Message, Void, Void> {
+
+        protected Void doInBackground(Message... message) {
+            mPresenter.notifyMembers(NavigationActivity.this, message[0]);
+
+            return null;
+        }
+    }
 
     protected void sendCheckIn(CheckIn checkIn) {
         mPresenter.setNewCheckIn(checkIn, new Date());

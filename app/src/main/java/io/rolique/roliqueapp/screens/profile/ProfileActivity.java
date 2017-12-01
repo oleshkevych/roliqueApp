@@ -1,10 +1,12 @@
 package io.rolique.roliqueapp.screens.profile;
 
+import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
@@ -676,7 +678,20 @@ public class ProfileActivity extends BaseActivity implements ProfileContract.Vie
     }
 
     @Override
-    public void showChatInView(Chat chat) {
+    public void showChatInView(Chat chat,List<String> userTokens) {
+        new SubscribeThread().execute(new Pair<>(chat, userTokens));
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private class SubscribeThread extends AsyncTask<Pair<Chat, List<String>>, Void, Void> {
+
+        protected Void doInBackground(Pair<Chat, List<String>>... pairs) {
+            mPresenter.subscribeMembers(ProfileActivity.this, pairs[0].first, pairs[0].second);
+            return null;
+        }
+    }
+    @Override
+    public void startChatInView(Chat chat) {
         startActivity(ChatActivity.startIntent(ProfileActivity.this, chat));
         finish();
     }

@@ -1,5 +1,6 @@
 package io.rolique.roliqueapp.screens.profile;
 
+import android.content.Context;
 import android.util.Pair;
 
 import java.util.List;
@@ -20,7 +21,8 @@ interface ProfileContract {
         void showValuesInView(String category, List<Pair<String, String>> pairs);
         void showRemoveCategoryInView(String category);
         void showErrorInView(String message);
-        void showChatInView(Chat chat);
+        void showChatInView(Chat chat, List<String> userTokens);
+        void startChatInView(Chat chat);
         void showProgressInView(boolean isActive);
         void showPhotoInView(String path);
     }
@@ -33,5 +35,6 @@ interface ProfileContract {
         void removeCategory(User user, String category);
         void findChat(final String userId, final String profileId, String profileImageUrl, String profileName);
         void updatePhoto(Media media, User user);
+        void subscribeMembers(Context context, Chat chat, List<String> userTokens);
     }
 }

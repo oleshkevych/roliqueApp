@@ -1,9 +1,12 @@
 package io.rolique.roliqueapp.screens.navigation;
 
+import android.content.Context;
+
 import java.util.Date;
 
 import io.rolique.roliqueapp.data.model.CheckIn;
 import io.rolique.roliqueapp.data.model.Media;
+import io.rolique.roliqueapp.data.model.Message;
 import io.rolique.roliqueapp.screens.BasePresenter;
 import io.rolique.roliqueapp.screens.BaseView;
 
@@ -22,6 +25,7 @@ interface NavigationContract {
         void showCheckedInInView(String checkInType);
         void showConnectionErrorInView();
         void updateAlarm(boolean isCheckedIn, String checkInTime, boolean isNotificationAllowed);
+        void showSentLateMessageInView(Message message);
     }
 
     interface Presenter extends BasePresenter {
@@ -31,5 +35,6 @@ interface NavigationContract {
         void checkIfUserCheckedIn();
         void setNewCheckIn(CheckIn checkIn, Date date);
         void sendMessageLateToMainChat(String messageText);
+        void notifyMembers(Context context, Message message);
     }
 }

@@ -194,8 +194,8 @@ public class UiUtil {
     }
 
     public static String resizeImage(Context context, String path, int width, int height) {
-        int desired_width = width / 4;
-        int desired_height = height / 4;
+        int desired_width = width / 2;
+        int desired_height = height / 2;
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
@@ -212,7 +212,7 @@ public class UiUtil {
         try {
             fOut = new FileOutputStream(smallPicture);
             // 0 = small/low quality, 100 = large/high quality
-            smallerBm.compress(Bitmap.CompressFormat.JPEG, 50, fOut);
+            smallerBm.compress(Bitmap.CompressFormat.JPEG, 80, fOut);
             fOut.flush();
             fOut.close();
             smallerBm.recycle();
