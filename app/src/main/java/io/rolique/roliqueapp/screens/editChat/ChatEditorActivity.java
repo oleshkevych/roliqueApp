@@ -93,7 +93,7 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
             findViewById(R.id.button_delete).setVisibility(View.VISIBLE);
             mImagePath = mChat.getImageUrl();
         }
-
+        mPresenter.start();
         setUpMediaLib();
         setUpToolbar();
         setUpHeader();
@@ -358,11 +358,5 @@ public class ChatEditorActivity extends BaseActivity implements ChatEditorContra
             mPresenter.subscribeMembers(ChatEditorActivity.this, pairs[0].first, pairs[0].second);
             return null;
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mPresenter.start();
     }
 }

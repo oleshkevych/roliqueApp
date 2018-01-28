@@ -74,9 +74,12 @@ public class AddPickerDialog extends BottomSheetDialogFragment {
         super.onViewCreated(view, savedInstanceState);
         mUnbinder = ButterKnife.bind(AddPickerDialog.this, view);
         mCategory = getArguments().getString(ARGUMENT_CATEGORY);
-        mCategoryTextView.setText(mCategory);
+        mCategoryTextView.setText(String.format("%s\nSwipe down to cancel", mCategory));
+        mKeyEditText.setHint(String.format("set the %s's title", mCategory.toLowerCase()));
+        mValueEditText.setHint(String.format("enter your %s", mCategory.toLowerCase()));
         mKeyEditText.addTextChangedListener(mTextWatcher);
         mValueEditText.addTextChangedListener(mTextWatcher);
+        toggleVisibility(false);
     }
 
     TextWatcher mTextWatcher = new TextWatcher() {
@@ -111,7 +114,7 @@ public class AddPickerDialog extends BottomSheetDialogFragment {
         }
     };
 
-    @OnClick(R.id.text_view_cancel)
+    @OnClick(R.id.image_view_cancel)
     protected void onOpenLinkClick() {
         if (mPickListener != null) mPickListener.onCancelLinkClick(AddPickerDialog.this);
     }

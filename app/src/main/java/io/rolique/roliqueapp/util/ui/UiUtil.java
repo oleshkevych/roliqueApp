@@ -194,6 +194,7 @@ public class UiUtil {
     }
 
     public static String resizeImage(Context context, String path, int width, int height) {
+        if (width < 25000) return path;
         int desired_width = width / 2;
         int desired_height = height / 2;
 

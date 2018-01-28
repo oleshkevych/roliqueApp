@@ -35,7 +35,6 @@ import io.rolique.roliqueapp.data.model.User;
 import io.rolique.roliqueapp.data.remote.SubscribeManager;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.LinksBuilder;
-import timber.log.Timber;
 
 /**
  * Created by Volodymyr Oleshkevych on 8/16/2017.
@@ -200,14 +199,23 @@ class ProfilePresenter implements ProfileContract.Presenter, FirebaseValues {
     }
 
     private void checkIfChatExists(List<Chat> chats, String userId, String profileId, String profileImageUrl, String profileName) {
-        for (Chat chat : chats)
-            if (chat.isSingle()
-                    && chat.getMemberIds().contains(userId)
-                    && chat.getMemberIds().contains(profileId)) {
-                mView.startChatInView(chat);
-                return;
-            }
-            Chat chat = createNewChat(userId, profileId, profileImageUrl, profileName);
+        if (userId.equals(profileId)) {
+            for (Chat chat : chats)
+                if (chat.isSingle()
+                        && chat.getMemberIds().get(0).equals(userId)
+                        && chat.getMemberIds().get(1).equals(userId)) {
+                    mView.startChatInView(chat);
+                    return;
+                }
+        } else
+            for (Chat chat : chats)
+                if (chat.isSingle()
+                        && chat.getMemberIds().contains(userId)
+                        && chat.getMemberIds().contains(profileId)) {
+                    mView.startChatInView(chat);
+                    return;
+                }
+        Chat chat = createNewChat(userId, profileId, profileImageUrl, profileName);
         fetchUserTokens(userId, profileId, chat);
     }
 
@@ -291,14 +299,14 @@ class ProfilePresenter implements ProfileContract.Presenter, FirebaseValues {
 
     @Override
     public void subscribeMembers(Context context, Chat chat, List<String> userTokens) {
-            SubscribeManager subscribeManager = new SubscribeManager(context, chat);
-            if (subscribeManager.sendSubscribeRequest(userTokens, true))
-                for (String userId : chat.getMemberIds()) {
-                    DatabaseReference muteRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_MUTES, userId, chat.getId()));
-                    muteRef.setValue(false);
-                }
-            mView.startChatInView(chat);
-        }
+        SubscribeManager subscribeManager = new SubscribeManager(context, chat);
+        if (subscribeManager.sendSubscribeRequest(userTokens, true))
+            for (String userId : chat.getMemberIds()) {
+                DatabaseReference muteRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, USER_MUTES, userId, chat.getId()));
+                muteRef.setValue(false);
+            }
+        mView.startChatInView(chat);
+    }
 
 
     private void updateUserInfo(String imagePath, User user) {

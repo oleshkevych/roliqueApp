@@ -34,8 +34,8 @@ public class GPSTrackerService extends Service implements LocationListener {
     // The minimum time between updates in milliseconds
     private static final long MIN_TIME_BW_UPDATES = 1000 * 20; // 20 sec
 
-    public static final LatLng ROLIQUE_POSITION = new LatLng(49.841358007066034, 24.023118875920773);
-    public static final int RANGE_RADIUS = 50;
+    private static final LatLng ROLIQUE_POSITION = new LatLng(49.841358007066034, 24.023118875920773);
+    private static final int RANGE_RADIUS = 50;
 
     public interface PositionChanged {
         void onPositionChanged(boolean isInRange, double distance);
@@ -52,7 +52,7 @@ public class GPSTrackerService extends Service implements LocationListener {
     boolean mIsNetworkEnabled = false;
 
     // flag for GPS status
-    public boolean mCanGetLocation = false;
+    private boolean mCanGetLocation = false;
 
     Location mLocation; // mLocation
     double mLatitude; // mLatitude

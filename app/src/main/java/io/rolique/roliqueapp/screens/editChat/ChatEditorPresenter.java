@@ -63,6 +63,7 @@ class ChatEditorPresenter implements ChatEditorContract.Presenter, FirebaseValue
     @Override
     public void start() {
         if (mUserWithTokens != null) return;
+        Timber.d("on START");
         mView.setProgressIndicator(true);
         if (mRoliqueAppUsers.getUsers().isEmpty()) {
             new Handler().postDelayed(new Runnable() {
@@ -71,9 +72,8 @@ class ChatEditorPresenter implements ChatEditorContract.Presenter, FirebaseValue
                     start();
                 }
             }, 500);
-            return;
-        }
-        fetchUserTokens();
+        } else
+            fetchUserTokens();
     }
 
     private void fetchUserTokens() {
@@ -93,9 +93,10 @@ class ChatEditorPresenter implements ChatEditorContract.Presenter, FirebaseValue
                             mUserWithTokens.add(user);
                             break;
                         }
-                    mView.showUserInView(users);
-                    mView.setProgressIndicator(false);
                 }
+                Timber.d("user size " + users.size());
+                mView.showUserInView(users);
+                mView.setProgressIndicator(false);
             }
 
             @Override

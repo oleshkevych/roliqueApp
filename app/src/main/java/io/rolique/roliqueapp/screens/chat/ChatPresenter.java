@@ -75,7 +75,7 @@ class ChatPresenter implements ChatContract.Presenter, FirebaseValues {
     @Override
     public void getTopMessages(String firstMessageId, Chat chat) {
         DatabaseReference chatRef = mDatabase.getReference(LinksBuilder.buildUrl(CHAT, MESSAGES));
-        Query chatQuery = chatRef.child(chat.getId()).orderByKey().endAt(firstMessageId).limitToFirst(20);
+        Query chatQuery = chatRef.child(chat.getId()).orderByKey().endAt(firstMessageId).limitToLast(20);
         chatQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {

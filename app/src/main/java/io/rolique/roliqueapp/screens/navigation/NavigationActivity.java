@@ -1,14 +1,15 @@
 package io.rolique.roliqueapp.screens.navigation;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -25,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -40,9 +42,8 @@ import io.rolique.roliqueapp.RoliqueApplicationPreferences;
 import io.rolique.roliqueapp.data.model.CheckIn;
 import io.rolique.roliqueapp.data.model.Media;
 import io.rolique.roliqueapp.data.model.Message;
-import io.rolique.roliqueapp.screens.BaseActivity;
+import io.rolique.roliqueapp.screens.BaseLocationActivity;
 import io.rolique.roliqueapp.screens.welcome.WelcomeActivity;
-import io.rolique.roliqueapp.services.gps.GPSTrackerService;
 import io.rolique.roliqueapp.util.AlarmBuilder;
 import io.rolique.roliqueapp.util.DateUtil;
 import io.rolique.roliqueapp.util.ui.UiUtil;
@@ -53,19 +54,21 @@ import io.rolique.roliqueapp.widget.ReasonDialogFragment;
  * Created by Volodymyr Oleshkevych on 8/22/2017.
  * Copyright (c) 2017, Rolique. All rights reserved.
  */
-public class NavigationActivity extends BaseActivity implements NavigationContract.View {
+public class NavigationActivity extends BaseLocationActivity implements NavigationContract.View {
 
     private static final String EXTRA_IS_FOR_CHECK_IN = "IS_FOR_CHECK_IN";
 
     public static Intent startIntent(Context context) {
         Intent intent = new Intent(context, NavigationActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return intent;
     }
 
     public static Intent startIntent(Context context, boolean onCheckIn) {
-        Intent intent = new Intent(context, NavigationActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        Intent intent = startIntent(context);
         intent.putExtra(EXTRA_IS_FOR_CHECK_IN, onCheckIn);
         return intent;
     }
@@ -86,7 +89,6 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     MediaLib mMediaLib;
 
     boolean mIsCheckInAlertAlreadyShown;
-    private GPSTrackerService mGPSTrackerService;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -272,7 +274,7 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     };
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (mMediaLib == null) return;
         mMediaLib.onActivityResult(requestCode, resultCode, data);
@@ -338,8 +340,6 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     @Override
     protected void onStop() {
         mPresenter.stop();
-        if (mGPSTrackerService != null) mIsCheckInAlertAlreadyShown = false;
-        toggleLocationService(false);
         super.onStop();
     }
 
@@ -352,13 +352,12 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
                 requestPermission();
                 return;
             }
-            if (mGPSTrackerService != null) return;
-            mGPSTrackerService = new GPSTrackerService(NavigationActivity.this, mPositionChanged);
-
-            if (!mGPSTrackerService.isCanGetLocation()) mGPSTrackerService.showSettingsAlert();
+            Calendar calNow = Calendar.getInstance();
+            if (calNow.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
+                    calNow.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
+                startLocationSearching();
         } else {
-            if (mGPSTrackerService != null) mGPSTrackerService.stopUsingGPS();
-            mGPSTrackerService = null;
+            stopLocationSearching();
         }
     }
 
@@ -384,20 +383,6 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
-
-    GPSTrackerService.PositionChanged mPositionChanged = new GPSTrackerService.PositionChanged() {
-        @Override
-        public void onPositionChanged(final boolean isInRange, final double distance) {
-            if (isInRange) showCheckInMessage(true, distance);
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showCheckInMessage(isInRange, distance);
-                }
-            }, 3000);
-        }
-    };
 
     void showCheckInMessage(boolean isInRange, double distance) {
         if (mIsCheckInAlertAlreadyShown) return;
@@ -446,6 +431,36 @@ public class NavigationActivity extends BaseActivity implements NavigationContra
     @Override
     public void showSentLateMessageInView(Message message) {
         new SendNotification().execute(message);
+    }
+
+    @Override
+    public void showGPSEnabledInView() {
+    }
+
+    @Override
+    public void showGPSDisabledInView() {
+        stopLocationSearching();
+        AlertDialog dialog = new AlertDialog.Builder(NavigationActivity.this)
+                .setTitle("GPS")
+                .setMessage("We need GPS enabled for check in!")
+                .setNegativeButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .create();
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                startLocationSearching();
+            }
+        });
+        dialog.show();
+    }
+
+    @Override
+    public void onLocationChanged(boolean isInRange, double distance) {
+        showCheckInMessage(isInRange, distance);
     }
 
     private class SendNotification extends AsyncTask<Message, Void, Void> {
