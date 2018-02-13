@@ -28,7 +28,7 @@ public class SampleBootReceiver extends BroadcastReceiver {
 
         Timber.e("Start reboot, time: " + time + " isAllowed " + isAllowed);
         if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
-            AlarmBuilder.setAlarm(context, time, false, !isAllowed);
+            AlarmBuilder.setAlarm(context, false);
             Toast.makeText(context, "Reseted Alarm", Toast.LENGTH_LONG).show();
         }
     }

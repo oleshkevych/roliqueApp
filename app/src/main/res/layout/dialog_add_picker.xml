@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/grey_400"
     android:orientation="vertical">
 
@@ -15,7 +16,7 @@
             android:id="@+id/image_view_cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_clear_red_16dp"
+            app:srcCompat="@drawable/ic_clear_red_16dp"
             android:padding="8dp"
             android:layout_gravity="end"
             android:background="?attr/selectableItemBackgroundBorderless"

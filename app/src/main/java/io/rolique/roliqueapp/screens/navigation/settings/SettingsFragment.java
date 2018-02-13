@@ -75,7 +75,7 @@ public class SettingsFragment extends BaseFragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mPreferences.setIsNotificationAllowed(isChecked);
                 setTimeText(isChecked);
-                AlarmBuilder.setAlarm(getActivity(), mPreferences.getNotificationTime(), false, !isChecked);
+                AlarmBuilder.setAlarm(getActivity(), false);
             }
         });
     }
@@ -93,13 +93,19 @@ public class SettingsFragment extends BaseFragment {
 
     @OnClick(R.id.button_start_set_dialog)
     void openTimePickerDialog() {
-        Calendar calendar = Calendar.getInstance();
+        String time = mPreferences.getNotificationTime();
 
+        String[] strings = time.split(" ");
+        Calendar calSet = Calendar.getInstance();
+        calSet.set(Calendar.HOUR_OF_DAY, Integer.valueOf(strings[0]));
+        calSet.set(Calendar.MINUTE, Integer.valueOf(strings[1]));
+        calSet.set(Calendar.SECOND, 0);
+        calSet.set(Calendar.MILLISECOND, 0);
         TimePickerDialog timePickerDialog = new TimePickerDialog(
                 getActivity(),
                 onTimeSetListener,
-                calendar.get(Calendar.HOUR_OF_DAY),
-                calendar.get(Calendar.MINUTE),
+                calSet.get(Calendar.HOUR_OF_DAY),
+                calSet.get(Calendar.MINUTE),
                 true);
         timePickerDialog.setTitle(R.string.fragment_settings_alarm_time_table_title);
         timePickerDialog.show();
@@ -115,8 +121,9 @@ public class SettingsFragment extends BaseFragment {
             String minutes = String.valueOf(minute);
             if (minute < 10) minutes = "0" + minutes;
             mPreferences.setNotificationTime(String.format("%s %s", hour, minutes));
+            mPreferences.setIsNotificationAllowed(true);
             setTimeText(true);
-            AlarmBuilder.setAlarm(getActivity(), mPreferences.getNotificationTime(), false, false);
+            AlarmBuilder.setAlarm(getActivity(), false);
             Toast.makeText(getActivity(), getString(R.string.fragment_settings_alarm_confirm), Toast.LENGTH_SHORT).show();
         }
     };

@@ -314,7 +314,7 @@ public class NavigationActivity extends BaseLocationActivity implements Navigati
 
     @Override
     public void updateAlarm(boolean isCheckedIn, String checkInTime, boolean isNotificationAllowed) {
-        AlarmBuilder.setAlarm(getApplicationContext(), checkInTime, isCheckedIn, isNotificationAllowed);
+        AlarmBuilder.setAlarm(getApplicationContext(), isCheckedIn);
     }
 
     @Override
@@ -354,8 +354,8 @@ public class NavigationActivity extends BaseLocationActivity implements Navigati
             }
             Calendar calNow = Calendar.getInstance();
             if (calNow.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
-                    calNow.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
-                startLocationSearching();
+                    calNow.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) return;
+            startLocationSearching();
         } else {
             stopLocationSearching();
         }
@@ -452,7 +452,7 @@ public class NavigationActivity extends BaseLocationActivity implements Navigati
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-                startLocationSearching();
+//                startLocationSearching();
             }
         });
         dialog.show();

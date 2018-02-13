@@ -1,10 +1,15 @@
 package io.rolique.roliqueapp.services.notification;
 
+import android.annotation.TargetApi;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.drawable.Icon;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 
@@ -23,7 +28,7 @@ import static android.app.Notification.DEFAULT_SOUND;
  */
 public class NotificationService extends Service {
 
-    public static final int NOTIFICATION_ID = 38;
+    public static final int NOTIFICATION_ID = 381;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -33,7 +38,7 @@ public class NotificationService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         final String NOTIFICATION_CHANNEL = "MY_NOTIFICATION_CHANNEL";
-        AlarmBuilder.resetAlarm(NotificationService.this);
+//        AlarmBuilder.resetAlarm(NotificationService.this);
 //        Calendar calNow = Calendar.getInstance();
 //        if (calNow.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
 //                calNow.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
@@ -54,8 +59,12 @@ public class NotificationService extends Service {
                 .setDefaults(DEFAULT_SOUND)
                 .setContentIntent(pIntent)
                 .setAutoCancel(true)
-                .setOngoing(true)
-                .addAction(R.drawable.ic_add_alarm_black_24dp, getString(R.string.alarm_receiver_remind_button), pIntentButton);
+                .setOngoing(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            builder.addAction(R.drawable.ic_add_alarm_black_24dp, getString(R.string.alarm_receiver_remind_button), pIntentButton);
+        else {
+            builder.addAction(R.drawable.ic_alarm_clock, getString(R.string.alarm_receiver_remind_button), pIntentButton);
+        }
 
         NotificationManager notificationmanager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         assert notificationmanager != null;

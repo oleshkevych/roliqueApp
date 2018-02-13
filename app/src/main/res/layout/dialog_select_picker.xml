@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:orientation="horizontal"
-              tools:background="@color/white">
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    tools:background="@color/white">
 
-    <TextView
+    <io.rolique.roliqueapp.widget.DrawableTextView
         android:id="@+id/text_view_email"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:background="?attr/selectableItemBackground"
         android:drawablePadding="16dp"
-        android:drawableTop="@drawable/ic_email_grey_36dp"
         android:gravity="center"
         android:paddingBottom="16dp"
         android:paddingTop="16dp"
@@ -22,16 +23,16 @@
         android:textColor="@color/grey_600"
         android:textStyle="bold"
         android:visibility="gone"
+        app:drawableTopCompat="@drawable/ic_email_grey_36dp"
         tools:visibility="visible"/>
 
-    <TextView
+    <io.rolique.roliqueapp.widget.DrawableTextView
         android:id="@+id/text_view_call"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:background="?attr/selectableItemBackground"
         android:drawablePadding="16dp"
-        android:drawableTop="@drawable/ic_phone_grey_36dp"
         android:gravity="center"
         android:paddingBottom="16dp"
         android:paddingTop="16dp"
@@ -40,16 +41,16 @@
         android:textColor="@color/grey_600"
         android:textStyle="bold"
         android:visibility="gone"
+        app:drawableTopCompat="@drawable/ic_phone_grey_36dp"
         tools:visibility="visible"/>
 
-    <TextView
+    <io.rolique.roliqueapp.widget.DrawableTextView
         android:id="@+id/text_view_open_link"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:background="?attr/selectableItemBackground"
         android:drawablePadding="16dp"
-        android:drawableTop="@drawable/ic_open_in_new_grey_36dp"
         android:gravity="center"
         android:paddingBottom="16dp"
         android:paddingTop="16dp"
@@ -58,16 +59,16 @@
         android:textColor="@color/grey_600"
         android:textStyle="bold"
         android:visibility="gone"
+        app:drawableTopCompat="@drawable/ic_open_in_new_grey_36dp"
         tools:visibility="visible"/>
 
-    <TextView
+    <io.rolique.roliqueapp.widget.DrawableTextView
         android:id="@+id/text_view_copy"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:background="?attr/selectableItemBackground"
         android:drawablePadding="16dp"
-        android:drawableTop="@drawable/ic_content_copy_grey_36dp"
         android:gravity="center"
         android:paddingBottom="16dp"
         android:paddingTop="16dp"
@@ -76,9 +77,10 @@
         android:textColor="@color/grey_600"
         android:textStyle="bold"
         android:visibility="gone"
+        app:drawableTopCompat="@drawable/ic_content_copy_grey_36dp"
         tools:visibility="visible"/>
 
-    <TextView
+    <io.rolique.roliqueapp.widget.DrawableTextView
         android:id="@+id/text_view_share"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -86,7 +88,6 @@
         android:layout_weight="1"
         android:background="?attr/selectableItemBackground"
         android:drawablePadding="16dp"
-        android:drawableTop="@drawable/ic_share_grey_36dp"
         android:gravity="center"
         android:paddingBottom="16dp"
         android:paddingTop="16dp"
@@ -95,5 +96,6 @@
         android:textColor="@color/grey_600"
         android:textStyle="bold"
         android:visibility="gone"
+        app:drawableTopCompat="@drawable/ic_share_grey_36dp"
         tools:visibility="visible"/>
 </LinearLayout>

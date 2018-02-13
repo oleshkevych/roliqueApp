@@ -82,12 +82,11 @@ class CheckInPresenter implements CheckInContract.Presenter, FirebaseValues {
                     }
                 }
                 mView.updateCheckInInView(isCheckedIn);
-                mView.updateAlarm(isCheckedIn, mPreferences.getNotificationTime(), mPreferences.isNotificationAllowed());
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                mView.updateCheckInInView(true);
+                mView.updateCheckInInView(false);
             }
         });
     }
@@ -102,7 +101,7 @@ class CheckInPresenter implements CheckInContract.Presenter, FirebaseValues {
         DatabaseReference reference = mDatabase.getReference(LinksBuilder.buildUrl(MAP, CHECK_IN, mDateFormat.format(date), mPreferences.getId()));
         reference.setValue(checkIn);
         mView.showCheckInInView(checkIn.getType());
-        mView.updateAlarm(true, mPreferences.getNotificationTime(), mPreferences.isNotificationAllowed());
+        mView.updateAlarm(true);
     }
 
     private boolean lackInternetConnection() {

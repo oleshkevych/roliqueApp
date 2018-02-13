@@ -46,10 +46,6 @@ public class JobSchedulerService extends JobService {
         Log.i(TAG, "Service destroyed");
     }
 
-    /**
-     * When the app's MainActivity is created, it starts this service. This is so that the
-     * activity and this service can communicate back and forth. See "setUiCallback()"
-     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         return START_STICKY;

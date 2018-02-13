@@ -17,7 +17,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:theme="@style/Widget.Rolique.ProgressBar.White"
-        tools:background="@color/black"/>
+        tools:background="@color/black"
+        tools:targetApi="lollipop"/>
 
     <include layout="@layout/content_network_error"/>
 

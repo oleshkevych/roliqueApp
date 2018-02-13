@@ -14,17 +14,18 @@ apply plugin: 'io.fabric'
 
 android {
     compileSdkVersion 27
-    buildToolsVersion "27.0.2"
+    buildToolsVersion "27.0.3"
 
     def versionMajor = 0
     def versionMinor = 0
-    def versionPatch = 32
+    def versionPatch = 35
 
     defaultConfig {
         applicationId "io.rolique.roliqueapp"
-        minSdkVersion 21
+        minSdkVersion 19
         targetSdkVersion 27
         multiDexEnabled true
+        vectorDrawables.useSupportLibrary = true
 
         versionCode versionMajor * 10000 + versionMinor * 100 + versionPatch
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
@@ -52,15 +53,6 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
-            ext.betaDistributionEmails="volodymyr.oleshkevych@rolique.io," +
-                    "dev.maslov@gmail.com," +
-                    "vladyslav.bilyi@rolique.io," +
-                    "vitman8@gmail.com," +
-                    "viktor.kolomiytsev@rolique.io," +
-                    "roman.horobets@rolique.io," +
-                    "sergii.velykodnyi@gmail.com," +
-                    "igor.semenyuk@rolique.io," +
-                    "khrystyna.hlushko@rolique.io "
         }
         debug {
             minifyEnabled false

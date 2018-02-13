@@ -124,7 +124,7 @@ abstract class BaseLocationActivity : BaseActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == RC_LOCATION_SETTINGS)
             when (resultCode) {
                 Activity.RESULT_OK -> {

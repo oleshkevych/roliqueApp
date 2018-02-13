@@ -335,8 +335,8 @@ public class CheckInFragment extends BaseFragment implements CheckInContract.Vie
     }
 
     @Override
-    public void updateAlarm(boolean isCheckedIn, String checkInTime, boolean isNotificationAllowed) {
-        AlarmBuilder.setAlarm(getActivity(), checkInTime, isCheckedIn, isNotificationAllowed);
+    public void updateAlarm(boolean isCheckedIn) {
+        AlarmBuilder.setAlarm(getActivity(), isCheckedIn);
     }
 
     @Override

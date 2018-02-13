@@ -20,7 +20,7 @@
         android:layout_margin="16dp"
         android:clickable="true"
         android:foreground="?android:selectableItemBackground"
-        android:src="@drawable/ic_add_white_16dp"
+        app:srcCompat="@drawable/ic_add_white_16dp"
         app:backgroundTint="@color/colorPrimaryDark"
         app:fabSize="normal"
         app:pressedTranslationZ="12dp"/>

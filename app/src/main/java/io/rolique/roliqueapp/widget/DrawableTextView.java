@@ -86,7 +86,7 @@ public class DrawableTextView extends AppCompatTextView {
     }
 
     private Drawable getDrawableFromRes(@DrawableRes int resId) {
-        return ContextCompat.getDrawable(getContext(), resId);
+        return getResources().getDrawable(resId);
     }
 
     public void setTextColorResource(@ColorRes int colorRes) {

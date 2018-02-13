@@ -1,11 +1,11 @@
 package io.rolique.cameralibrary.screens.gallery;
 
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -181,13 +181,21 @@ class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewHolder> 
 
         private void setImageWithRoundCorners(ImageView imageView) {
             int cornerRadius = imageView.getContext().getResources().getDimensionPixelSize(R.dimen.image_view_corner_radius);
-            mPicasso
-                    .load(mFile)
-                    .fit()
-                    .centerCrop()
-                    .transform(new RoundedCornersTransformation(cornerRadius, 0))
-                    .placeholder(R.drawable.ic_placeholder_grey_160dp)
-                    .into(imageView);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                mPicasso
+                        .load(mFile)
+                        .fit()
+                        .centerCrop()
+                        .transform(new RoundedCornersTransformation(cornerRadius, 0))
+                        .placeholder(R.drawable.ic_placeholder_grey_160dp)
+                        .into(imageView);
+            else
+                mPicasso
+                        .load(mFile)
+                        .fit()
+                        .centerCrop()
+                        .transform(new RoundedCornersTransformation(cornerRadius, 0))
+                        .into(imageView);
         }
 
         private void setUpActionListeners() {
