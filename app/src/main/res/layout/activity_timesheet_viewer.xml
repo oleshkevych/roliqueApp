@@ -44,9 +44,9 @@
                     android:layout_height="match_parent"
                     android:layout_gravity="center"
                     android:background="?selectableItemBackground"
-                    android:padding="8dp"
+                    android:padding="16dp"
                     android:scaleType="fitCenter"
-                    app:srcCompat="@drawable/ic_help_white_24dp"
+                    tools:src="@drawable/ic_help_white_24dp"
                     tools:ignore="ContentDescription"/>
 
                 <ProgressBar
@@ -75,12 +75,13 @@
             android:paddingBottom="16dp"
             android:paddingTop="8dp">
 
-            <ImageView
+            <ImageButton
                 android:id="@+id/image_view_back"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                app:srcCompat="@drawable/ic_keyboard_arrow_left_grey_24dp"
+                android:background="?selectableItemBackground"
+                tools:src="@drawable/ic_keyboard_arrow_left_grey_24dp"
                 tools:ignore="ContentDescription"/>
 
             <TextView
@@ -92,12 +93,13 @@
                 android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
                 tools:text="01.09 - 08.09 2017"/>
 
-            <ImageView
+            <ImageButton
                 android:id="@+id/image_view_forward"
                 android:layout_width="0dp"
+                android:background="?selectableItemBackground"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                app:srcCompat="@drawable/ic_keyboard_arrow_right_grey_24dp"
+                tools:srcCompat="@drawable/ic_keyboard_arrow_right_grey_24dp"
                 tools:ignore="ContentDescription"/>
         </LinearLayout>
 

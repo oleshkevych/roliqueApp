@@ -14,10 +14,12 @@ import timber.log.Timber;
 
 public final class DateUtil {
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss Z";
+    private static final String DATE_FORMAT_SIMPLE = "yyyy-MM-dd HH:mm:ss 'Z'";
 
     public static Date transformDate(String dateInString) {
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault());
+            SimpleDateFormat sdf = (dateInString.contains("Z")) ? new SimpleDateFormat(DATE_FORMAT_SIMPLE, Locale.getDefault()) :
+            new SimpleDateFormat(DATE_FORMAT, Locale.getDefault());
             return sdf.parse(dateInString);
         } catch (Exception e) {
             Timber.e(e);

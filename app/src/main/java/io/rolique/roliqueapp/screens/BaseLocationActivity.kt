@@ -21,7 +21,7 @@ import timber.log.Timber
 abstract class BaseLocationActivity : BaseActivity() {
 
     companion object {
-        val ROLIQUE_POSITION = LatLng(49.841358007066034, 24.023118875920773)
+        val ROLIQUE_POSITION = LatLng(49.826776, 23.990259)
         val RANGE_RADIUS = 50
     }
 

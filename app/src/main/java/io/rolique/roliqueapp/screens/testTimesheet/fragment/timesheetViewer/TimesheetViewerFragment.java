@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
@@ -79,7 +80,9 @@ public class TimesheetViewerFragment extends BaseFragment implements TimesheetCo
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        mHelpButton.setImageDrawable(ContextCompat.getDrawable(mHelpButton.getContext(), R.drawable.ic_help_white_24dp));
+        ((ImageView) view.findViewById(R.id.image_view_back)).setImageDrawable(ContextCompat.getDrawable(mHelpButton.getContext(), R.drawable.ic_keyboard_arrow_left_grey_24dp));
+        ((ImageView) view.findViewById(R.id.image_view_forward)).setImageDrawable(ContextCompat.getDrawable(mHelpButton.getContext(), R.drawable.ic_keyboard_arrow_right_grey_24dp));
         setUpTableView(view);
         if (savedInstanceState == null) {
             if (mTableDate == null) {

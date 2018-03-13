@@ -19,19 +19,20 @@ public abstract class BaseFragment extends Fragment {
 
     private Unbinder mUnbinder;
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        inject();
-    }
-
-    protected abstract void inject();
+//    @Override
+//    public void onCreate(@Nullable Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//        inject();
+//    }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mUnbinder = ButterKnife.bind(BaseFragment.this, view);
+        inject();
     }
+
+    protected abstract void inject();
 
     @Override
     public void onDestroyView() {

@@ -38,11 +38,11 @@ public class NotificationService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         final String NOTIFICATION_CHANNEL = "MY_NOTIFICATION_CHANNEL";
-//        AlarmBuilder.resetAlarm(NotificationService.this);
-//        Calendar calNow = Calendar.getInstance();
-//        if (calNow.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
-//                calNow.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
-//            return START_NOT_STICKY;
+        AlarmBuilder.resetAlarm(NotificationService.this);
+        Calendar calNow = Calendar.getInstance();
+        if (calNow.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
+                calNow.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
+            return START_NOT_STICKY;
 
         Intent intentAction = new Intent(NotificationService.this, RemindService.class);
         intentAction.putExtra(getString(R.string.extra_notification_id), NOTIFICATION_ID);
